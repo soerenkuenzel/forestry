@@ -305,7 +305,7 @@ setGeneric(
 #' @rdname honestRF-honestRF
 #' @aliases honestRF, honestRF-method
 #' @importFrom Rcpp evalCpp
-#' @useDynLib hte
+#' @useDynLib forestry
 #' @return A `honestRF` object.
 honestRF <- function(
   x,

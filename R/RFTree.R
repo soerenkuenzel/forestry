@@ -68,7 +68,7 @@ setGeneric(
 #' @rdname RFTree-RFTree
 #' @aliases RFTree, RFTree-method
 #' @importFrom Rcpp evalCpp
-#' @useDynLib hte
+#' @useDynLib forestry
 #' @return a `RFTree` object
 RFTree <- function(
   x,

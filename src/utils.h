@@ -1,5 +1,5 @@
-#ifndef HTECPP_UTILS_H
-#define HTECPP_UTILS_H
+#ifndef FORESTRYCPP_UTILS_H
+#define FORESTRYCPP_UTILS_H
 
 #include <iostream>
 #include <vector>
@@ -10,4 +10,4 @@ void print_vector(
   std::vector<size_t> v
 );
 
-#endif //HTECPP_UTILS_H
+#endif //FORESTRYCPP_UTILS_H

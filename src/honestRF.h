@@ -1,5 +1,5 @@
-#ifndef HTECPP_RF_H
-#define HTECPP_RF_H
+#ifndef FORESTRYCPP_RF_H
+#define FORESTRYCPP_RF_H
 
 #include <iostream>
 #include <vector>
@@ -110,4 +110,4 @@ private:
   bool _splitMiddle;
 };
 
-#endif //HTECPP_RF_H
+#endif //FORESTRYCPP_RF_H

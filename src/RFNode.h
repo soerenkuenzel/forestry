@@ -1,5 +1,5 @@
-#ifndef HTECPP_RFNODE_H
-#define HTECPP_RFNODE_H
+#ifndef FORESTRYCPP_RFNODE_H
+#define FORESTRYCPP_RFNODE_H
 
 #include <iostream>
 #include <vector>
@@ -105,4 +105,4 @@ private:
 };
 
 
-#endif //HTECPP_RFNODE_H
+#endif //FORESTRYCPP_RFNODE_H

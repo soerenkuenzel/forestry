@@ -1,5 +1,5 @@
-#ifndef HTECPP_DATAFRAME_H
-#define HTECPP_DATAFRAME_H
+#ifndef FORESTRYCPP_DATAFRAME_H
+#define FORESTRYCPP_DATAFRAME_H
 
 #include <iostream>
 #include <vector>
@@ -60,4 +60,4 @@ private:
 };
 
 
-#endif //HTECPP_DATAFRAME_H
+#endif //FORESTRYCPP_DATAFRAME_H

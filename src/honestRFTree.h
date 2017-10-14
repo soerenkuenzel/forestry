@@ -1,5 +1,5 @@
-#ifndef HTECPP_RFTREE_H
-#define HTECPP_RFTREE_H
+#ifndef FORESTRYCPP_RFTREE_H
+#define FORESTRYCPP_RFTREE_H
 
 #include <iostream>
 #include <vector>
@@ -108,4 +108,4 @@ private:
 };
 
 
-#endif //HTECPP_RFTREE_H
+#endif //FORESTRYCPP_RFTREE_H
