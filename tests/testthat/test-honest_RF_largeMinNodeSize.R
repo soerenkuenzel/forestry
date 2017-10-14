@@ -15,7 +15,7 @@ test_that("Tests large node size", {
     sampsize = nrow(x),
     mtry = 4,
     nodesizeSpl = 80,
-    nthread = 4,
+    nthread = 2,
     splitrule = "variance",
     splitratio = 1,
     nodesizeAvg = 80

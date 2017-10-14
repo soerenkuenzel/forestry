@@ -15,7 +15,7 @@ test_that("Tests adding more trees", {
       sampsize = nrow(x),
       mtry = 3,
       nodesizeSpl = 5,
-      nthread = 4,
+      nthread = 2,
       splitrule = "variance",
       splitratio = 1,
       nodesizeAvg = 5

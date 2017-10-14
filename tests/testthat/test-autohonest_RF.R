@@ -9,7 +9,8 @@ test_that("Tests that autotuning is working correctly", {
   tuned_forest <- autohonestRF(x = x,
                                y = y,
                                num_iter = 9,
-                               eta = 3 )
+                               eta = 3,
+                               nthread = 2)
 
   y_pred <- predict(tuned_forest, x)
 

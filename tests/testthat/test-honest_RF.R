@@ -14,7 +14,7 @@ test_that("Tests that random forest is working correctly", {
     sample.fraction = .8,
     mtry = 3,
     nodesizeSpl = 5,
-    nthread = 4,
+    nthread = 2,
     splitrule = "variance",
     splitratio = 1,
     nodesizeAvg = 5

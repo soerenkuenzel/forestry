@@ -16,7 +16,7 @@ test_that("Test non-continuous split", {
       sampsize = nrow(x),
       mtry = 4,
       nodesizeSpl = 5,
-      nthread = 4,
+      nthread = 2,
       splitrule = "variance",
       splitratio = 1,
       nodesizeAvg = 5,
