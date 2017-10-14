@@ -8,7 +8,6 @@ test_that("Test non-continuous split", {
   set.seed(24750371)
 
   # Test honestRF (mimic RF)
-  expect_warning(
     forest <- honestRF(
       x,
       y,
@@ -22,15 +21,13 @@ test_that("Test non-continuous split", {
       splitratio = 1,
       nodesizeAvg = 5,
       middleSplit = TRUE
-    ),
-    "honestRF is used as adaptive random forest."
-  )
+    )
 
   # Test predict
   y_pred <- predict(forest, x)
 
   # Mean Square Error
   # sum((y_pred - y) ^ 2)
-  expect_equal(sum((y_pred - y) ^ 2), 7.81, tolerance=1e-2)
+  expect_equal(sum((y_pred - y) ^ 2), 7.933141, tolerance=1e-2)
 
 })

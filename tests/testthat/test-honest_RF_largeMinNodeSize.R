@@ -7,21 +7,18 @@ test_that("Tests large node size", {
   set.seed(24750371)
 
   # Test honestRF (mimic RF)
-  expect_warning(
-    forest <- honestRF(
-      x,
-      y,
-      ntree = 500,
-      replace = TRUE,
-      sampsize = nrow(x),
-      mtry = 4,
-      nodesizeSpl = 80,
-      nthread = 4,
-      splitrule = "variance",
-      splitratio = 1,
-      nodesizeAvg = 80
-    ),
-    "honestRF is used as adaptive random forest."
+  forest <- honestRF(
+    x,
+    y,
+    ntree = 500,
+    replace = TRUE,
+    sampsize = nrow(x),
+    mtry = 4,
+    nodesizeSpl = 80,
+    nthread = 4,
+    splitrule = "variance",
+    splitratio = 1,
+    nodesizeAvg = 80
   )
 
   # Test predict
@@ -32,3 +29,4 @@ test_that("Tests large node size", {
   expect_equal(sum((y_pred - y) ^ 2), 102.1684, tolerance=1e-4)
 
 })
+

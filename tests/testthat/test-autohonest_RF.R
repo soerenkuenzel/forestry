@@ -6,16 +6,12 @@ test_that("Tests that autotuning is working correctly", {
 
   # Set seed for reproductivity
   set.seed(24750371)
-
-  expect_warning(
   tuned_forest <- autohonestRF(x = x,
                                y = y,
                                num_iter = 9,
-                               eta = 3 ),
-  "honestRF is used as adaptive random forest."
-  )
+                               eta = 3 )
 
   y_pred <- predict(tuned_forest, x)
 
-  expect_equal(sum((y_pred - y) ^ 2), 16.9, tolerance=1e-1)
+  expect_equal(sum((y_pred - y) ^ 2), 14.91946, tolerance=1e-1)
 })

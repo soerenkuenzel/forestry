@@ -7,7 +7,6 @@ test_that("Tests adding more trees", {
   set.seed(24750371)
 
   # Test honestRF (mimic RF)
-  expect_warning(
     forest <- honestRF(
       x,
       y,
@@ -20,9 +19,7 @@ test_that("Tests adding more trees", {
       splitrule = "variance",
       splitratio = 1,
       nodesizeAvg = 5
-    ),
-    "honestRF is used as adaptive random forest."
-  )
+    )
 
   # Test add more trees
   forest <- addTrees(forest, 100)
@@ -33,6 +30,6 @@ test_that("Tests adding more trees", {
 
   # Mean Square Error
   sum((y_pred - y) ^ 2)
-  expect_equal(sum((y_pred - y) ^ 2), 8.47, tolerance=1e-3)
+  expect_equal(sum((y_pred - y) ^ 2), 8.536994, tolerance=1e-3)
 
 })

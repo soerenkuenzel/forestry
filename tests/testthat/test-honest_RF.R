@@ -6,21 +6,18 @@ test_that("Tests that random forest is working correctly", {
   set.seed(24750371)
 
   # Test honestRF (mimic RF)
-  expect_warning(
-    forest <- honestRF(
-      x,
-      y,
-      ntree = 500,
-      replace = TRUE,
-      sample.fraction = .8,
-      mtry = 3,
-      nodesizeSpl = 5,
-      nthread = 4,
-      splitrule = "variance",
-      splitratio = 1,
-      nodesizeAvg = 5
-    ),
-    "honestRF is used as adaptive random forest."
+  forest <- honestRF(
+    x,
+    y,
+    ntree = 500,
+    replace = TRUE,
+    sample.fraction = .8,
+    mtry = 3,
+    nodesizeSpl = 5,
+    nthread = 4,
+    splitrule = "variance",
+    splitratio = 1,
+    nodesizeAvg = 5
   )
 
   # Test predict
@@ -28,5 +25,5 @@ test_that("Tests that random forest is working correctly", {
 
   # Mean Square Error
   sum((y_pred - y) ^ 2)
-  expect_equal(sum((y_pred - y) ^ 2), 9.68, tolerance=1e-2)
+  expect_equal(sum((y_pred - y) ^ 2), 9.68, tolerance = 1e-2)
 })
