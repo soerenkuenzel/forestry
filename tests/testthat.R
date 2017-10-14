@@ -1,4 +1,4 @@
 library(testthat)
-library(hte)
+library(forestry)
 
-test_check("hte")
+test_check("forestry")
