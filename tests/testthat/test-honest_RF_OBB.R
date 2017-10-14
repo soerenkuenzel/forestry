@@ -32,7 +32,7 @@ test_that("Tests if OOB calculation is working correctly", {
     sampsize = nrow(x),
     mtry = 3,
     nodesizeSpl = 5,
-    nthread = 4,
+    nthread = 2,
     splitrule = "variance",
     splitratio = 1,
     nodesizeAvg = 5
