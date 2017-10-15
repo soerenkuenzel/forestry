@@ -29,7 +29,6 @@ test_that("Tests adding more trees", {
   y_pred <- predict(forest, x)
 
   # Mean Square Error
-  sum((y_pred - y) ^ 2)
-  expect_equal(sum((y_pred - y) ^ 2), 8.536994, tolerance=1e-3)
+  expect_lt(mean((y_pred - y) ^ 2), 0.1)
 
 })

@@ -21,7 +21,7 @@ test_that("Tests if OOB calculation is working correctly", {
   )
 
   # Test OOB
-  expect_equal(getOOB(forest), 15.79849, tolerance = 1e-2)
+  expect_lt(mean((getOOB(forest) - 15.79849)^2), .1)
 
   # Test a very extreme setting
   forest <- honestRF(
