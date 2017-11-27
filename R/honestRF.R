@@ -124,15 +124,15 @@ training_data_checker <- function(
   #
   #   print("Note that honestRF is used as adaptive random forest.")
 
-#   } else {
-#
-#     if (splitSampleSize < 2 * nodesizeSpl){
-#       stop("splitratio is too small such that splitting data cannot even be splitted!")
-#     }
-#
-#     if (avgSampleSize < 2 * nodesizeAvg) {
-#       stop("splitratio is too big such that averaging data cannot even be splitted!")
-#     }
+  #   } else {
+  #
+  #     if (splitSampleSize < 2 * nodesizeSpl){
+  #       stop("splitratio is too small such that splitting data cannot even be splitted!")
+  #     }
+  #
+  #     if (avgSampleSize < 2 * nodesizeAvg) {
+  #       stop("splitratio is too big such that averaging data cannot even be splitted!")
+  #     }
 
   # }
 
@@ -147,7 +147,7 @@ training_data_checker <- function(
                  error = function(x) {FALSE})) {
       stop(paste0(
         "nthread cannot exceed total cores in the computer: ", detectCores()
-        ))
+      ))
     }
   }
 
@@ -155,7 +155,7 @@ training_data_checker <- function(
     stop("middleSplit must be TRUE or FALSE.")
   }
 
-}
+  }
 
 #' @title testing_data_checker-hoenstRF
 #' @name testing_data_checker-honestRF
@@ -296,7 +296,7 @@ setGeneric(
     splitrule,
     middleSplit,
     reuseHonestRF
-    ){
+  ){
     standardGeneric("honestRF")
   }
 )
@@ -324,7 +324,7 @@ honestRF <- function(
   splitrule="variance",
   middleSplit=FALSE,
   reuseHonestRF=NULL
-  ){
+){
   # only if sample.fraction is given, update sampsize
   if(!is.null(sample.fraction))
     sampsize <- ceiling(sample.fraction * nrow(x))
@@ -697,7 +697,7 @@ autohonestRF <- function(x,
     allConfigs$min_node_size_spl <- ifelse(min_node_size_spl_raw == 0, 1,
                                            min_node_size_spl_raw)
     min_node_size_ave <- floor((1 - allConfigs$splitratio) * sampsize *
-                                     rbeta(n, 1, 3))
+                                 rbeta(n, 1, 3))
     allConfigs$min_node_size_ave <- ifelse(min_node_size_ave == 0, 1,
                                            min_node_size_ave)
 

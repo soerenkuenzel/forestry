@@ -18,11 +18,9 @@
 #' usage however since there will be no data available for splitting).
 #' @exportClass honestRF_R
 setClass(
-  Class="honestRF_R",
-  slots=list(
-    splitratio="numeric"
-  ),
-  contains="RF"
+  Class = "honestRF_R",
+  slots = list(splitratio = "numeric"),
+  contains = "RF"
 )
 
 
@@ -63,22 +61,21 @@ setClass(
 #' @param nodesizeAvg Minimum size of terminal nodes for averaging dataset.
 #' The default value is 5.
 #' @export honestRF_R
+#' @include R_RF.R
 setGeneric(
-  name="honestRF_R",
-  def=function(
-    x,
-    y,
-    ntree,
-    replace,
-    sampsize,
-    mtry,
-    nodesizeSpl,
-    nthread,
-    splitrule,
-    avgfunc,
-    splitratio,
-    nodesizeAvg
-    ){
+  name = "honestRF_R",
+  def = function(x,
+                 y,
+                 ntree,
+                 replace,
+                 sampsize,
+                 mtry,
+                 nodesizeSpl,
+                 nthread,
+                 splitrule,
+                 avgfunc,
+                 splitratio,
+                 nodesizeAvg) {
     standardGeneric("honestRF_R")
   }
 )
@@ -87,26 +84,27 @@ setGeneric(
 #' @rdname honestRF_R-honestRF_R
 #' @aliases honestRF_R, honestRF_R-method
 #' @return A `honestRF_R` object.
-honestRF_R <- function(
-  x,
-  y,
-  ntree=500,
-  replace=TRUE,
-  sampsize=if (replace) nrow(x) else ceiling(.632*nrow(x)),
-  mtry=max(floor(ncol(x)/3), 1),
-  nodesizeSpl=5,
-  nthread=1,
-  splitrule="variance",
-  avgfunc=avgMean,
-  splitratio=1,
-  nodesizeAvg=5
-  ){
-
+honestRF_R <- function(x,
+                       y,
+                       ntree = 500,
+                       replace = TRUE,
+                       sampsize = if (replace)
+                         nrow(x)
+                       else
+                         ceiling(.632 * nrow(x)),
+                       mtry = max(floor(ncol(x) / 3), 1),
+                       nodesizeSpl = 5,
+                       nthread = 1,
+                       splitrule = "variance",
+                       avgfunc = avgMean,
+                       splitratio = 1,
+                       nodesizeAvg = 5) {
   # Preprocess the data
   preprocessedData <- preprocess_training(x, y)
   x <- preprocessedData$x
   categoricalFeatureCols <- preprocessedData$categoricalFeatureCols
-  categoricalFeatureMapping <- preprocessedData$categoricalFeatureMapping
+  categoricalFeatureMapping <-
+    preprocessedData$categoricalFeatureMapping
 
   # Total number of obervations
   nObservations <- length(y)
@@ -117,26 +115,19 @@ honestRF_R <- function(
   registerDoParallel(nthread)
 
   # Create a list of minimum node size
-  aggregateNodeSize <- list(
-    "averagingNodeSize"=nodesizeAvg,
-    "splittingNodeSize"=nodesizeSpl
-  )
+  aggregateNodeSize <- list("averagingNodeSize" = nodesizeAvg,
+                            "splittingNodeSize" = nodesizeSpl)
 
   # Create trees
-  trees <- foreach(i = 1:ntree) %dopar%{
-
+  trees <- foreach(i = 1:ntree) %dopar% {
     # Bootstrap sample observation index
-    sampledIndex <- sample(
-      1:nObservations,
-      sampsize,
-      replace=replace
-      )
+    sampledIndex <- sample(1:nObservations,
+                           sampsize,
+                           replace = replace)
 
     # Sample splitting index from the sampled observation index
-    splittingSamples <- sample(
-      1:length(sampledIndex),
-      as.integer(sampsize * splitratio)
-      )
+    splittingSamples <- sample(1:length(sampledIndex),
+                               as.integer(sampsize * splitratio))
     splittingSampledIndex <- sampledIndex[splittingSamples]
 
     # If splitratio is 1, set averagingSampledIndex to be the same as
@@ -149,16 +140,16 @@ honestRF_R <- function(
 
     return(
       honestRFTree(
-        x=x,
-        y=y,
-        mtry=mtry,
-        nodesize=aggregateNodeSize,
-        sampleIndex=list(
-          "averagingSampleIndex"=averagingSampledIndex,
-          "splittingSampleIndex"=splittingSampledIndex
+        x = x,
+        y = y,
+        mtry = mtry,
+        nodesize = aggregateNodeSize,
+        sampleIndex = list(
+          "averagingSampleIndex" = averagingSampledIndex,
+          "splittingSampleIndex" = splittingSampledIndex
         ),
-        splitrule=splitrule,
-        categoricalFeatureCol=categoricalFeatureCols
+        splitrule = splitrule,
+        categoricalFeatureCols = categoricalFeatureCols
       )
     )
   }
@@ -166,20 +157,19 @@ honestRF_R <- function(
   # Create a forest object
   forest <- new(
     "honestRF_R",
-    x=x,
-    y=y,
-    ntree=ntree,
-    replace=replace,
-    sampsize=sampsize,
-    mtry=mtry,
-    nodesize=aggregateNodeSize,
-    splitrule=splitrule,
-    avgfunc=avgfunc,
-    forest=trees,
-    categoricalFeatureCols=categoricalFeatureCols,
-    categoricalFeatureMapping=categoricalFeatureMapping,
-    splitratio=splitratio
+    x = x,
+    y = y,
+    ntree = ntree,
+    replace = replace,
+    sampsize = sampsize,
+    mtry = mtry,
+    nodesize = aggregateNodeSize,
+    splitrule = splitrule,
+    avgfunc = avgfunc,
+    forest = trees,
+    categoricalFeatureCols = categoricalFeatureCols,
+    categoricalFeatureMapping = categoricalFeatureMapping,
+    splitratio = splitratio
   )
-
   return(forest)
 }
