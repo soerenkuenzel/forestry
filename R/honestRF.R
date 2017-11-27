@@ -34,6 +34,7 @@
 #' values. If false, it will take a point based on a uniform distribution
 #' between two feature values. (Default = FALSE)
 #' @export honestRF
+
 training_data_checker <- function(
   x,
   y,
@@ -142,7 +143,7 @@ training_data_checker <- function(
 
   if (nthread > 0) {
     #' @import parallel
-    library(parallel)
+#    library(parallel)
     if (tryCatch(nthread > parallel::detectCores(),
                  error = function(x) {FALSE})) {
       stop(paste0(
