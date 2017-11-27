@@ -452,7 +452,7 @@ honestRF <- function(
 #' @param object A `honestRF` object.
 #' @param feature.new A data frame of testing predictors.
 #' @return A vector of predicted responses.
-#' @aliases predict, honestRF-method
+#' @aliases predict,honestRF-method
 #' @exportMethod predict
 setMethod(
   f="predict",

@@ -3,8 +3,7 @@
 \docType{methods}
 \name{predict-honestRF}
 \alias{predict-honestRF}
-\alias{predict,}
-\alias{honestRF-method}
+\alias{predict,honestRF-method}
 \title{predict-honestRF}
 \usage{
 \S4method{predict}{honestRF}(object, feature.new)
