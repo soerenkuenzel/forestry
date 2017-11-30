@@ -9,6 +9,11 @@
 \usage{
 \S4method{addTrees}{honestRF}(object, ntree)
 }
+\arguments{
+\item{object}{A `honestRF` object.}
+
+\item{ntree}{Number of new trees to add}
+}
 \value{
 A `honestRF` object
 }

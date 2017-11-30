@@ -2,6 +2,7 @@
 % Please edit documentation in R/honestRF.R
 \name{getOOB-honestRF}
 \alias{getOOB-honestRF}
+\alias{getOOB}
 \title{getOOB-honestRF}
 \usage{
 getOOB(object, noWarning = FALSE)

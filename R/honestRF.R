@@ -492,6 +492,7 @@ setMethod(
 #' @description Calculate the out-of-bag error of a given forest.
 #' @param object A `honestRF` object.
 #' @param noWarning flag to not display warnings
+#' @aliases getOOB
 setGeneric(
   name="getOOB",
   def=function(
@@ -503,6 +504,8 @@ setGeneric(
 )
 
 #' @title getOOB-honestRF
+#' @param object A `honestRF` object.
+#' @param noWarning flag to not display warnings
 #' @aliases getOOB, honestRF-method
 #' @return The OOB error of the forest.
 #' @exportMethod getOOB
@@ -546,6 +549,7 @@ setMethod(
 #' @description Add more trees to the existing forest.
 #' @param object A `honestRF` object.
 #' @param ntree Number of new trees to add
+#' @aliases addTrees
 setGeneric(
   name="addTrees",
   def=function(
@@ -557,6 +561,8 @@ setGeneric(
 )
 
 #' @title addTrees-honestRF
+#' @param object A `honestRF` object.
+#' @param ntree Number of new trees to add
 #' @aliases addTrees, honestRF-method
 #' @exportMethod addTrees
 #' @return A `honestRF` object
@@ -620,6 +626,15 @@ setGeneric(
 )
 
 #' @title autohonestRF-honestRF
+#' @param x A data frame of all training predictors.
+#' @param y A vector of all training responses.
+#' @param sampsize The size of total samples to draw for the training data.
+#' @param num_iter Maximum iterations/epochs per configuration. Default is 1024.
+#' @param eta Downsampling rate. Default value is 2.
+#' @param verbose if tuning process in verbose mode
+#' @param seed random seed
+#' @param nthread Number of threads to train and predict thre forest. The
+#' default number is 0 which represents using all cores.
 #' @aliases autohonestRF, honestRF-method
 #' @return A `honestRF` object
 #' @export autohonestRF

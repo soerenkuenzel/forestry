@@ -9,6 +9,11 @@
 \usage{
 \S4method{getOOB}{honestRF}(object, noWarning = FALSE)
 }
+\arguments{
+\item{object}{A `honestRF` object.}
+
+\item{noWarning}{flag to not display warnings}
+}
 \value{
 The OOB error of the forest.
 }

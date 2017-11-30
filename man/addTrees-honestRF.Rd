@@ -2,6 +2,7 @@
 % Please edit documentation in R/honestRF.R
 \name{addTrees-honestRF}
 \alias{addTrees-honestRF}
+\alias{addTrees}
 \title{addTrees-honestRF}
 \usage{
 addTrees(object, ntree)
