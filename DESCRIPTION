@@ -5,7 +5,7 @@ Version: 0.4.0.000
 Author: Sören Künzel, Theo Saarinen, Allen Tang, Ling Xie 
 Maintainer: Sören Künzel <srk@berkeley.edu>, Allen Tang <actang.me@gmail.com>
 Description: Gradient Boosting, Random Forests, Tree Estimators, Optimal Trees,
-    Continuous Random Forests, Random Forests for correlated Uncertainty
+    Continuous Random Forests, Random Forests for correlated Uncertainty.
 License: GPL (>=3)
 Encoding: UTF-8
 LazyData: true
