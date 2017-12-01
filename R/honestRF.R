@@ -504,6 +504,7 @@ setGeneric(
 )
 
 #' @title getOOB-honestRF
+#' @description Calculate the out-of-bag error of a given forest.
 #' @param object A `honestRF` object.
 #' @param noWarning flag to not display warnings
 #' @aliases getOOB, honestRF-method
@@ -561,6 +562,7 @@ setGeneric(
 )
 
 #' @title addTrees-honestRF
+#' @description Add more trees to the existing forest.
 #' @param object A `honestRF` object.
 #' @param ntree Number of new trees to add
 #' @aliases addTrees, honestRF-method
@@ -626,6 +628,9 @@ setGeneric(
 )
 
 #' @title autohonestRF-honestRF
+#' @description Autotune a honestRF based on the input dataset. The methodology
+#' is based on paper `Hyperband: A Novel Bandit-Based Approach to
+#' Hyperparameter Optimization` by Lisha Li, et al.
 #' @param x A data frame of all training predictors.
 #' @param y A vector of all training responses.
 #' @param sampsize The size of total samples to draw for the training data.

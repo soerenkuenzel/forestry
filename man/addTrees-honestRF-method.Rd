@@ -17,3 +17,6 @@
 \value{
 A `honestRF` object
 }
+\description{
+Add more trees to the existing forest.
+}

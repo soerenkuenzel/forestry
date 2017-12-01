@@ -30,3 +30,8 @@ default number is 0 which represents using all cores.}
 \value{
 A `honestRF` object
 }
+\description{
+Autotune a honestRF based on the input dataset. The methodology
+is based on paper `Hyperband: A Novel Bandit-Based Approach to
+Hyperparameter Optimization` by Lisha Li, et al.
+}
