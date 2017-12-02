@@ -2,7 +2,7 @@
 
 ## forestry: Provides Functions for Fast Random Forests
 
-Sören Künzel
+Sören Künzel, Jasjeet Sekhon, Allen Tang, Theo Saarinen, Ling Xie 
 
 ## Introduction
 
