@@ -2,8 +2,7 @@
 % Please edit documentation in R/honestRF.R
 \name{autohonestRF}
 \alias{autohonestRF}
-\alias{autohonestRF,}
-\alias{honestRF-method}
+\alias{autohonestRF,honestRF-method}
 \title{autohonestRF-honestRF}
 \usage{
 autohonestRF(x, y, sampsize = as.integer(nrow(x) * 0.75), num_iter = 1024,

@@ -3,8 +3,6 @@
 \docType{methods}
 \name{addTrees,honestRF-method}
 \alias{addTrees,honestRF-method}
-\alias{addTrees,}
-\alias{honestRF-method}
 \title{addTrees-honestRF}
 \usage{
 \S4method{addTrees}{honestRF}(object, ntree)

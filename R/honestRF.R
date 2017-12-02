@@ -304,7 +304,7 @@ setGeneric(
 
 #' @title honestRF-Constructor
 #' @rdname honestRF-honestRF
-#' @aliases honestRF, honestRF-method
+#' @aliases honestRF,honestRF-method
 #' @importFrom Rcpp evalCpp
 #' @useDynLib forestry
 #' @return A `honestRF` object.
@@ -507,7 +507,7 @@ setGeneric(
 #' @description Calculate the out-of-bag error of a given forest.
 #' @param object A `honestRF` object.
 #' @param noWarning flag to not display warnings
-#' @aliases getOOB, honestRF-method
+#' @aliases getOOB,honestRF-method
 #' @return The OOB error of the forest.
 #' @exportMethod getOOB
 setMethod(
@@ -565,7 +565,7 @@ setGeneric(
 #' @description Add more trees to the existing forest.
 #' @param object A `honestRF` object.
 #' @param ntree Number of new trees to add
-#' @aliases addTrees, honestRF-method
+#' @aliases addTrees,honestRF-method
 #' @exportMethod addTrees
 #' @return A `honestRF` object
 setMethod(
@@ -640,7 +640,7 @@ setGeneric(
 #' @param seed random seed
 #' @param nthread Number of threads to train and predict thre forest. The
 #' default number is 0 which represents using all cores.
-#' @aliases autohonestRF, honestRF-method
+#' @aliases autohonestRF,honestRF-method
 #' @return A `honestRF` object
 #' @export autohonestRF
 #' @import stats

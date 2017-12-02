@@ -3,8 +3,6 @@
 \docType{methods}
 \name{getOOB,honestRF-method}
 \alias{getOOB,honestRF-method}
-\alias{getOOB,}
-\alias{honestRF-method}
 \title{getOOB-honestRF}
 \usage{
 \S4method{getOOB}{honestRF}(object, noWarning = FALSE)
