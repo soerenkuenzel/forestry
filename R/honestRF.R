@@ -178,8 +178,8 @@ testing_data_checker <- function(
 ########################################
 ### Honest Random Forest Constructor ###
 ########################################
-#' @title honstRF Constructor
-#' @name honstRF-class
+#' @title honestRF Constructor
+#' @name honestRF-class
 #' @rdname honestRF-class
 #' @description `honestRF` object implementing the most basic version of
 #' a random forest.
@@ -230,7 +230,8 @@ setClass(
     nodesizeSpl="numeric",
     nodesizeAvg="numeric",
     splitratio="numeric",
-    middleSplit="logical"
+    middleSplit="logical",
+    y="vector"
   )
 )
 
