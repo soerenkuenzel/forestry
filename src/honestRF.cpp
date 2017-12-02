@@ -2,8 +2,10 @@
 #include <random>
 #include <thread>
 #include <mutex>
+#include <functional>
 #include "utils.h"
 #define DOPARELLEL true
+// [[Rcpp::plugins(cpp11)]]
 
 honestRF::honestRF():
   _trainingData(nullptr), _ntree(0), _replace(0), _sampSize(0),
