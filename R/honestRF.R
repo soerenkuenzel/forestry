@@ -643,6 +643,7 @@ setGeneric(
 #' @aliases autohonestRF, honestRF-method
 #' @return A `honestRF` object
 #' @export autohonestRF
+#' @import stats
 autohonestRF <- function(x,
                          y,
                          sampsize = as.integer(nrow(x) * 0.75),
