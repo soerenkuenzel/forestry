@@ -1,5 +1,6 @@
 [![Travis-CI Build Status](https://travis-ci.org/soerenkuenzel/forestry.svg?branch=master)](https://travis-ci.org/soerenkuenzel/forestry)
 
+## forestry: provides functions for fast random forests
 
 `forestry` provides functions for estimating heterogenous treatment effects. 
 
