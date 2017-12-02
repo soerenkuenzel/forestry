@@ -20,7 +20,7 @@ setClass(Class = "RFTree",
                       root = "list"))
 
 #' @title RFTree-Constructor
-#' @name RFTree-constructor
+#' @name RFTree-RFTree
 #' @rdname RFTree-class
 #' @description The actual storation of `RFTree` is different from its input.
 #' `sampleIndex` and `nodesize` are actually two lists composing of those in
@@ -79,7 +79,7 @@ setGeneric(
 #' minimizes the overall MSE after splitting. The default value is `variance`.
 #' @param categoricalFeatureCols A list of index for all categorical data. Used
 #' for trees to detect categorical columns.
-#' @aliases RFTree, RFTree-method
+#' @aliases RFTree,RFTree-method
 ## @useDynLib forestry
 #' @return a `RFTree` object
 RFTree <- function(x,
@@ -166,7 +166,7 @@ setGeneric(
 )
 
 #' @rdname selectBestFeature-RFTree
-#' @aliases selectBestFeature, selectBestFeature-method
+#' @aliases selectBestFeature,selectBestFeature-method
 #' @return A list of two outputs: "splitFeature" is the best feature to split
 #' in order to minimize the split loss, "splitValue" is its corresponding split
 #' value.
@@ -567,7 +567,7 @@ setMethod(
 ### showTree Method ###
 #######################
 #' showTree-RFTree
-#' @name showTree-RFTree
+#' @name showTree
 #' @rdname showTree-RFTree
 #' @description Print the entire tree starting from the root node
 #' @param object A `RFTree`` object
@@ -581,7 +581,9 @@ setGeneric(
 )
 
 #' @rdname showTree-RFTree
-#' @aliases showTree
+#' @description Print the entire tree starting from the root node
+#' @aliases showTree,RFTree-method
+
 setMethod(
   f = "showTree",
   signature = "RFTree",

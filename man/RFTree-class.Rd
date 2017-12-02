@@ -3,7 +3,7 @@
 \docType{class}
 \name{RFTree-class}
 \alias{RFTree-class}
-\alias{RFTree-constructor}
+\alias{RFTree-RFTree}
 \title{RFTree Constructor}
 \format{An object of class \code{NULL} of length 0.}
 \arguments{

@@ -4,8 +4,7 @@
 \name{selectBestFeature}
 \alias{selectBestFeature}
 \alias{selectBestFeature}
-\alias{selectBestFeature,}
-\alias{selectBestFeature-method}
+\alias{selectBestFeature,selectBestFeature-method}
 \title{selectBestFeature}
 \format{An object of class \code{NULL} of length 0.}
 \usage{

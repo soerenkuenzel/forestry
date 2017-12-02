@@ -2,8 +2,7 @@
 % Please edit documentation in R/R_RFTree.R
 \name{RFTree}
 \alias{RFTree}
-\alias{RFTree,}
-\alias{RFTree-method}
+\alias{RFTree,RFTree-method}
 \title{RFTree-Constructor}
 \usage{
 RFTree(x, y, se = NULL, mtry = max(floor(ncol(x)/3), 1), nodesize = 5,
