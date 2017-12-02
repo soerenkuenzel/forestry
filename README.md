@@ -1,8 +1,12 @@
 [![Travis-CI Build Status](https://travis-ci.org/soerenkuenzel/forestry.svg?branch=master)](https://travis-ci.org/soerenkuenzel/forestry)
 
-## forestry: provides functions for fast random forests
+## forestry: Provides Functions for Fast Random Forests
 
-`forestry` provides functions for estimating heterogenous treatment effects. 
+Sören Künzel
+
+## Introduction
+
+forestry is a fast implementation of Honest Random Forests. 
 
 ## How to install
 
