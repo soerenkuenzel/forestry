@@ -25,15 +25,3 @@ rcpp_AddTreeInterface <- function(forest, ntree) {
     invisible(.Call('forestry_rcpp_AddTreeInterface', PACKAGE = 'forestry', forest, ntree))
 }
 
-rcpp_selectBestFeature <- function(x, y, featureList, sampleIndex, nodesize, splitrule, categoricalFeatureCols) {
-    .Call('forestry_rcpp_selectBestFeature', PACKAGE = 'forestry', x, y, featureList, sampleIndex, nodesize, splitrule, categoricalFeatureCols)
-}
-
-test_rnd <- function() {
-    .Call('forestry_test_rnd', PACKAGE = 'forestry')
-}
-
-test_rnd2 <- function() {
-    .Call('forestry_test_rnd2', PACKAGE = 'forestry')
-}
-

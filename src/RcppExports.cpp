@@ -93,43 +93,6 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
-// rcpp_selectBestFeature
-List rcpp_selectBestFeature(DataFrame x, NumericVector y, List featureList, List sampleIndex, List nodesize, std::string splitrule, List categoricalFeatureCols);
-RcppExport SEXP forestry_rcpp_selectBestFeature(SEXP xSEXP, SEXP ySEXP, SEXP featureListSEXP, SEXP sampleIndexSEXP, SEXP nodesizeSEXP, SEXP splitruleSEXP, SEXP categoricalFeatureColsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< DataFrame >::type x(xSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
-    Rcpp::traits::input_parameter< List >::type featureList(featureListSEXP);
-    Rcpp::traits::input_parameter< List >::type sampleIndex(sampleIndexSEXP);
-    Rcpp::traits::input_parameter< List >::type nodesize(nodesizeSEXP);
-    Rcpp::traits::input_parameter< std::string >::type splitrule(splitruleSEXP);
-    Rcpp::traits::input_parameter< List >::type categoricalFeatureCols(categoricalFeatureColsSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_selectBestFeature(x, y, featureList, sampleIndex, nodesize, splitrule, categoricalFeatureCols));
-    return rcpp_result_gen;
-END_RCPP
-}
-// test_rnd
-double test_rnd();
-RcppExport SEXP forestry_test_rnd() {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(test_rnd());
-    return rcpp_result_gen;
-END_RCPP
-}
-// test_rnd2
-NumericVector test_rnd2();
-RcppExport SEXP forestry_test_rnd2() {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(test_rnd2());
-    return rcpp_result_gen;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
     {"forestry_rcpp_cppDataFrameInterface", (DL_FUNC) &forestry_rcpp_cppDataFrameInterface, 5},
@@ -138,9 +101,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"forestry_rcpp_OBBPredictInterface", (DL_FUNC) &forestry_rcpp_OBBPredictInterface, 1},
     {"forestry_rcpp_getObservationSizeInterface", (DL_FUNC) &forestry_rcpp_getObservationSizeInterface, 1},
     {"forestry_rcpp_AddTreeInterface", (DL_FUNC) &forestry_rcpp_AddTreeInterface, 2},
-    {"forestry_rcpp_selectBestFeature", (DL_FUNC) &forestry_rcpp_selectBestFeature, 7},
-    {"forestry_test_rnd", (DL_FUNC) &forestry_test_rnd, 0},
-    {"forestry_test_rnd2", (DL_FUNC) &forestry_test_rnd2, 0},
     {NULL, NULL, 0}
 };
 
