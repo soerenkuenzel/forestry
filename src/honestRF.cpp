@@ -11,7 +11,7 @@ honestRF::honestRF():
   _trainingData(nullptr), _ntree(0), _replace(0), _sampSize(0),
   _splitRatio(0), _mtry(0), _nodeSizeSpt(0), _nodeSizeAvg(0),
   _forest(nullptr), _seed(0), _verbose(0), _nthread(0), _OOBError(0),
-  _splitMiddle(0){};
+  _splitMiddle(0), _doubleTree(0){};
 
 honestRF::~honestRF(){
 //  for (std::vector<honestRFTree*>::iterator it = (*_forest).begin();
@@ -34,7 +34,8 @@ honestRF::honestRF(
   unsigned int seed,
   size_t nthread,
   bool verbose,
-  bool splitMiddle
+  bool splitMiddle,
+  bool doubleTree
 ){
   this->_trainingData = trainingData;
   this->_ntree = 0;
@@ -48,6 +49,7 @@ honestRF::honestRF(
   this->_nthread = nthread;
   this->_verbose = verbose;
   this->_splitMiddle = splitMiddle;
+  this->_doubleTree = doubleTree;
 
   if (splitRatio > 1 || splitRatio < 0) {
     throw std::runtime_error("splitRatio shoule be between 0 and 1.");
@@ -152,11 +154,15 @@ void honestRF::addTrees(size_t ntree) {
           std::unique_ptr<std::vector<size_t> > splitSampleIndex;
           std::unique_ptr<std::vector<size_t> > averageSampleIndex;
 
+          std::unique_ptr<std::vector<size_t> > splitSampleIndex2;
+          std::unique_ptr<std::vector<size_t> > averageSampleIndex2;
+
           if (getSplitRatio() == 1 || getSplitRatio() == 0) {
 
             // Treat it as normal RF
             splitSampleIndex.reset(new std::vector<size_t>(sampleIndex));
             averageSampleIndex.reset(new std::vector<size_t>(sampleIndex));
+
           } else {
 
             // Generate sample index based on the split ratio
@@ -180,6 +186,15 @@ void honestRF::addTrees(size_t ntree) {
             averageSampleIndex.reset(
               new std::vector<size_t>(averageSampleIndex_)
             );
+
+            if (_doubleTree) {
+              splitSampleIndex2.reset(
+                new std::vector<size_t>(splitSampleIndex_)
+              );
+              averageSampleIndex2.reset(
+                new std::vector<size_t>(averageSampleIndex_)
+              );
+            }
           }
 
           try{
@@ -196,6 +211,21 @@ void honestRF::addTrees(size_t ntree) {
               )
             );
 
+            honestRFTree *anotherTree;
+            if (_doubleTree) {
+              anotherTree =
+                new honestRFTree(
+                    getTrainingData(),
+                    getMtry(),
+                    getNodeSizeAvg(),
+                    getNodeSizeSpt(),
+                    std::move(averageSampleIndex2),
+                    std::move(splitSampleIndex2),
+                    random_number_generator,
+                    getSplitMiddle()
+                 );
+            }
+
             #if DOPARELLEL
             std::lock_guard<std::mutex> lock(threadLock);
             #endif
@@ -205,6 +235,12 @@ void honestRF::addTrees(size_t ntree) {
             }
             (*getForest()).emplace_back(oneTree);
             _ntree = _ntree + 1;
+            if (_doubleTree) {
+              (*getForest()).emplace_back(anotherTree);
+              _ntree = _ntree + 1;
+            } else {
+              // delete anotherTree;
+            }
 
           } catch (std::runtime_error &err) {
             std::cerr << err.what() << std::endl;

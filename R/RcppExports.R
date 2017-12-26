@@ -5,8 +5,8 @@ rcpp_cppDataFrameInterface <- function(x, y, catCols, numRows, numColumns) {
     .Call('forestry_rcpp_cppDataFrameInterface', PACKAGE = 'forestry', x, y, catCols, numRows, numColumns)
 }
 
-rcpp_cppBuildInterface <- function(x, y, catCols, numRows, numColumns, ntree, replace, sampsize, mtry, splitratio, nodesizeSpl, nodesizeAvg, seed, nthread, verbose, middleSplit, existing_dataframe_flag, existing_dataframe) {
-    .Call('forestry_rcpp_cppBuildInterface', PACKAGE = 'forestry', x, y, catCols, numRows, numColumns, ntree, replace, sampsize, mtry, splitratio, nodesizeSpl, nodesizeAvg, seed, nthread, verbose, middleSplit, existing_dataframe_flag, existing_dataframe)
+rcpp_cppBuildInterface <- function(x, y, catCols, numRows, numColumns, ntree, replace, sampsize, mtry, splitratio, nodesizeSpl, nodesizeAvg, seed, nthread, verbose, middleSplit, doubleTree, existing_dataframe_flag, existing_dataframe) {
+    .Call('forestry_rcpp_cppBuildInterface', PACKAGE = 'forestry', x, y, catCols, numRows, numColumns, ntree, replace, sampsize, mtry, splitratio, nodesizeSpl, nodesizeAvg, seed, nthread, verbose, middleSplit, doubleTree, existing_dataframe_flag, existing_dataframe)
 }
 
 rcpp_cppPredictInterface <- function(forest, x) {

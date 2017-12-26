@@ -81,6 +81,7 @@ SEXP rcpp_cppBuildInterface(
   int nthread,
   bool verbose,
   bool middleSplit,
+  bool doubleTree,
   bool existing_dataframe_flag,
   SEXP existing_dataframe
 ){
@@ -102,7 +103,8 @@ SEXP rcpp_cppBuildInterface(
         (unsigned int) seed,
         (size_t) nthread,
         verbose,
-        middleSplit
+        middleSplit,
+        doubleTree
       );
 
       // delete(testFullForest);
@@ -160,7 +162,8 @@ SEXP rcpp_cppBuildInterface(
         (unsigned int) seed,
         (size_t) nthread,
         verbose,
-        middleSplit
+        middleSplit,
+        doubleTree
       );
 
       // delete(testFullForest);

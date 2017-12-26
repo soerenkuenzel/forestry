@@ -25,7 +25,8 @@ public:
     unsigned int seed,
     size_t nthread,
     bool verbose,
-    bool splitMiddle
+    bool splitMiddle,
+    bool doubleTree
   );
 
   std::unique_ptr< std::vector<double> > predict(
@@ -108,6 +109,7 @@ private:
   size_t _nthread;
   double _OOBError;
   bool _splitMiddle;
+  bool _doubleTree;
 };
 
 #endif //FORESTRYCPP_RF_H

@@ -21,8 +21,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // rcpp_cppBuildInterface
-SEXP rcpp_cppBuildInterface(Rcpp::List x, Rcpp::NumericVector y, Rcpp::NumericVector catCols, int numRows, int numColumns, int ntree, bool replace, int sampsize, int mtry, double splitratio, int nodesizeSpl, int nodesizeAvg, int seed, int nthread, bool verbose, bool middleSplit, bool existing_dataframe_flag, SEXP existing_dataframe);
-RcppExport SEXP forestry_rcpp_cppBuildInterface(SEXP xSEXP, SEXP ySEXP, SEXP catColsSEXP, SEXP numRowsSEXP, SEXP numColumnsSEXP, SEXP ntreeSEXP, SEXP replaceSEXP, SEXP sampsizeSEXP, SEXP mtrySEXP, SEXP splitratioSEXP, SEXP nodesizeSplSEXP, SEXP nodesizeAvgSEXP, SEXP seedSEXP, SEXP nthreadSEXP, SEXP verboseSEXP, SEXP middleSplitSEXP, SEXP existing_dataframe_flagSEXP, SEXP existing_dataframeSEXP) {
+SEXP rcpp_cppBuildInterface(Rcpp::List x, Rcpp::NumericVector y, Rcpp::NumericVector catCols, int numRows, int numColumns, int ntree, bool replace, int sampsize, int mtry, double splitratio, int nodesizeSpl, int nodesizeAvg, int seed, int nthread, bool verbose, bool middleSplit, bool doubleTree, bool existing_dataframe_flag, SEXP existing_dataframe);
+RcppExport SEXP forestry_rcpp_cppBuildInterface(SEXP xSEXP, SEXP ySEXP, SEXP catColsSEXP, SEXP numRowsSEXP, SEXP numColumnsSEXP, SEXP ntreeSEXP, SEXP replaceSEXP, SEXP sampsizeSEXP, SEXP mtrySEXP, SEXP splitratioSEXP, SEXP nodesizeSplSEXP, SEXP nodesizeAvgSEXP, SEXP seedSEXP, SEXP nthreadSEXP, SEXP verboseSEXP, SEXP middleSplitSEXP, SEXP doubleTreeSEXP, SEXP existing_dataframe_flagSEXP, SEXP existing_dataframeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -42,9 +42,10 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type nthread(nthreadSEXP);
     Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
     Rcpp::traits::input_parameter< bool >::type middleSplit(middleSplitSEXP);
+    Rcpp::traits::input_parameter< bool >::type doubleTree(doubleTreeSEXP);
     Rcpp::traits::input_parameter< bool >::type existing_dataframe_flag(existing_dataframe_flagSEXP);
     Rcpp::traits::input_parameter< SEXP >::type existing_dataframe(existing_dataframeSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_cppBuildInterface(x, y, catCols, numRows, numColumns, ntree, replace, sampsize, mtry, splitratio, nodesizeSpl, nodesizeAvg, seed, nthread, verbose, middleSplit, existing_dataframe_flag, existing_dataframe));
+    rcpp_result_gen = Rcpp::wrap(rcpp_cppBuildInterface(x, y, catCols, numRows, numColumns, ntree, replace, sampsize, mtry, splitratio, nodesizeSpl, nodesizeAvg, seed, nthread, verbose, middleSplit, doubleTree, existing_dataframe_flag, existing_dataframe));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -96,7 +97,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"forestry_rcpp_cppDataFrameInterface", (DL_FUNC) &forestry_rcpp_cppDataFrameInterface, 5},
-    {"forestry_rcpp_cppBuildInterface", (DL_FUNC) &forestry_rcpp_cppBuildInterface, 18},
+    {"forestry_rcpp_cppBuildInterface", (DL_FUNC) &forestry_rcpp_cppBuildInterface, 19},
     {"forestry_rcpp_cppPredictInterface", (DL_FUNC) &forestry_rcpp_cppPredictInterface, 2},
     {"forestry_rcpp_OBBPredictInterface", (DL_FUNC) &forestry_rcpp_OBBPredictInterface, 1},
     {"forestry_rcpp_getObservationSizeInterface", (DL_FUNC) &forestry_rcpp_getObservationSizeInterface, 1},
