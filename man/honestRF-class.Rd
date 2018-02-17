@@ -55,5 +55,8 @@ usage however since there will be no data available for splitting).}
 \item{\code{middleSplit}}{if the split value is taking the average of two feature
 values. If false, it will take a point based on a uniform distribution
 between two feature values. (Default = FALSE)}
+
+\item{\code{doubleTree}}{if the number of tree is doubled as averaging and splitting
+data can be exchanged to create decorrelated trees. (Default = FALSE)}
 }}
 
