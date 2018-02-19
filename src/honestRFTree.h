@@ -22,7 +22,8 @@ public:
     std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
     std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
     std::mt19937_64& random_number_generator,
-    bool splitMiddle
+    bool splitMiddle,
+    size_t maxObs
   );
 
   // This tree is only for testing purpose
@@ -46,7 +47,8 @@ public:
     std::vector<size_t>* splittingSampleIndex,
     DataFrame* trainingData,
     std::mt19937_64& random_number_generator,
-    bool splitMiddle
+    bool splitMiddle,
+    size_t maxObs
   );
 
   void selectBestFeature(
@@ -58,7 +60,8 @@ public:
     std::vector<size_t>* splittingSampleIndex,
     DataFrame* trainingData,
     std::mt19937_64& random_number_generator,
-    bool splitMiddle
+    bool splitMiddle,
+    size_t maxObs
   );
 
   void printTree();

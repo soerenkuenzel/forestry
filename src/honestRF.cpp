@@ -34,7 +34,8 @@ honestRF::honestRF(
   unsigned int seed,
   size_t nthread,
   bool verbose,
-  bool splitMiddle
+  bool splitMiddle,
+  size_t maxObs
 ){
   this->_trainingData = trainingData;
   this->_ntree = 0;
@@ -48,6 +49,7 @@ honestRF::honestRF(
   this->_nthread = nthread;
   this->_verbose = verbose;
   this->_splitMiddle = splitMiddle;
+  this->maxObs = maxObs;
 
   if (splitRatio > 1 || splitRatio < 0) {
     throw std::runtime_error("splitRatio shoule be between 0 and 1.");
@@ -192,7 +194,8 @@ void honestRF::addTrees(size_t ntree) {
                 std::move(splitSampleIndex),
                 std::move(averageSampleIndex),
                 random_number_generator,
-                getSplitMiddle()
+                getSplitMiddle(),
+                getMaxObs()
               )
             );
 

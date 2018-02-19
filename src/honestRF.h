@@ -25,7 +25,8 @@ public:
     unsigned int seed,
     size_t nthread,
     bool verbose,
-    bool splitMiddle
+    bool splitMiddle,
+    size_t maxObs
   );
 
   std::unique_ptr< std::vector<double> > predict(
@@ -93,6 +94,10 @@ public:
     return _splitMiddle;
   }
 
+  size_t getMaxObs() {
+    return maxObs;
+  }
+
 private:
   DataFrame* _trainingData;
   size_t _ntree;
@@ -108,6 +113,7 @@ private:
   size_t _nthread;
   double _OOBError;
   bool _splitMiddle;
+  size_t maxObs;
 };
 
 #endif //FORESTRYCPP_RF_H

@@ -25,7 +25,8 @@ honestRFTree::honestRFTree(
   std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
   std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
   std::mt19937_64& random_number_generator,
-  bool splitMiddle
+  bool splitMiddle,
+  size_t maxObs
 ){
   /**
    * @brief Honest random forest tree constructor
@@ -38,6 +39,7 @@ honestRFTree::honestRFTree(
    * @param random_number_generator    A mt19937 random generator
    * @param splitMiddle    Boolean to indicate if new feature value is
    *    determined at a random position between two feature values
+   * @param maxObs    Max number of observations to split on
    */
 
   /* Sanity Check */
@@ -86,6 +88,7 @@ honestRFTree::honestRFTree(
   std::unique_ptr< RFNode > root ( new RFNode() );
   this->_root = std::move(root);
 
+
   /* Recursively grow the tree */
   recursivePartition(
     getRoot(),
@@ -93,7 +96,8 @@ honestRFTree::honestRFTree(
     getSplittingIndex(),
     trainingData,
     random_number_generator,
-    splitMiddle
+    splitMiddle,
+    maxObs
   );
 }
 
@@ -231,7 +235,8 @@ void honestRFTree::recursivePartition(
   std::vector<size_t>* splittingSampleIndex,
   DataFrame* trainingData,
   std::mt19937_64& random_number_generator,
-  bool splitMiddle
+  bool splitMiddle,
+  size_t maxObs
 ){
 
   // Sample mtry amounts of features
@@ -255,7 +260,8 @@ void honestRFTree::recursivePartition(
     splittingSampleIndex,
     trainingData,
     random_number_generator,
-    splitMiddle
+    splitMiddle,
+    maxObs
   );
 
   // Create a leaf node if the current bestSplitValue is NA
@@ -310,7 +316,8 @@ void honestRFTree::recursivePartition(
       &splittingLeftPartitionIndex,
       trainingData,
       random_number_generator,
-      splitMiddle
+      splitMiddle,
+      maxObs
     );
     recursivePartition(
       rightChild.get(),
@@ -318,7 +325,8 @@ void honestRFTree::recursivePartition(
       &splittingRightPartitionIndex,
       trainingData,
       random_number_generator,
-      splitMiddle
+      splitMiddle,
+      maxObs
     );
 
     (*rootNode).setSplitNode(
@@ -379,7 +387,8 @@ void findBestSplitValueCategorical(
   DataFrame* trainingData,
   size_t splitNodeSize,
   size_t averageNodeSize,
-  std::mt19937_64& random_number_generator
+  std::mt19937_64& random_number_generator,
+  size_t maxObs
 ){
 
   // Count total number of observations for different categories
@@ -491,7 +500,8 @@ void findBestSplitValueNonCategorical(
   size_t splitNodeSize,
   size_t averageNodeSize,
   std::mt19937_64& random_number_generator,
-  bool splitMiddle
+  bool splitMiddle,
+  size_t maxObs
 ) {
 
   // Create specific vectors to holddata
@@ -530,6 +540,26 @@ void findBestSplitValueNonCategorical(
         tmpOutcomeValue
       )
     );
+  }
+  // If there are more than maxSplittingObs, randomly downsample maxObs samples
+  if (maxObs < splittingData.size()) {
+
+  std::vector<dataPair> newSplittingData;
+  std::vector<dataPair> newAveragingData;
+
+  std::shuffle(splittingData.begin(), splittingData.end(),
+               random_number_generator);
+  std::shuffle(averagingData.begin(), averagingData.end(),
+               random_number_generator);
+
+  for (int q = 0; q < maxObs; q++) {
+    newSplittingData.pushback(splittingData[q]);
+    newAveragingData.pushback(averagingData[q]);
+  }
+
+  std::swap(newSplittingData, splittingData);
+  std::swap(newAveragingData, averagingData);
+
   }
 
   // Sort both splitting and averaging dataset
@@ -744,7 +774,8 @@ void honestRFTree::selectBestFeature(
   std::vector<size_t>* splittingSampleIndex,
   DataFrame* trainingData,
   std::mt19937_64& random_number_generator,
-  bool splitMiddle
+  bool splitMiddle,
+  size_t maxObs
 ){
 
   // Get the number of total features
@@ -786,7 +817,8 @@ void honestRFTree::selectBestFeature(
         trainingData,
         getNodeSizeSpt(),
         getNodeSizeAvg(),
-        random_number_generator
+        random_number_generator,
+        maxObs
       );
     } else {
       findBestSplitValueNonCategorical(
@@ -802,7 +834,8 @@ void honestRFTree::selectBestFeature(
         getNodeSizeSpt(),
         getNodeSizeAvg(),
         random_number_generator,
-        splitMiddle
+        splitMiddle,
+        maxObs
       );
     }
   }
