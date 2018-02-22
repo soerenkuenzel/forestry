@@ -215,6 +215,7 @@ testing_data_checker <- function(
 #' @slot middleSplit if the split value is taking the average of two feature
 #' values. If false, it will take a point based on a uniform distribution
 #' between two feature values. (Default = FALSE)
+#' @slot maxObs The max number of observations to split on (Default = nrows(y))
 #' @exportClass honestRF
 setClass(
   Class="honestRF",
@@ -231,7 +232,8 @@ setClass(
     nodesizeAvg="numeric",
     splitratio="numeric",
     middleSplit="logical",
-    y="vector"
+    y="vector",
+    maxObs="numeric"
   )
 )
 
@@ -278,6 +280,7 @@ setClass(
 #' @param reuseHonestRF pass in an `honestRF` object which will recycle the
 #' dataframe the old object created. It will save some space working on the same
 #' dataset.
+#' @param maxObs The max number of observations to split on
 #' @export honestRF
 setGeneric(
   name="honestRF",
@@ -297,7 +300,8 @@ setGeneric(
     nthread,
     splitrule,
     middleSplit,
-    reuseHonestRF
+    reuseHonestRF,
+    maxObs
   ){
     standardGeneric("honestRF")
   }
@@ -325,7 +329,8 @@ honestRF <- function(
   nthread=0,
   splitrule="variance",
   middleSplit=FALSE,
-  reuseHonestRF=NULL
+  reuseHonestRF=NULL,
+  maxObs = nrow(y)
 ){
   # only if sample.fraction is given, update sampsize
   if(!is.null(sample.fraction))
@@ -368,7 +373,7 @@ honestRF <- function(
         nObservations,
         numColumns, ntree, replace, sampsize, mtry,
         splitratio, nodesizeSpl, nodesizeAvg, seed,
-        nthread, verbose, middleSplit, TRUE, rcppDataFrame
+        nthread, verbose, middleSplit, maxObs, TRUE, rcppDataFrame
       )
       return(
         new(
@@ -384,7 +389,8 @@ honestRF <- function(
           nodesizeSpl=nodesizeSpl,
           nodesizeAvg=nodesizeAvg,
           splitratio=splitratio,
-          middleSplit=middleSplit
+          middleSplit=middleSplit,
+          maxObs=maxObs
         )
       )
     }, error = function(err) {
@@ -412,7 +418,7 @@ honestRF <- function(
         nObservations,
         numColumns, ntree, replace, sampsize, mtry,
         splitratio, nodesizeSpl, nodesizeAvg, seed,
-        nthread, verbose, middleSplit, TRUE, reuseHonestRF@dataframe
+        nthread, verbose, middleSplit, maxObs, reuseHonestRF@dataframe
       )
 
       return(
@@ -429,7 +435,8 @@ honestRF <- function(
           nodesizeSpl=nodesizeSpl,
           nodesizeAvg=nodesizeAvg,
           splitratio=splitratio,
-          middleSplit=middleSplit
+          middleSplit=middleSplit,
+          maxObs=maxObs
         )
       )
     }, error = function(err) {
