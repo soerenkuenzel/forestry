@@ -2,26 +2,26 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 rcpp_cppDataFrameInterface <- function(x, y, catCols, numRows, numColumns) {
-    .Call('forestry_rcpp_cppDataFrameInterface', PACKAGE = 'forestry', x, y, catCols, numRows, numColumns)
+    .Call('_forestry_rcpp_cppDataFrameInterface', PACKAGE = 'forestry', x, y, catCols, numRows, numColumns)
 }
 
-rcpp_cppBuildInterface <- function(x, y, catCols, numRows, numColumns, ntree, replace, sampsize, mtry, splitratio, nodesizeSpl, nodesizeAvg, seed, nthread, verbose, middleSplit, existing_dataframe_flag, existing_dataframe) {
-    .Call('forestry_rcpp_cppBuildInterface', PACKAGE = 'forestry', x, y, catCols, numRows, numColumns, ntree, replace, sampsize, mtry, splitratio, nodesizeSpl, nodesizeAvg, seed, nthread, verbose, middleSplit, maxObs, existing_dataframe_flag, existing_dataframe)
+rcpp_cppBuildInterface <- function(x, y, catCols, numRows, numColumns, ntree, replace, sampsize, mtry, splitratio, nodesizeSpl, nodesizeAvg, seed, nthread, verbose, middleSplit, maxObs, existing_dataframe_flag, existing_dataframe) {
+    .Call('_forestry_rcpp_cppBuildInterface', PACKAGE = 'forestry', x, y, catCols, numRows, numColumns, ntree, replace, sampsize, mtry, splitratio, nodesizeSpl, nodesizeAvg, seed, nthread, verbose, middleSplit, maxObs, existing_dataframe_flag, existing_dataframe)
 }
 
 rcpp_cppPredictInterface <- function(forest, x) {
-    .Call('forestry_rcpp_cppPredictInterface', PACKAGE = 'forestry', forest, x)
+    .Call('_forestry_rcpp_cppPredictInterface', PACKAGE = 'forestry', forest, x)
 }
 
 rcpp_OBBPredictInterface <- function(forest) {
-    .Call('forestry_rcpp_OBBPredictInterface', PACKAGE = 'forestry', forest)
+    .Call('_forestry_rcpp_OBBPredictInterface', PACKAGE = 'forestry', forest)
 }
 
 rcpp_getObservationSizeInterface <- function(df) {
-    .Call('forestry_rcpp_getObservationSizeInterface', PACKAGE = 'forestry', df)
+    .Call('_forestry_rcpp_getObservationSizeInterface', PACKAGE = 'forestry', df)
 }
 
 rcpp_AddTreeInterface <- function(forest, ntree) {
-    invisible(.Call('forestry_rcpp_AddTreeInterface', PACKAGE = 'forestry', forest, ntree))
+    invisible(.Call('_forestry_rcpp_AddTreeInterface', PACKAGE = 'forestry', forest, ntree))
 }
 

@@ -553,8 +553,8 @@ void findBestSplitValueNonCategorical(
                random_number_generator);
 
   for (int q = 0; q < maxObs; q++) {
-    newSplittingData.pushback(splittingData[q]);
-    newAveragingData.pushback(averagingData[q]);
+    newSplittingData.push_back(splittingData[q]);
+    newAveragingData.push_back(averagingData[q]);
   }
 
   std::swap(newSplittingData, splittingData);
