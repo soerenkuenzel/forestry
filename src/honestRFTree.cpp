@@ -29,18 +29,18 @@ honestRFTree::honestRFTree(
   size_t maxObs
 ){
   /**
-   * @brief Honest random forest tree constructor
-   * @param trainingData    A DataFrame object
-   * @param mtry    The total number of features to use for each split
-   * @param nodeSizeSpt    Minimum splitting size of leaf node
-   * @param nodeSizeAvg    Minimum averaging size of leaf node
-   * @param splittingSampleIndex    A vector with index of splitting samples
-   * @param averagingSampleIndex    A vector with index of averaging samples
-   * @param random_number_generator    A mt19937 random generator
-   * @param splitMiddle    Boolean to indicate if new feature value is
-   *    determined at a random position between two feature values
-   * @param maxObs    Max number of observations to split on
-   */
+  * @brief Honest random forest tree constructor
+  * @param trainingData    A DataFrame object
+  * @param mtry    The total number of features to use for each split
+  * @param nodeSizeSpt    Minimum splitting size of leaf node
+  * @param nodeSizeAvg    Minimum averaging size of leaf node
+  * @param splittingSampleIndex    A vector with index of splitting samples
+  * @param averagingSampleIndex    A vector with index of averaging samples
+  * @param random_number_generator    A mt19937 random generator
+  * @param splitMiddle    Boolean to indicate if new feature value is
+  *    determined at a random position between two feature values
+  * @param maxObs    Max number of observations to split on
+  */
 
   /* Sanity Check */
   if (nodeSizeAvg == 0) {
@@ -52,14 +52,14 @@ honestRFTree::honestRFTree(
   if (nodeSizeAvg > (*averagingSampleIndex).size()) {
     std::ostringstream ostr;
     ostr << "nodeSizeAvg cannot exceed total elements in the "
-      "averaging samples: nodeSizeAvg=" << nodeSizeAvg <<
+    "averaging samples: nodeSizeAvg=" << nodeSizeAvg <<
       ", averagingSampleSize=" << (*averagingSampleIndex).size() << ".";
     throw std::runtime_error(ostr.str());
   }
   if (nodeSizeSpt > (*splittingSampleIndex).size()) {
     std::ostringstream ostr;
     ostr << "nodeSizeSpt cannot exceed total elements in the "
-      "splitting samples: nodeSizeSpt=" << nodeSizeSpt <<
+    "splitting samples: nodeSizeSpt=" << nodeSizeSpt <<
       ", splittingSampleSize=" << (*splittingSampleIndex).size() << ".";
     throw std::runtime_error(ostr.str());
   }
@@ -75,7 +75,7 @@ honestRFTree::honestRFTree(
   if (mtry > (*trainingData).getNumColumns()) {
     std::ostringstream ostr;
     ostr << "mtry cannot exceed total amount of features: mtry=" << mtry
-      << ", totalNumFeatures=" << (*trainingData).getNumColumns() << ".";
+         << ", totalNumFeatures=" << (*trainingData).getNumColumns() << ".";
     throw std::runtime_error(ostr.str());
   }
 
@@ -102,11 +102,11 @@ honestRFTree::honestRFTree(
 }
 
 void honestRFTree::setDummyTree(
-  size_t mtry,
-  size_t nodeSizeSpt,
-  size_t nodeSizeAvg,
-  std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
-  std::unique_ptr< std::vector<size_t> > averagingSampleIndex
+    size_t mtry,
+    size_t nodeSizeSpt,
+    size_t nodeSizeAvg,
+    std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
+    std::unique_ptr< std::vector<size_t> > averagingSampleIndex
 ){
   this->_mtry = mtry;
   this->_nodeSizeSpt = nodeSizeSpt;
@@ -116,9 +116,9 @@ void honestRFTree::setDummyTree(
 }
 
 void honestRFTree::predict(
-  std::vector<double> &outputPrediction,
-  std::vector< std::vector<double> >* xNew,
-  DataFrame* trainingData
+    std::vector<double> &outputPrediction,
+    std::vector< std::vector<double> >* xNew,
+    DataFrame* trainingData
 ){
 
   struct rangeGenerator {
@@ -135,25 +135,25 @@ void honestRFTree::predict(
 
 
 std::vector<size_t> sampleFeatures(
-  size_t mtry,
-  std::mt19937_64& random_number_generator,
-  int totalColumns
+    size_t mtry,
+    std::mt19937_64& random_number_generator,
+    int totalColumns
 ){
   // Sample features without replacement
   std::vector<size_t> featureList;
   while (featureList.size() < mtry) {
     std::uniform_int_distribution<size_t> unif_dist(
-      0, (size_t) totalColumns - 1
+        0, (size_t) totalColumns - 1
     );
     size_t randomIndex = unif_dist(random_number_generator);
     if (
-      featureList.size() == 0 ||
-      std::find(
-        featureList.begin(),
-        featureList.end(),
-        randomIndex
-      ) == featureList.end()
-      ) {
+        featureList.size() == 0 ||
+          std::find(
+            featureList.begin(),
+            featureList.end(),
+            randomIndex
+          ) == featureList.end()
+    ) {
       featureList.push_back(randomIndex);
     }
   }
@@ -162,19 +162,19 @@ std::vector<size_t> sampleFeatures(
 
 
 void splitDataIntoTwoParts(
-  DataFrame* trainingData,
-  std::vector<size_t>* sampleIndex,
-  size_t splitFeature,
-  double splitValue,
-  std::vector<size_t>* leftPartitionIndex,
-  std::vector<size_t>* rightPartitionIndex,
-  bool categoical
+    DataFrame* trainingData,
+    std::vector<size_t>* sampleIndex,
+    size_t splitFeature,
+    double splitValue,
+    std::vector<size_t>* leftPartitionIndex,
+    std::vector<size_t>* rightPartitionIndex,
+    bool categoical
 ){
   for (
-    std::vector<size_t>::iterator it = (*sampleIndex).begin();
-    it != (*sampleIndex).end();
-    ++it
-    ) {
+      std::vector<size_t>::iterator it = (*sampleIndex).begin();
+      it != (*sampleIndex).end();
+      ++it
+  ) {
     if (categoical) {
       // categorical, split by (==) or (!=)
       if ((*trainingData).getPoint(*it, splitFeature) == splitValue) {
@@ -195,16 +195,16 @@ void splitDataIntoTwoParts(
 }
 
 void splitData(
-  DataFrame* trainingData,
-  std::vector<size_t>* averagingSampleIndex,
-  std::vector<size_t>* splittingSampleIndex,
-  size_t splitFeature,
-  double splitValue,
-  std::vector<size_t>* averagingLeftPartitionIndex,
-  std::vector<size_t>* averagingRightPartitionIndex,
-  std::vector<size_t>* splittingLeftPartitionIndex,
-  std::vector<size_t>* splittingRightPartitionIndex,
-  bool categoical
+    DataFrame* trainingData,
+    std::vector<size_t>* averagingSampleIndex,
+    std::vector<size_t>* splittingSampleIndex,
+    size_t splitFeature,
+    double splitValue,
+    std::vector<size_t>* averagingLeftPartitionIndex,
+    std::vector<size_t>* averagingRightPartitionIndex,
+    std::vector<size_t>* splittingLeftPartitionIndex,
+    std::vector<size_t>* splittingRightPartitionIndex,
+    bool categoical
 ){
   // averaging data
   splitDataIntoTwoParts(
@@ -230,13 +230,13 @@ void splitData(
 
 
 void honestRFTree::recursivePartition(
-  RFNode* rootNode,
-  std::vector<size_t>* averagingSampleIndex,
-  std::vector<size_t>* splittingSampleIndex,
-  DataFrame* trainingData,
-  std::mt19937_64& random_number_generator,
-  bool splitMiddle,
-  size_t maxObs
+    RFNode* rootNode,
+    std::vector<size_t>* averagingSampleIndex,
+    std::vector<size_t>* splittingSampleIndex,
+    DataFrame* trainingData,
+    std::mt19937_64& random_number_generator,
+    bool splitMiddle,
+    size_t maxObs
 ){
 
   // Sample mtry amounts of features
@@ -268,14 +268,14 @@ void honestRFTree::recursivePartition(
   if (std::isnan(bestSplitValue)) {
     // Create two lists on heap and transfer the owernship to the node
     std::unique_ptr<std::vector<size_t> > averagingSampleIndex_(
-      new std::vector<size_t>(*averagingSampleIndex)
+        new std::vector<size_t>(*averagingSampleIndex)
     );
     std::unique_ptr<std::vector<size_t> > splittingSampleIndex_(
-      new std::vector<size_t>(*splittingSampleIndex)
+        new std::vector<size_t>(*splittingSampleIndex)
     );
     (*rootNode).setLeafNode(
-      std::move(averagingSampleIndex_),
-      std::move(splittingSampleIndex_)
+        std::move(averagingSampleIndex_),
+        std::move(splittingSampleIndex_)
     );
 
   } else {
@@ -330,24 +330,24 @@ void honestRFTree::recursivePartition(
     );
 
     (*rootNode).setSplitNode(
-      bestSplitFeature,
-      bestSplitValue,
-      std::move(leftChild),
-      std::move(rightChild)
+        bestSplitFeature,
+        bestSplitValue,
+        std::move(leftChild),
+        std::move(rightChild)
     );
   }
 }
 
 void updateBestSplit(
-  double* bestSplitLossAll,
-  double* bestSplitValueAll,
-  size_t* bestSplitFeatureAll,
-  size_t* bestSplitCountAll,
-  double currentSplitLoss,
-  double currentSplitValue,
-  size_t currentFeature,
-  size_t bestSplitTableIndex,
-  std::mt19937_64& random_number_generator
+    double* bestSplitLossAll,
+    double* bestSplitValueAll,
+    size_t* bestSplitFeatureAll,
+    size_t* bestSplitCountAll,
+    double currentSplitLoss,
+    double currentSplitValue,
+    size_t currentFeature,
+    size_t bestSplitTableIndex,
+    std::mt19937_64& random_number_generator
 ) {
 
   // Update the value if a higher value has been seen
@@ -376,19 +376,19 @@ void updateBestSplit(
 }
 
 void findBestSplitValueCategorical(
-  std::vector<size_t>* averagingSampleIndex,
-  std::vector<size_t>* splittingSampleIndex,
-  size_t bestSplitTableIndex,
-  size_t currentFeature,
-  double* bestSplitLossAll,
-  double* bestSplitValueAll,
-  size_t* bestSplitFeatureAll,
-  size_t* bestSplitCountAll,
-  DataFrame* trainingData,
-  size_t splitNodeSize,
-  size_t averageNodeSize,
-  std::mt19937_64& random_number_generator,
-  size_t maxObs
+    std::vector<size_t>* averagingSampleIndex,
+    std::vector<size_t>* splittingSampleIndex,
+    size_t bestSplitTableIndex,
+    size_t currentFeature,
+    double* bestSplitLossAll,
+    double* bestSplitValueAll,
+    size_t* bestSplitFeatureAll,
+    size_t* bestSplitCountAll,
+    DataFrame* trainingData,
+    size_t splitNodeSize,
+    size_t averageNodeSize,
+    std::mt19937_64& random_number_generator,
+    size_t maxObs
 ){
 
   // Count total number of observations for different categories
@@ -397,17 +397,53 @@ void findBestSplitValueCategorical(
   size_t splitTotalCount = 0;
   size_t averageTotalCount = 0;
 
-  for (size_t j=0; j<(*splittingSampleIndex).size(); j++) {
+  //EDITED
+  //Move indices to vectors so we can downsample if needed
+  std::vector<size_t> splittingIndices;
+  std::vector<size_t> averagingIndices;
+
+  for (size_t y = 0; y < (*splittingSampleIndex).size(); y++) {
+    splittingIndices.push_back((*splittingSampleIndex)[y]);
+  }
+
+  for (size_t y = 0; y < (*averagingSampleIndex).size(); y++) {
+    averagingIndices.push_back((*averagingSampleIndex)[y]);
+  }
+
+
+  //If maxObs is smaller, randomly downsample
+  if (maxObs < (*splittingSampleIndex).size()) {
+    std::vector<size_t> newSplittingIndices;
+    std::vector<size_t> newAveragingIndices;
+
+    std::shuffle(splittingIndices.begin(), splittingIndices.end(),
+                 random_number_generator);
+    std::shuffle(averagingIndices.begin(), averagingIndices.end(),
+                 random_number_generator);
+
+    for (int q = 0; q < maxObs; q++) {
+      newSplittingIndices.push_back(splittingIndices[q]);
+      newAveragingIndices.push_back(averagingIndices[q]);
+    }
+
+    std::swap(newSplittingIndices, splittingIndices);
+    std::swap(newAveragingIndices, averagingIndices);
+  }
+
+
+
+
+  for (size_t j=0; j<splittingIndices.size(); j++) {
     all_categories.insert(
-      (*trainingData).getPoint((*splittingSampleIndex)[j], currentFeature)
+      (*trainingData).getPoint(splittingIndices[j], currentFeature)
     );
     splitTotalSum +=
-      (*trainingData).getOutcomePoint((*splittingSampleIndex)[j]);
+      (*trainingData).getOutcomePoint(splittingIndices[j]);
     splitTotalCount++;
   }
-  for (size_t j=0; j<(*averagingSampleIndex).size(); j++) {
+  for (size_t j=0; j<averagingIndices.size(); j++) {
     all_categories.insert(
-      (*trainingData).getPoint((*averagingSampleIndex)[j], currentFeature)
+      (*trainingData).getPoint(averagingIndices[j], currentFeature)
     );
     averageTotalCount++;
   }
@@ -418,59 +454,59 @@ void findBestSplitValueCategorical(
   std::map<double, double> splittingCategoryYSum;
 
   for (
-    std::set<double>::iterator it=all_categories.begin();
-    it != all_categories.end();
-    ++it
-    ) {
+      std::set<double>::iterator it=all_categories.begin();
+      it != all_categories.end();
+      ++it
+  ) {
     splittingCategoryCount[*it] = 0;
     averagingCategoryCount[*it] = 0;
     splittingCategoryYSum[*it] = 0;
   }
 
-  for (size_t j=0; j<(*splittingSampleIndex).size(); j++) {
+  for (size_t j=0; j<splittingIndices.size(); j++) {
     double currentXValue = (*trainingData).
-      getPoint((*splittingSampleIndex)[j], currentFeature);
+    getPoint(splittingIndices[j], currentFeature);
     double currentYValue = (*trainingData).
-      getOutcomePoint((*splittingSampleIndex)[j]);
+    getOutcomePoint(splittingIndices[j]);
     splittingCategoryCount[currentXValue] += 1;
     splittingCategoryYSum[currentXValue] += currentYValue;
   }
 
-  for (size_t j=0; j<(*averagingSampleIndex).size(); j++) {
+  for (size_t j=0; j<averagingIndices.size(); j++) {
     double currentXValue = (*trainingData).
-      getPoint((*averagingSampleIndex)[j], currentFeature);
+    getPoint(averagingIndices[j], currentFeature);
     averagingCategoryCount[currentXValue] += 1;
   }
 
   // Go through the sums and determine the best partition
   for (
-    std::set<double>::iterator it=all_categories.begin();
-    it != all_categories.end();
-    ++it
-    ) {
+      std::set<double>::iterator it=all_categories.begin();
+      it != all_categories.end();
+      ++it
+  ) {
     // Check leaf size at least nodesize
     if (
-      std::min(
-        splittingCategoryCount[*it],
-        splitTotalCount - splittingCategoryCount[*it]
-      ) < splitNodeSize ||
-      std::min(
-        averagingCategoryCount[*it],
-        averageTotalCount - averagingCategoryCount[*it]
-      ) < averageNodeSize
-      ) {
+        std::min(
+          splittingCategoryCount[*it],
+                                splitTotalCount - splittingCategoryCount[*it]
+        ) < splitNodeSize ||
+          std::min(
+            averagingCategoryCount[*it],
+                                  averageTotalCount - averagingCategoryCount[*it]
+          ) < averageNodeSize
+    ) {
       continue;
     }
 
     double leftPartitionMean = splittingCategoryYSum[*it] /
-                               splittingCategoryCount[*it];
+      splittingCategoryCount[*it];
     double rightPartitionMean = (splitTotalSum -
                                  splittingCategoryYSum[*it]) /
-                                (splitTotalCount - splittingCategoryCount[*it]);
+                                   (splitTotalCount - splittingCategoryCount[*it]);
     double currentSplitLoss = splittingCategoryCount[*it] *
-                              leftPartitionMean * leftPartitionMean +
-                              (splitTotalCount - splittingCategoryCount[*it]) *
-                              rightPartitionMean * rightPartitionMean;
+      leftPartitionMean * leftPartitionMean +
+      (splitTotalCount - splittingCategoryCount[*it]) *
+      rightPartitionMean * rightPartitionMean;
 
     updateBestSplit(
       bestSplitLossAll,
@@ -488,20 +524,20 @@ void findBestSplitValueCategorical(
 
 
 void findBestSplitValueNonCategorical(
-  std::vector<size_t>* averagingSampleIndex,
-  std::vector<size_t>* splittingSampleIndex,
-  size_t bestSplitTableIndex,
-  size_t currentFeature,
-  double* bestSplitLossAll,
-  double* bestSplitValueAll,
-  size_t* bestSplitFeatureAll,
-  size_t* bestSplitCountAll,
-  DataFrame* trainingData,
-  size_t splitNodeSize,
-  size_t averageNodeSize,
-  std::mt19937_64& random_number_generator,
-  bool splitMiddle,
-  size_t maxObs
+    std::vector<size_t>* averagingSampleIndex,
+    std::vector<size_t>* splittingSampleIndex,
+    size_t bestSplitTableIndex,
+    size_t currentFeature,
+    double* bestSplitLossAll,
+    double* bestSplitValueAll,
+    size_t* bestSplitFeatureAll,
+    size_t* bestSplitCountAll,
+    DataFrame* trainingData,
+    size_t splitNodeSize,
+    size_t averageNodeSize,
+    std::mt19937_64& random_number_generator,
+    bool splitMiddle,
+    size_t maxObs
 ) {
 
   // Create specific vectors to holddata
@@ -512,9 +548,9 @@ void findBestSplitValueNonCategorical(
   for (size_t j=0; j<(*splittingSampleIndex).size(); j++){
     // Retrieve the current feature value
     double tmpFeatureValue = (*trainingData).
-      getPoint((*splittingSampleIndex)[j], currentFeature);
+    getPoint((*splittingSampleIndex)[j], currentFeature);
     double tmpOutcomeValue = (*trainingData).
-      getOutcomePoint((*splittingSampleIndex)[j]);
+    getOutcomePoint((*splittingSampleIndex)[j]);
     splitTotalSum += tmpOutcomeValue;
 
     // Adding data to the internal data vector (Note: R index)
@@ -529,9 +565,9 @@ void findBestSplitValueNonCategorical(
   for (size_t j=0; j<(*averagingSampleIndex).size(); j++){
     // Retrieve the current feature value
     double tmpFeatureValue = (*trainingData).
-      getPoint((*averagingSampleIndex)[j], currentFeature);
+    getPoint((*averagingSampleIndex)[j], currentFeature);
     double tmpOutcomeValue = (*trainingData).
-      getOutcomePoint((*averagingSampleIndex)[j]);
+    getOutcomePoint((*averagingSampleIndex)[j]);
 
     // Adding data to the internal data vector (Note: R index)
     averagingData.push_back(
@@ -544,21 +580,21 @@ void findBestSplitValueNonCategorical(
   // If there are more than maxSplittingObs, randomly downsample maxObs samples
   if (maxObs < splittingData.size()) {
 
-  std::vector<dataPair> newSplittingData;
-  std::vector<dataPair> newAveragingData;
+    std::vector<dataPair> newSplittingData;
+    std::vector<dataPair> newAveragingData;
 
-  std::shuffle(splittingData.begin(), splittingData.end(),
-               random_number_generator);
-  std::shuffle(averagingData.begin(), averagingData.end(),
-               random_number_generator);
+    std::shuffle(splittingData.begin(), splittingData.end(),
+                 random_number_generator);
+    std::shuffle(averagingData.begin(), averagingData.end(),
+                 random_number_generator);
 
-  for (int q = 0; q < maxObs; q++) {
-    newSplittingData.push_back(splittingData[q]);
-    newAveragingData.push_back(averagingData[q]);
-  }
+    for (int q = 0; q < maxObs; q++) {
+      newSplittingData.push_back(splittingData[q]);
+      newAveragingData.push_back(averagingData[q]);
+    }
 
-  std::swap(newSplittingData, splittingData);
-  std::swap(newAveragingData, averagingData);
+    std::swap(newSplittingData, splittingData);
+    std::swap(newAveragingData, averagingData);
 
   }
 
@@ -598,24 +634,24 @@ void findBestSplitValueNonCategorical(
   bool oneValueDistinctFlag = true;
 
   while (
-    splittingDataIter < splittingData.end() ||
-    averagingDataIter < averagingData.end()
-    ){
+      splittingDataIter < splittingData.end() ||
+        averagingDataIter < averagingData.end()
+  ){
 
     // Exhaust all current feature value in both dataset as partitioning
     while (
-      splittingDataIter < splittingData.end() &&
-      std::get<0>(*splittingDataIter) == featureValue
-      ) {
+        splittingDataIter < splittingData.end() &&
+          std::get<0>(*splittingDataIter) == featureValue
+    ) {
       splitLeftPartitionCount++;
       splitLeftPartitionRunningSum += std::get<1>(*splittingDataIter);
       splittingDataIter++;
     }
 
     while (
-      averagingDataIter < averagingData.end() &&
-      std::get<0>(*averagingDataIter) == featureValue
-      ) {
+        averagingDataIter < averagingData.end() &&
+          std::get<0>(*averagingDataIter) == featureValue
+    ) {
       averagingDataIter++;
       averageLeftPartitionCount++;
     }
@@ -624,9 +660,9 @@ void findBestSplitValueNonCategorical(
     if (oneValueDistinctFlag) {
       oneValueDistinctFlag = false;
       if (
-        splittingDataIter == splittingData.end() &&
-        averagingDataIter == averagingData.end()
-        ) {
+          splittingDataIter == splittingData.end() &&
+            averagingDataIter == averagingData.end()
+      ) {
         break;
       }
     }
@@ -637,9 +673,9 @@ void findBestSplitValueNonCategorical(
     // array.
     // Get new feature value
     if (
-      splittingDataIter == splittingData.end() &&
-      averagingDataIter == averagingData.end()
-      ) {
+        splittingDataIter == splittingData.end() &&
+          averagingDataIter == averagingData.end()
+    ) {
       break;
     } else if (splittingDataIter == splittingData.end()) {
       newFeatureValue = std::get<0>(*averagingDataIter);
@@ -654,15 +690,15 @@ void findBestSplitValueNonCategorical(
 
     // Check leaf size at least nodesize
     if (
-      std::min(
-        splitLeftPartitionCount,
-        splitTotalCount - splitLeftPartitionCount
-      ) < splitNodeSize||
-      std::min(
-        averageLeftPartitionCount,
-        averageTotalCount - averageLeftPartitionCount
-      ) < averageNodeSize
-      ) {
+        std::min(
+          splitLeftPartitionCount,
+          splitTotalCount - splitLeftPartitionCount
+        ) < splitNodeSize||
+          std::min(
+            averageLeftPartitionCount,
+            averageTotalCount - averageLeftPartitionCount
+          ) < averageNodeSize
+    ) {
       // Update the oldFeature value before proceeding
       featureValue = newFeatureValue;
       continue;
@@ -677,8 +713,8 @@ void findBestSplitValueNonCategorical(
 
     // Calculate the variance of the splitting
     double muBarSquareSum =
-      splitLeftPartitionCount * leftPartitionMean * leftPartitionMean +
-      (splitTotalCount - splitLeftPartitionCount) * rightPartitionMean
+    splitLeftPartitionCount * leftPartitionMean * leftPartitionMean +
+    (splitTotalCount - splitLeftPartitionCount) * rightPartitionMean
       * rightPartitionMean;
 
     double currentSplitValue;
@@ -712,15 +748,15 @@ void findBestSplitValueNonCategorical(
 }
 
 void determineBestSplit(
-  size_t &bestSplitFeature,
-  double &bestSplitValue,
-  double &bestSplitLoss,
-  size_t mtry,
-  double* bestSplitLossAll,
-  double* bestSplitValueAll,
-  size_t* bestSplitFeatureAll,
-  size_t* bestSplitCountAll,
-  std::mt19937_64& random_number_generator
+    size_t &bestSplitFeature,
+    double &bestSplitValue,
+    double &bestSplitLoss,
+    size_t mtry,
+    double* bestSplitLossAll,
+    double* bestSplitValueAll,
+    size_t* bestSplitFeatureAll,
+    size_t* bestSplitCountAll,
+    std::mt19937_64& random_number_generator
 ){
 
   // Get the best split values among all features
@@ -747,7 +783,7 @@ void determineBestSplit(
     // If there are multiple best features, sample one according to their
     // frequency of occurence
     std::uniform_int_distribution<size_t> unif_dist(
-      0, bestFeatures.size() - 1
+        0, bestFeatures.size() - 1
     );
     size_t tmp_random = unif_dist(random_number_generator);
     size_t bestFeatureIndex = bestFeatures.at(tmp_random);
@@ -766,16 +802,16 @@ void determineBestSplit(
 
 
 void honestRFTree::selectBestFeature(
-  size_t &bestSplitFeature,
-  double &bestSplitValue,
-  double &bestSplitLoss,
-  std::vector<size_t>* featureList,
-  std::vector<size_t>* averagingSampleIndex,
-  std::vector<size_t>* splittingSampleIndex,
-  DataFrame* trainingData,
-  std::mt19937_64& random_number_generator,
-  bool splitMiddle,
-  size_t maxObs
+    size_t &bestSplitFeature,
+    double &bestSplitValue,
+    double &bestSplitLoss,
+    std::vector<size_t>* featureList,
+    std::vector<size_t>* averagingSampleIndex,
+    std::vector<size_t>* splittingSampleIndex,
+    DataFrame* trainingData,
+    std::mt19937_64& random_number_generator,
+    bool splitMiddle,
+    size_t maxObs
 ){
 
   // Get the number of total features
@@ -799,11 +835,11 @@ void honestRFTree::selectBestFeature(
     // Test if the current feature is in the categorical list
     std::vector<size_t> categorialCols = *(*trainingData).getCatCols();
     if (
-      std::find(
-        categorialCols.begin(),
-        categorialCols.end(),
-        currentFeature
-      ) != categorialCols.end()
+        std::find(
+          categorialCols.begin(),
+          categorialCols.end(),
+          currentFeature
+        ) != categorialCols.end()
     ){
       findBestSplitValueCategorical(
         averagingSampleIndex,
@@ -864,8 +900,8 @@ void honestRFTree::printTree(){
 }
 
 void honestRFTree::getOOBindex(
-  std::vector<size_t> &outputOOBIndex,
-  size_t nRows
+    std::vector<size_t> &outputOOBIndex,
+    size_t nRows
 ){
 
   // Generate union of splitting and averaging dataset
@@ -879,7 +915,7 @@ void honestRFTree::getOOBindex(
   );
 
   std::vector<size_t> allSampledIndex(
-    (*getSplittingIndex()).size() + (*getAveragingIndex()).size()
+      (*getSplittingIndex()).size() + (*getAveragingIndex()).size()
   );
 
   std::vector<size_t>::iterator it= std::set_union(
@@ -915,9 +951,9 @@ void honestRFTree::getOOBindex(
   OOBIndex.resize((unsigned long) (it - OOBIndex.begin()));
 
   for (
-    std::vector<size_t>::iterator it_ = OOBIndex.begin();
-    it_ != OOBIndex.end();
-    ++it_
+      std::vector<size_t>::iterator it_ = OOBIndex.begin();
+      it_ != OOBIndex.end();
+      ++it_
   ) {
     outputOOBIndex.push_back(*it_);
   }
@@ -925,18 +961,18 @@ void honestRFTree::getOOBindex(
 }
 
 void honestRFTree::getOOBPrediction(
-  std::vector<double> &outputOOBPrediction,
-  std::vector<size_t> &outputOOBCount,
-  DataFrame* trainingData
+    std::vector<double> &outputOOBPrediction,
+    std::vector<size_t> &outputOOBCount,
+    DataFrame* trainingData
 ){
 
   std::vector<size_t> OOBIndex;
   getOOBindex(OOBIndex, trainingData->getNumRows());
 
   for (
-    std::vector<size_t>::iterator it=OOBIndex.begin();
-    it!=OOBIndex.end();
-    ++it
+      std::vector<size_t>::iterator it=OOBIndex.begin();
+      it!=OOBIndex.end();
+      ++it
   ) {
 
     size_t OOBSampleIndex = *it;
