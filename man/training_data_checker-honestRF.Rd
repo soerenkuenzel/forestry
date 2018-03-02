@@ -6,7 +6,8 @@
 \title{training_data_checker-hoenstRF}
 \usage{
 training_data_checker(x, y, ntree, replace, sampsize, mtry, nodesizeSpl,
-  nodesizeAvg, splitratio, nthread, middleSplit, doubleTree)
+  nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, splitratio, nthread,
+  middleSplit, doubleTree)
 }
 \arguments{
 \item{x}{A data frame of all training predictors.}
@@ -28,11 +29,17 @@ the length of the training data.}
 The default value is set to be one third of total number of features of the
 training data.}
 
-\item{nodesizeSpl}{The minimum observations contained in terminal nodes. The
+\item{nodesizeSpl}{Minimum observations contained in terminal nodes. The
 default value is 3.}
 
 \item{nodesizeAvg}{Minimum size of terminal nodes for averaging dataset.
 The default value is 3.}
+
+\item{nodesizeStrictSpl}{Minimum observations to follow strictly in
+terminal nodes. The default value is 1.}
+
+\item{nodesizeStrictAvg}{Minimum size of terminal nodes for averaging
+dataset to follow strictly. The default value is 1.}
 
 \item{splitratio}{Proportion of the training data used as the splitting
 dataset. It is a ratio between 0 and 1. If the ratio is 1, then essentially
