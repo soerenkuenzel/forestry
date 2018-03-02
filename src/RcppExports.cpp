@@ -21,8 +21,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // rcpp_cppBuildInterface
-SEXP rcpp_cppBuildInterface(Rcpp::List x, Rcpp::NumericVector y, Rcpp::NumericVector catCols, int numRows, int numColumns, int ntree, bool replace, int sampsize, int mtry, double splitratio, int nodesizeSpl, int nodesizeAvg, int nodesizeStrictSpl, int nodesizeStrictAvg, int seed, int nthread, bool verbose, bool middleSplit, bool existing_dataframe_flag, SEXP existing_dataframe);
-RcppExport SEXP _forestry_rcpp_cppBuildInterface(SEXP xSEXP, SEXP ySEXP, SEXP catColsSEXP, SEXP numRowsSEXP, SEXP numColumnsSEXP, SEXP ntreeSEXP, SEXP replaceSEXP, SEXP sampsizeSEXP, SEXP mtrySEXP, SEXP splitratioSEXP, SEXP nodesizeSplSEXP, SEXP nodesizeAvgSEXP, SEXP nodesizeStrictSplSEXP, SEXP nodesizeStrictAvgSEXP, SEXP seedSEXP, SEXP nthreadSEXP, SEXP verboseSEXP, SEXP middleSplitSEXP, SEXP existing_dataframe_flagSEXP, SEXP existing_dataframeSEXP) {
+SEXP rcpp_cppBuildInterface(Rcpp::List x, Rcpp::NumericVector y, Rcpp::NumericVector catCols, int numRows, int numColumns, int ntree, bool replace, int sampsize, int mtry, float splitratio, int nodesizeSpl, int nodesizeAvg, int nodesizeStrictSpl, int nodesizeStrictAvg, int seed, int nthread, bool verbose, bool middleSplit, bool doubleTree, bool existing_dataframe_flag, SEXP existing_dataframe);
+RcppExport SEXP _forestry_rcpp_cppBuildInterface(SEXP xSEXP, SEXP ySEXP, SEXP catColsSEXP, SEXP numRowsSEXP, SEXP numColumnsSEXP, SEXP ntreeSEXP, SEXP replaceSEXP, SEXP sampsizeSEXP, SEXP mtrySEXP, SEXP splitratioSEXP, SEXP nodesizeSplSEXP, SEXP nodesizeAvgSEXP, SEXP nodesizeStrictSplSEXP, SEXP nodesizeStrictAvgSEXP, SEXP seedSEXP, SEXP nthreadSEXP, SEXP verboseSEXP, SEXP middleSplitSEXP, SEXP doubleTreeSEXP, SEXP existing_dataframe_flagSEXP, SEXP existing_dataframeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -35,7 +35,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type replace(replaceSEXP);
     Rcpp::traits::input_parameter< int >::type sampsize(sampsizeSEXP);
     Rcpp::traits::input_parameter< int >::type mtry(mtrySEXP);
-    Rcpp::traits::input_parameter< double >::type splitratio(splitratioSEXP);
+    Rcpp::traits::input_parameter< float >::type splitratio(splitratioSEXP);
     Rcpp::traits::input_parameter< int >::type nodesizeSpl(nodesizeSplSEXP);
     Rcpp::traits::input_parameter< int >::type nodesizeAvg(nodesizeAvgSEXP);
     Rcpp::traits::input_parameter< int >::type nodesizeStrictSpl(nodesizeStrictSplSEXP);
@@ -44,9 +44,10 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type nthread(nthreadSEXP);
     Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
     Rcpp::traits::input_parameter< bool >::type middleSplit(middleSplitSEXP);
+    Rcpp::traits::input_parameter< bool >::type doubleTree(doubleTreeSEXP);
     Rcpp::traits::input_parameter< bool >::type existing_dataframe_flag(existing_dataframe_flagSEXP);
     Rcpp::traits::input_parameter< SEXP >::type existing_dataframe(existing_dataframeSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_cppBuildInterface(x, y, catCols, numRows, numColumns, ntree, replace, sampsize, mtry, splitratio, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, seed, nthread, verbose, middleSplit, existing_dataframe_flag, existing_dataframe));
+    rcpp_result_gen = Rcpp::wrap(rcpp_cppBuildInterface(x, y, catCols, numRows, numColumns, ntree, replace, sampsize, mtry, splitratio, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, seed, nthread, verbose, middleSplit, doubleTree, existing_dataframe_flag, existing_dataframe));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -63,7 +64,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // rcpp_OBBPredictInterface
-double rcpp_OBBPredictInterface(SEXP forest);
+float rcpp_OBBPredictInterface(SEXP forest);
 RcppExport SEXP _forestry_rcpp_OBBPredictInterface(SEXP forestSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -74,7 +75,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // rcpp_getObservationSizeInterface
-double rcpp_getObservationSizeInterface(SEXP df);
+float rcpp_getObservationSizeInterface(SEXP df);
 RcppExport SEXP _forestry_rcpp_getObservationSizeInterface(SEXP dfSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -98,7 +99,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_forestry_rcpp_cppDataFrameInterface", (DL_FUNC) &_forestry_rcpp_cppDataFrameInterface, 5},
-    {"_forestry_rcpp_cppBuildInterface", (DL_FUNC) &_forestry_rcpp_cppBuildInterface, 20},
+    {"_forestry_rcpp_cppBuildInterface", (DL_FUNC) &_forestry_rcpp_cppBuildInterface, 21},
     {"_forestry_rcpp_cppPredictInterface", (DL_FUNC) &_forestry_rcpp_cppPredictInterface, 2},
     {"_forestry_rcpp_OBBPredictInterface", (DL_FUNC) &_forestry_rcpp_OBBPredictInterface, 1},
     {"_forestry_rcpp_getObservationSizeInterface", (DL_FUNC) &_forestry_rcpp_getObservationSizeInterface, 1},

@@ -39,8 +39,8 @@ public:
   );
 
   void predict(
-    std::vector<double> &outputPrediction,
-    std::vector< std::vector<double> >* xNew,
+    std::vector<float> &outputPrediction,
+    std::vector< std::vector<float> >* xNew,
     DataFrame* trainingData
   );
 
@@ -55,8 +55,8 @@ public:
 
   void selectBestFeature(
     size_t& bestSplitFeature,
-    double& bestSplitValue,
-    double& bestSplitLoss,
+    float& bestSplitValue,
+    float& bestSplitLoss,
     std::vector<size_t>* featureList,
     std::vector<size_t>* averagingSampleIndex,
     std::vector<size_t>* splittingSampleIndex,
@@ -73,7 +73,7 @@ public:
   );
 
   void getOOBPrediction(
-    std::vector<double> &outputOOBPrediction,
+    std::vector<float> &outputOOBPrediction,
     std::vector<size_t> &outputOOBCount,
     DataFrame* trainingData
   );

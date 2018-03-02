@@ -18,7 +18,7 @@ public:
     size_t ntree,
     bool replace,
     size_t sampSize,
-    double splitRatio,
+    float splitRatio,
     size_t mtry,
     size_t minNodeSizeSpt,
     size_t minNodeSizeAvg,
@@ -27,16 +27,17 @@ public:
     unsigned int seed,
     size_t nthread,
     bool verbose,
-    bool splitMiddle
+    bool splitMiddle,
+    bool doubleTree
   );
 
-  std::unique_ptr< std::vector<double> > predict(
-    std::vector< std::vector<double> >* xNew
+  std::unique_ptr< std::vector<float> > predict(
+    std::vector< std::vector<float> >* xNew
   );
 
   void calculateOOBError();
 
-  double getOOBError() {
+  float getOOBError() {
     calculateOOBError();
     return _OOBError;
   }
@@ -75,7 +76,7 @@ public:
     return _sampSize;
   }
 
-  double getSplitRatio() {
+  float getSplitRatio() {
     return _splitRatio;
   }
 
@@ -108,7 +109,7 @@ private:
   size_t _ntree;
   bool _replace;
   size_t _sampSize;
-  double _splitRatio;
+  float _splitRatio;
   size_t _mtry;
   size_t _minNodeSizeSpt;
   size_t _minNodeSizeAvg;
@@ -118,8 +119,9 @@ private:
   unsigned int _seed;
   bool _verbose;
   size_t _nthread;
-  double _OOBError;
+  float _OOBError;
   bool _splitMiddle;
+  bool _doubleTree;
 };
 
 #endif //HTECPP_RF_H

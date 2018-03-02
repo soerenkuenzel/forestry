@@ -25,15 +25,15 @@ SEXP rcpp_cppDataFrameInterface(
 ){
 
   try {
-    std::unique_ptr<std::vector< std::vector<double> > > featureDataRcpp (
-        new std::vector< std::vector<double> >(
-            Rcpp::as< std::vector< std::vector<double> > >(x)
+    std::unique_ptr<std::vector< std::vector<float> > > featureDataRcpp (
+        new std::vector< std::vector<float> >(
+            Rcpp::as< std::vector< std::vector<float> > >(x)
         )
     );
 
-    std::unique_ptr<std::vector<double>> outcomeDataRcpp (
-        new std::vector<double>(
-            Rcpp::as< std::vector<double> >(y)
+    std::unique_ptr<std::vector<float>> outcomeDataRcpp (
+        new std::vector<float>(
+            Rcpp::as< std::vector<float> >(y)
         )
     );
 
@@ -74,7 +74,7 @@ SEXP rcpp_cppBuildInterface(
   bool replace,
   int sampsize,
   int mtry,
-  double splitratio,
+  float splitratio,
   int nodesizeSpl,
   int nodesizeAvg,
   int nodesizeStrictSpl,
@@ -83,6 +83,7 @@ SEXP rcpp_cppBuildInterface(
   int nthread,
   bool verbose,
   bool middleSplit,
+  bool doubleTree,
   bool existing_dataframe_flag,
   SEXP existing_dataframe
 ){
@@ -106,7 +107,8 @@ SEXP rcpp_cppBuildInterface(
         (unsigned int) seed,
         (size_t) nthread,
         verbose,
-        middleSplit
+        middleSplit,
+        doubleTree
       );
 
       // delete(testFullForest);
@@ -126,15 +128,15 @@ SEXP rcpp_cppBuildInterface(
   } else {
 
     try {
-      std::unique_ptr<std::vector< std::vector<double> > > featureDataRcpp (
-          new std::vector< std::vector<double> >(
-              Rcpp::as< std::vector< std::vector<double> > >(x)
+      std::unique_ptr<std::vector< std::vector<float> > > featureDataRcpp (
+          new std::vector< std::vector<float> >(
+              Rcpp::as< std::vector< std::vector<float> > >(x)
           )
       );
 
-      std::unique_ptr<std::vector<double>> outcomeDataRcpp (
-          new std::vector<double>(
-              Rcpp::as< std::vector<double> >(y)
+      std::unique_ptr<std::vector<float>> outcomeDataRcpp (
+          new std::vector<float>(
+              Rcpp::as< std::vector<float> >(y)
           )
       );
 
@@ -166,7 +168,8 @@ SEXP rcpp_cppBuildInterface(
         (unsigned int) seed,
         (size_t) nthread,
         verbose,
-        middleSplit
+        middleSplit,
+        doubleTree
       );
 
       // delete(testFullForest);
@@ -197,15 +200,15 @@ Rcpp::NumericVector rcpp_cppPredictInterface(
 
     Rcpp::XPtr< honestRF > testFullForest(forest) ;
 
-    std::vector< std::vector<double> > featureData =
-      Rcpp::as< std::vector< std::vector<double> > >(x);
+    std::vector< std::vector<float> > featureData =
+      Rcpp::as< std::vector< std::vector<float> > >(x);
 
-    std::unique_ptr< std::vector<double> > testForestPrediction (
+    std::unique_ptr< std::vector<float> > testForestPrediction (
       (*testFullForest).predict(&featureData)
     );
 
-    std::vector<double>* testForestPrediction_ =
-      new std::vector<double>(*testForestPrediction.get());
+    std::vector<float>* testForestPrediction_ =
+      new std::vector<float>(*testForestPrediction.get());
 
     Rcpp::NumericVector output = Rcpp::wrap(*testForestPrediction_);
 
@@ -221,13 +224,13 @@ Rcpp::NumericVector rcpp_cppPredictInterface(
 
 
 // [[Rcpp::export]]
-double rcpp_OBBPredictInterface(
+float rcpp_OBBPredictInterface(
     SEXP forest
 ){
 
   try {
     Rcpp::XPtr< honestRF > testFullForest(forest) ;
-    double OOBError = (*testFullForest).getOOBError();
+    float OOBError = (*testFullForest).getOOBError();
     return OOBError;
   } catch(std::runtime_error const& err) {
     forward_exception_to_r(err);
@@ -239,13 +242,13 @@ double rcpp_OBBPredictInterface(
 
 
 // [[Rcpp::export]]
-double rcpp_getObservationSizeInterface(
+float rcpp_getObservationSizeInterface(
     SEXP df
 ){
 
   try {
     Rcpp::XPtr< DataFrame > trainingData(df) ;
-    double nrows = (double) (*trainingData).getNumRows();
+    float nrows = (float) (*trainingData).getNumRows();
     return nrows;
   } catch(std::runtime_error const& err) {
     forward_exception_to_r(err);

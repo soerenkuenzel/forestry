@@ -37,6 +37,8 @@
 #' @param middleSplit if the split value is taking the average of two feature
 #' values. If false, it will take a point based on a uniform distribution
 #' between two feature values. (Default = FALSE)
+#' @param doubleTree if the number of tree is doubled as averaging and splitting
+#' data can be exchanged to create decorrelated trees. (Default = FALSE)
 #' @export honestRF
 
 training_data_checker <- function(
@@ -52,7 +54,8 @@ training_data_checker <- function(
   nodesizeStrictAvg,
   splitratio,
   nthread,
-  middleSplit
+  middleSplit,
+  doubleTree
 ){
   x <- as.data.frame(x)
 
@@ -128,6 +131,25 @@ training_data_checker <- function(
     warning("nodesizeStrictAvg cannot exceed averaging sample size. We have set
             nodesizeStrictAvg to be the maximum")
     nodesizeStrictAvg <<- avgSampleSize
+  }
+
+  if (doubleTree) {
+    if (splitratio == 0 || splitratio == 1){
+      warning("Trees cannot be doubled if splitratio is 1. We have set
+              doubleTree to FALSE")
+      doubleTree <<- FALSE
+    } else {
+      if (nodesizeStrictAvg > splitSampleSize) {
+        warning("nodesizeStrictAvg cannot exceed splitting sample size. We have set
+                nodesizeStrictAvg to be the maximum")
+        nodesizeStrictAvg <<- splitSampleSize
+      }
+      if (nodesizeStrictSpl > avgSampleSize) {
+        warning("nodesizeStrictSpl cannot exceed averaging sample size. We have set
+                nodesizeStrictSpl to be the maximum")
+        nodesizeStrictSpl <<- avgSampleSize
+      }
+    }
   }
 
   if (splitratio < 0 || splitratio > 1){
@@ -232,6 +254,8 @@ testing_data_checker <- function(
 #' @slot middleSplit if the split value is taking the average of two feature
 #' values. If false, it will take a point based on a uniform distribution
 #' between two feature values. (Default = FALSE)
+#' @slot doubleTree if the number of tree is doubled as averaging and splitting
+#' data can be exchanged to create decorrelated trees. (Default = FALSE)
 #' @exportClass honestRF
 setClass(
   Class="honestRF",
@@ -250,6 +274,7 @@ setClass(
     nodesizeStrictAvg="numeric",
     splitratio="numeric",
     middleSplit="logical",
+    doubleTree="logical",
     y="vector"
   )
 )
@@ -298,6 +323,8 @@ setClass(
 #' @param middleSplit if the split value is taking the average of two feature
 #' values. If false, it will take a point based on a uniform distribution
 #' between two feature values. (Default = FALSE)
+#' @param doubleTree if the number of tree is doubled as averaging and splitting
+#' data can be exchanged to create decorrelated trees. (Default = FALSE)
 #' @param reuseHonestRF pass in an `honestRF` object which will recycle the
 #' dataframe the old object created. It will save some space working on the same
 #' dataset.
@@ -322,6 +349,7 @@ setGeneric(
     nthread,
     splitrule,
     middleSplit,
+    doubleTree,
     reuseHonestRF
   ){
     standardGeneric("honestRF")
@@ -352,6 +380,7 @@ honestRF <- function(
   nthread=0,
   splitrule="variance",
   middleSplit=FALSE,
+  doubleTree=FALSE,
   reuseHonestRF=NULL
 ){
   # only if sample.fraction is given, update sampsize
@@ -362,7 +391,7 @@ honestRF <- function(
   # Preprocess the data
   training_data_checker(x, y, ntree,replace, sampsize, mtry, nodesizeSpl,
                         nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg,
-                        splitratio, nthread, middleSplit)
+                        splitratio, nthread, middleSplit, doubleTree)
   # Total number of obervations
   nObservations <- length(y)
   numColumns <- ncol(x)
@@ -397,7 +426,8 @@ honestRF <- function(
         numColumns, ntree, replace, sampsize, mtry,
         splitratio, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl,
         nodesizeStrictAvg, seed,
-        nthread, verbose, middleSplit, TRUE, rcppDataFrame
+        nthread, verbose, middleSplit, doubleTree,
+        TRUE, rcppDataFrame
       )
       return(
         new(
@@ -406,7 +436,7 @@ honestRF <- function(
           dataframe=rcppDataFrame,
           categoricalFeatureCols=categoricalFeatureCols,
           categoricalFeatureMapping=categoricalFeatureMapping,
-          ntree=ntree,
+          ntree=ntree * (doubleTree + 1),
           replace=replace,
           sampsize=sampsize,
           mtry=mtry,
@@ -415,7 +445,8 @@ honestRF <- function(
           nodesizeStrictSpl=nodesizeStrictSpl,
           nodesizeStrictAvg=nodesizeStrictAvg,
           splitratio=splitratio,
-          middleSplit=middleSplit
+          middleSplit=middleSplit,
+          doubleTree=doubleTree
         )
       )
     }, error = function(err) {
@@ -444,7 +475,8 @@ honestRF <- function(
         numColumns, ntree, replace, sampsize, mtry,
         splitratio, nodesizeSpl, nodesizeAvg,
         nodesizeStrictSpl, nodesizeStrictAvg, seed,
-        nthread, verbose, middleSplit, TRUE, reuseHonestRF@dataframe
+        nthread, verbose, middleSplit, doubleTree,
+        TRUE, reuseHonestRF@dataframe
       )
 
       return(
@@ -454,7 +486,7 @@ honestRF <- function(
           dataframe=reuseHonestRF@dataframe,
           categoricalFeatureCols=reuseHonestRF@categoricalFeatureCols,
           categoricalFeatureMapping=categoricalFeatureMapping,
-          ntree=ntree,
+          ntree=ntree * (doubleTree + 1),
           replace=replace,
           sampsize=sampsize,
           mtry=mtry,
@@ -463,7 +495,8 @@ honestRF <- function(
           nodesizeStrictSpl=nodesizeStrictSpl,
           nodesizeStrictAvg=nodesizeStrictAvg,
           splitratio=splitratio,
-          middleSplit=middleSplit
+          middleSplit=middleSplit,
+          doubleTree=doubleTree
         )
       )
     }, error = function(err) {

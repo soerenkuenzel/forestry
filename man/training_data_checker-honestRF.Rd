@@ -6,7 +6,7 @@
 \title{training_data_checker-hoenstRF}
 \usage{
 training_data_checker(x, y, ntree, replace, sampsize, mtry, nodesizeSpl,
-  nodesizeAvg, splitratio, nthread, middleSplit)
+  nodesizeAvg, splitratio, nthread, middleSplit, doubleTree)
 }
 \arguments{
 \item{x}{A data frame of all training predictors.}
@@ -47,6 +47,9 @@ default number is 0 which represents using all cores.}
 \item{middleSplit}{if the split value is taking the average of two feature
 values. If false, it will take a point based on a uniform distribution
 between two feature values. (Default = FALSE)}
+
+\item{doubleTree}{if the number of tree is doubled as averaging and splitting
+data can be exchanged to create decorrelated trees. (Default = FALSE)}
 }
 \description{
 Check the input to honestRF constructor
