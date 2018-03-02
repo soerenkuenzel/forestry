@@ -330,7 +330,7 @@ honestRF <- function(
   splitrule="variance",
   middleSplit=FALSE,
   reuseHonestRF=NULL,
-  maxObs = nrow(y)
+  maxObs = length(y)
 ){
   # only if sample.fraction is given, update sampsize
   if(!is.null(sample.fraction))
@@ -418,7 +418,7 @@ honestRF <- function(
         nObservations,
         numColumns, ntree, replace, sampsize, mtry,
         splitratio, nodesizeSpl, nodesizeAvg, seed,
-        nthread, verbose, middleSplit, maxObs, reuseHonestRF@dataframe
+        nthread, verbose, middleSplit, maxObs, TRUE, reuseHonestRF@dataframe
       )
 
       return(
