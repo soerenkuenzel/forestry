@@ -18,10 +18,14 @@
 #' @param mtry The number of variables randomly selected at each split point.
 #' The default value is set to be one third of total number of features of the
 #' training data.
-#' @param nodesizeSpl The minimum observations contained in terminal nodes. The
+#' @param nodesizeSpl Minimum observations contained in terminal nodes. The
 #' default value is 3.
 #' @param nodesizeAvg Minimum size of terminal nodes for averaging dataset.
 #' The default value is 3.
+#' @param nodesizeStrictSpl Minimum observations to follow strictly in
+#' terminal nodes. The default value is 1.
+#' @param nodesizeStrictAvg Minimum size of terminal nodes for averaging
+#' dataset to follow strictly. The default value is 1.
 #' @param splitratio Proportion of the training data used as the splitting
 #' dataset. It is a ratio between 0 and 1. If the ratio is 1, then essentially
 #' splitting dataset becomes the total entire sampled set and the averaging
@@ -33,6 +37,8 @@
 #' @param middleSplit if the split value is taking the average of two feature
 #' values. If false, it will take a point based on a uniform distribution
 #' between two feature values. (Default = FALSE)
+#' @param doubleTree if the number of tree is doubled as averaging and splitting
+#' data can be exchanged to create decorrelated trees. (Default = FALSE)
 #' @export honestRF
 
 training_data_checker <- function(
@@ -44,9 +50,12 @@ training_data_checker <- function(
   mtry,
   nodesizeSpl,
   nodesizeAvg,
+  nodesizeStrictSpl,
+  nodesizeStrictAvg,
   splitratio,
   nthread,
-  middleSplit
+  middleSplit,
+  doubleTree
 ){
   x <- as.data.frame(x)
 
@@ -96,6 +105,13 @@ training_data_checker <- function(
     stop("nodesizeAvg must be a positive integer.")
   }
 
+  if (nodesizeStrictSpl <= 0 || nodesizeStrictSpl %% 1 != 0) {
+    stop("nodesizeStrictSpl must be a positive integer.")
+  }
+  if (nodesizeStrictAvg <= 0 || nodesizeStrictAvg %% 1 != 0) {
+    stop("nodesizeStrictAvg must be a positive integer.")
+  }
+
   # if the splitratio is 1, then we use adaptive rf and avgSampleSize is the
   # equal to the total sampsize
   if (splitratio == 0 || splitratio == 1){
@@ -106,15 +122,34 @@ training_data_checker <- function(
     avgSampleSize <- sampsize - splitSampleSize
   }
 
-  if (nodesizeSpl > splitSampleSize) {
-    warning("nodesizeSpl cannot exceed splitting sample size. We have set
-            nodesizeSpl to be the maximum")
-    nodesizeSpl <<- splitSampleSize
+  if (nodesizeStrictSpl > splitSampleSize) {
+    warning("nodesizeStrictSpl cannot exceed splitting sample size. We have set
+            nodesizeStrictSpl to be the maximum")
+    nodesizeStrictSpl <<- splitSampleSize
   }
-  if (nodesizeAvg > avgSampleSize) {
-    warning("nodesizeAvg cannot exceed averaging sample size. We have set
-            nodesizeAvg to be the maximum")
-    nodesizeAvg <<- avgSampleSize
+  if (nodesizeStrictAvg > avgSampleSize) {
+    warning("nodesizeStrictAvg cannot exceed averaging sample size. We have set
+            nodesizeStrictAvg to be the maximum")
+    nodesizeStrictAvg <<- avgSampleSize
+  }
+
+  if (doubleTree) {
+    if (splitratio == 0 || splitratio == 1){
+      warning("Trees cannot be doubled if splitratio is 1. We have set
+              doubleTree to FALSE")
+      doubleTree <<- FALSE
+    } else {
+      if (nodesizeStrictAvg > splitSampleSize) {
+        warning("nodesizeStrictAvg cannot exceed splitting sample size. We have set
+                nodesizeStrictAvg to be the maximum")
+        nodesizeStrictAvg <<- splitSampleSize
+      }
+      if (nodesizeStrictSpl > avgSampleSize) {
+        warning("nodesizeStrictSpl cannot exceed averaging sample size. We have set
+                nodesizeStrictSpl to be the maximum")
+        nodesizeStrictSpl <<- avgSampleSize
+      }
+    }
   }
 
   if (splitratio < 0 || splitratio > 1){
@@ -206,6 +241,10 @@ testing_data_checker <- function(
 #' default value is 3.
 #' @slot nodesizeAvg Minimum size of terminal nodes for averaging dataset.
 #' The default value is 3.
+#' @slot nodesizeStrictSpl Minimum observations to follow strictly in
+#' terminal nodes. The default value is 1.
+#' @slot nodesizeStrictAvg Minimum size of terminal nodes for averaging
+#' dataset to follow strictly. The default value is 1.
 #' @slot splitratio Proportion of the training data used as the splitting
 #' dataset. It is a ratio between 0 and 1. If the ratio is 1, then essentially
 #' splitting dataset becomes the total entire sampled set and the averaging
@@ -216,6 +255,8 @@ testing_data_checker <- function(
 #' values. If false, it will take a point based on a uniform distribution
 #' between two feature values. (Default = FALSE)
 #' @slot maxObs The max number of observations to split on (Default = nrows(y))
+#' @slot doubleTree if the number of tree is doubled as averaging and splitting
+#' data can be exchanged to create decorrelated trees. (Default = FALSE)
 #' @exportClass honestRF
 setClass(
   Class="honestRF",
@@ -230,10 +271,13 @@ setClass(
     mtry="numeric",
     nodesizeSpl="numeric",
     nodesizeAvg="numeric",
+    nodesizeStrictSpl="numeric",
+    nodesizeStrictAvg="numeric",
     splitratio="numeric",
     middleSplit="logical",
     y="vector",
-    maxObs="numeric"
+    maxObs="numeric",
+    doubleTree="logical"
   )
 )
 
@@ -257,10 +301,14 @@ setClass(
 #' @param mtry The number of variables randomly selected at each split point.
 #' The default value is set to be one third of total number of features of the
 #' training data.
-#' @param nodesizeSpl The minimum observations contained in terminal nodes. The
+#' @param nodesizeSpl Minimum observations contained in terminal nodes. The
 #' default value is 3.
 #' @param nodesizeAvg Minimum size of terminal nodes for averaging dataset.
 #' The default value is 3.
+#' @param nodesizeStrictSpl Minimum observations to follow strictly in
+#' terminal nodes. The default value is 1.
+#' @param nodesizeStrictAvg Minimum size of terminal nodes for averaging
+#' dataset to follow strictly. The default value is 1.
 #' @param splitratio Proportion of the training data used as the splitting
 #' dataset. It is a ratio between 0 and 1. If the ratio is 1, then essentially
 #' splitting dataset becomes the total entire sampled set and the averaging
@@ -277,6 +325,8 @@ setClass(
 #' @param middleSplit if the split value is taking the average of two feature
 #' values. If false, it will take a point based on a uniform distribution
 #' between two feature values. (Default = FALSE)
+#' @param doubleTree if the number of tree is doubled as averaging and splitting
+#' data can be exchanged to create decorrelated trees. (Default = FALSE)
 #' @param reuseHonestRF pass in an `honestRF` object which will recycle the
 #' dataframe the old object created. It will save some space working on the same
 #' dataset.
@@ -294,14 +344,17 @@ setGeneric(
     mtry,
     nodesizeSpl,
     nodesizeAvg,
+    nodesizeStrictSpl,
+    nodesizeStrictAvg,
     splitratio,
     seed,
     verbose,
     nthread,
     splitrule,
     middleSplit,
-    reuseHonestRF,
-    maxObs
+    maxObs,
+    doubleTree,
+    reuseHonestRF
   ){
     standardGeneric("honestRF")
   }
@@ -323,14 +376,17 @@ honestRF <- function(
   mtry=max(floor(ncol(x)/3), 1),
   nodesizeSpl=3,
   nodesizeAvg=3,
+  nodesizeStrictSpl=1,
+  nodesizeStrictAvg=1,
   splitratio=1,
   seed=as.integer(runif(1)*1000),
   verbose=FALSE,
   nthread=0,
   splitrule="variance",
   middleSplit=FALSE,
-  reuseHonestRF=NULL,
-  maxObs = length(y)
+  maxObs = length(y),
+  doubleTree=FALSE,
+  reuseHonestRF=NULL
 ){
   # only if sample.fraction is given, update sampsize
   if(!is.null(sample.fraction))
@@ -339,7 +395,8 @@ honestRF <- function(
   x <- as.data.frame(x)
   # Preprocess the data
   training_data_checker(x, y, ntree,replace, sampsize, mtry, nodesizeSpl,
-                        nodesizeAvg, splitratio, nthread, middleSplit)
+                        nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg,
+                        splitratio, nthread, middleSplit, doubleTree)
   # Total number of obervations
   nObservations <- length(y)
   numColumns <- ncol(x)
@@ -372,8 +429,9 @@ honestRF <- function(
         categoricalFeatureCols_cpp,
         nObservations,
         numColumns, ntree, replace, sampsize, mtry,
-        splitratio, nodesizeSpl, nodesizeAvg, seed,
-        nthread, verbose, middleSplit, maxObs, TRUE, rcppDataFrame
+        splitratio, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl,
+	nodesizeStrictAvg, seed, nthread, verbose, middleSplit,
+	maxObs, doubleTree, TRUE, rcppDataFrame
       )
       return(
         new(
@@ -382,15 +440,18 @@ honestRF <- function(
           dataframe=rcppDataFrame,
           categoricalFeatureCols=categoricalFeatureCols,
           categoricalFeatureMapping=categoricalFeatureMapping,
-          ntree=ntree,
+          ntree=ntree * (doubleTree + 1),
           replace=replace,
           sampsize=sampsize,
           mtry=mtry,
           nodesizeSpl=nodesizeSpl,
           nodesizeAvg=nodesizeAvg,
+          nodesizeStrictSpl=nodesizeStrictSpl,
+          nodesizeStrictAvg=nodesizeStrictAvg,
           splitratio=splitratio,
           middleSplit=middleSplit,
-          maxObs=maxObs
+          maxObs=maxObs,
+          doubleTree=doubleTree
         )
       )
     }, error = function(err) {
@@ -417,8 +478,10 @@ honestRF <- function(
         categoricalFeatureCols_cpp,
         nObservations,
         numColumns, ntree, replace, sampsize, mtry,
-        splitratio, nodesizeSpl, nodesizeAvg, seed,
-        nthread, verbose, middleSplit, maxObs, TRUE, reuseHonestRF@dataframe
+        splitratio, nodesizeSpl, nodesizeAvg,
+        nodesizeStrictSpl, nodesizeStrictAvg, seed,
+        nthread, verbose, middleSplit, maxObs, doubleTree,
+        TRUE, reuseHonestRF@dataframe
       )
 
       return(
@@ -428,15 +491,18 @@ honestRF <- function(
           dataframe=reuseHonestRF@dataframe,
           categoricalFeatureCols=reuseHonestRF@categoricalFeatureCols,
           categoricalFeatureMapping=categoricalFeatureMapping,
-          ntree=ntree,
+          ntree=ntree * (doubleTree + 1),
           replace=replace,
           sampsize=sampsize,
           mtry=mtry,
           nodesizeSpl=nodesizeSpl,
           nodesizeAvg=nodesizeAvg,
+          nodesizeStrictSpl=nodesizeStrictSpl,
+          nodesizeStrictAvg=nodesizeStrictAvg,
           splitratio=splitratio,
           middleSplit=middleSplit,
-          maxObs=maxObs
+          maxObs=maxObs,
+          doubleTree=doubleTree
         )
       )
     }, error = function(err) {

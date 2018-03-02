@@ -11,9 +11,10 @@
 honestRF(x, y, ntree = 500, replace = TRUE, sampsize = if (replace)
   nrow(x) else ceiling(0.632 * nrow(x)), sample.fraction = NULL,
   mtry = max(floor(ncol(x)/3), 1), nodesizeSpl = 3, nodesizeAvg = 3,
-  splitratio = 1, seed = as.integer(runif(1) * 1000), verbose = FALSE,
-  nthread = 0, splitrule = "variance", middleSplit = FALSE,
-  reuseHonestRF = NULL)
+  nodesizeStrictSpl = 1, nodesizeStrictAvg = 1, splitratio = 1,
+  seed = as.integer(runif(1) * 1000), verbose = FALSE, nthread = 0,
+  splitrule = "variance", middleSplit = FALSE, maxObs = length(y),
+  doubleTree = FALSE, reuseHonestRF = NULL)
 }
 \arguments{
 \item{x}{A data frame of all training predictors.}
@@ -39,11 +40,17 @@ be round(length(y) * sample.fraction). It must be a real number between 0 and
 The default value is set to be one third of total number of features of the
 training data.}
 
-\item{nodesizeSpl}{The minimum observations contained in terminal nodes. The
+\item{nodesizeSpl}{Minimum observations contained in terminal nodes. The
 default value is 3.}
 
 \item{nodesizeAvg}{Minimum size of terminal nodes for averaging dataset.
 The default value is 3.}
+
+\item{nodesizeStrictSpl}{Minimum observations to follow strictly in
+terminal nodes. The default value is 1.}
+
+\item{nodesizeStrictAvg}{Minimum size of terminal nodes for averaging
+dataset to follow strictly. The default value is 1.}
 
 \item{splitratio}{Proportion of the training data used as the splitting
 dataset. It is a ratio between 0 and 1. If the ratio is 1, then essentially
@@ -66,6 +73,11 @@ should be made}
 \item{middleSplit}{if the split value is taking the average of two feature
 values. If false, it will take a point based on a uniform distribution
 between two feature values. (Default = FALSE)}
+
+\item{maxObs}{The max number of observations to split on}
+
+\item{doubleTree}{if the number of tree is doubled as averaging and splitting
+data can be exchanged to create decorrelated trees. (Default = FALSE)}
 
 \item{reuseHonestRF}{pass in an `honestRF` object which will recycle the
 dataframe the old object created. It will save some space working on the same

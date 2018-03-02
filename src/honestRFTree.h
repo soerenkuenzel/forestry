@@ -1,5 +1,5 @@
-#ifndef FORESTRYCPP_RFTREE_H
-#define FORESTRYCPP_RFTREE_H
+#ifndef HTECPP_RFTREE_H
+#define HTECPP_RFTREE_H
 
 #include <iostream>
 #include <vector>
@@ -17,8 +17,10 @@ public:
   honestRFTree(
     DataFrame* trainingData,
     size_t mtry,
-    size_t nodeSizeSpt,
-    size_t nodeSizeAvg,
+    size_t minNodeSizeSpt,
+    size_t minNodeSizeAvg,
+    size_t minNodeSizeToSplitSpt,
+    size_t minNodeSizeToSplitAvg,
     std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
     std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
     std::mt19937_64& random_number_generator,
@@ -29,15 +31,17 @@ public:
   // This tree is only for testing purpose
   void setDummyTree(
     size_t mtry,
-    size_t nodeSizeSpt,
-    size_t nodeSizeAvg,
+    size_t minNodeSizeSpt,
+    size_t minNodeSizeAvg,
+    size_t minNodeSizeToSplitSpt,
+    size_t minNodeSizeToSplitAvg,
     std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
     std::unique_ptr< std::vector<size_t> > averagingSampleIndex
   );
 
   void predict(
-    std::vector<double> &outputPrediction,
-    std::vector< std::vector<double> >* xNew,
+    std::vector<float> &outputPrediction,
+    std::vector< std::vector<float> >* xNew,
     DataFrame* trainingData
   );
 
@@ -53,8 +57,8 @@ public:
 
   void selectBestFeature(
     size_t& bestSplitFeature,
-    double& bestSplitValue,
-    double& bestSplitLoss,
+    float& bestSplitValue,
+    float& bestSplitLoss,
     std::vector<size_t>* featureList,
     std::vector<size_t>* averagingSampleIndex,
     std::vector<size_t>* splittingSampleIndex,
@@ -72,7 +76,7 @@ public:
   );
 
   void getOOBPrediction(
-    std::vector<double> &outputOOBPrediction,
+    std::vector<float> &outputOOBPrediction,
     std::vector<size_t> &outputOOBCount,
     DataFrame* trainingData
   );
@@ -81,12 +85,20 @@ public:
     return _mtry;
   }
 
-  size_t getNodeSizeSpt() {
-    return _nodeSizeSpt;
+  size_t getMinNodeSizeSpt() {
+    return _minNodeSizeSpt;
   }
 
-  size_t getNodeSizeAvg() {
-    return _nodeSizeAvg;
+  size_t getMinNodeSizeAvg() {
+    return _minNodeSizeAvg;
+  }
+
+  size_t getMinNodeSizeToSplitSpt() {
+    return _minNodeSizeToSplitSpt;
+  }
+
+  size_t getMinNodeSizeToSplitAvg() {
+    return _minNodeSizeToSplitAvg;
   }
 
   std::vector<size_t>* getSplittingIndex() {
@@ -103,12 +115,14 @@ public:
 
 private:
   size_t _mtry;
-  size_t _nodeSizeSpt;
-  size_t _nodeSizeAvg;
+  size_t _minNodeSizeSpt;
+  size_t _minNodeSizeAvg;
+  size_t _minNodeSizeToSplitSpt;
+  size_t _minNodeSizeToSplitAvg;
   std::unique_ptr< std::vector<size_t> > _averagingSampleIndex;
   std::unique_ptr< std::vector<size_t> > _splittingSampleIndex;
   std::unique_ptr< RFNode > _root;
 };
 
 
-#endif //FORESTRYCPP_RFTREE_H
+#endif //HTECPP_RFTREE_H

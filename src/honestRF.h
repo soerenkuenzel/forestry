@@ -1,5 +1,5 @@
-#ifndef FORESTRYCPP_RF_H
-#define FORESTRYCPP_RF_H
+#ifndef HTECPP_RF_H
+#define HTECPP_RF_H
 
 #include <iostream>
 #include <vector>
@@ -18,24 +18,27 @@ public:
     size_t ntree,
     bool replace,
     size_t sampSize,
-    double splitRatio,
+    float splitRatio,
     size_t mtry,
-    size_t nodeSizeSpt,
-    size_t nodeSizeAvg,
+    size_t minNodeSizeSpt,
+    size_t minNodeSizeAvg,
+    size_t minNodeSizeToSplitSpt,
+    size_t minNodeSizeToSplitAvg,
     unsigned int seed,
     size_t nthread,
     bool verbose,
     bool splitMiddle,
-    size_t maxObs
+    size_t maxObs,
+    bool doubleTree
   );
 
-  std::unique_ptr< std::vector<double> > predict(
-    std::vector< std::vector<double> >* xNew
+  std::unique_ptr< std::vector<float> > predict(
+    std::vector< std::vector<float> >* xNew
   );
 
   void calculateOOBError();
 
-  double getOOBError() {
+  float getOOBError() {
     calculateOOBError();
     return _OOBError;
   }
@@ -50,12 +53,20 @@ public:
     return _mtry;
   }
 
-  size_t getNodeSizeSpt() {
-    return _nodeSizeSpt;
+  size_t getMinNodeSizeSpt() {
+    return _minNodeSizeSpt;
   }
 
-  size_t getNodeSizeAvg() {
-    return _nodeSizeAvg;
+  size_t getMinNodeSizeAvg() {
+    return _minNodeSizeAvg;
+  }
+
+  size_t getMinNodeSizeToSplitSpt() {
+    return _minNodeSizeToSplitSpt;
+  }
+
+  size_t getMinNodeSizeToSplitAvg() {
+    return _minNodeSizeToSplitAvg;
   }
 
   size_t getNtree() {
@@ -66,7 +77,7 @@ public:
     return _sampSize;
   }
 
-  double getSplitRatio() {
+  float getSplitRatio() {
     return _splitRatio;
   }
 
@@ -103,17 +114,20 @@ private:
   size_t _ntree;
   bool _replace;
   size_t _sampSize;
-  double _splitRatio;
+  float _splitRatio;
   size_t _mtry;
-  size_t _nodeSizeSpt;
-  size_t _nodeSizeAvg;
+  size_t _minNodeSizeSpt;
+  size_t _minNodeSizeAvg;
+  size_t _minNodeSizeToSplitSpt;
+  size_t _minNodeSizeToSplitAvg;
   std::unique_ptr< std::vector< std::unique_ptr< honestRFTree > > > _forest;
   unsigned int _seed;
   bool _verbose;
   size_t _nthread;
-  double _OOBError;
+  float _OOBError;
   bool _splitMiddle;
   size_t maxObs;
+  bool _doubleTree;
 };
 
-#endif //FORESTRYCPP_RF_H
+#endif //HTECPP_RF_H

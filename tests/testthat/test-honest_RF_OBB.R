@@ -13,11 +13,11 @@ test_that("Tests if OOB calculation is working correctly", {
     replace = TRUE,
     sampsize = nrow(x),
     mtry = 3,
-    nodesizeSpl = 5,
+    nodesizeStrictSpl = 5,
     nthread = 2,
     splitrule = "variance",
     splitratio = 1,
-    nodesizeAvg = 5
+    nodesizeStrictAvg = 5
   )
 
   # Test OOB
@@ -31,11 +31,11 @@ test_that("Tests if OOB calculation is working correctly", {
     replace = FALSE,
     sampsize = nrow(x),
     mtry = 3,
-    nodesizeSpl = 5,
+    nodesizeStrictSpl = 5,
     nthread = 2,
     splitrule = "variance",
     splitratio = 1,
-    nodesizeAvg = 5
+    nodesizeStrictAvg = 5
   )
 
   expect_warning(

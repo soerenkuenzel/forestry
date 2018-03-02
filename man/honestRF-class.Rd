@@ -45,6 +45,12 @@ default value is 3.}
 \item{\code{nodesizeAvg}}{Minimum size of terminal nodes for averaging dataset.
 The default value is 3.}
 
+\item{\code{nodesizeStrictSpl}}{Minimum observations to follow strictly in
+terminal nodes. The default value is 1.}
+
+\item{\code{nodesizeStrictAvg}}{Minimum size of terminal nodes for averaging
+dataset to follow strictly. The default value is 1.}
+
 \item{\code{splitratio}}{Proportion of the training data used as the splitting
 dataset. It is a ratio between 0 and 1. If the ratio is 1, then essentially
 splitting dataset becomes the total entire sampled set and the averaging
@@ -55,5 +61,10 @@ usage however since there will be no data available for splitting).}
 \item{\code{middleSplit}}{if the split value is taking the average of two feature
 values. If false, it will take a point based on a uniform distribution
 between two feature values. (Default = FALSE)}
+
+\item{\code{maxObs}}{The max number of observations to split on (Default = nrows(y))}
+
+\item{\code{doubleTree}}{if the number of tree is doubled as averaging and splitting
+data can be exchanged to create decorrelated trees. (Default = FALSE)}
 }}
 
