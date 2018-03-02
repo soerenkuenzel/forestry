@@ -2,16 +2,14 @@
 #include <random>
 #include <thread>
 #include <mutex>
-#include <functional>
 #include "utils.h"
 #define DOPARELLEL true
-// [[Rcpp::plugins(cpp11)]]
 
 honestRF::honestRF():
   _trainingData(nullptr), _ntree(0), _replace(0), _sampSize(0),
-  _splitRatio(0), _mtry(0), _nodeSizeSpt(0), _nodeSizeAvg(0),
-  _forest(nullptr), _seed(0), _verbose(0), _nthread(0), _OOBError(0),
-  _splitMiddle(0){};
+  _splitRatio(0), _mtry(0), _minNodeSizeSpt(0), _minNodeSizeAvg(0),
+  _minNodeSizeToSplitSpt(0), _minNodeSizeToSplitAvg(0), _forest(nullptr),
+  _seed(0), _verbose(0), _nthread(0), _OOBError(0), _splitMiddle(0){};
 
 honestRF::~honestRF(){
 //  for (std::vector<honestRFTree*>::iterator it = (*_forest).begin();
@@ -29,8 +27,10 @@ honestRF::honestRF(
   size_t sampSize,
   double splitRatio,
   size_t mtry,
-  size_t nodeSizeSpt,
-  size_t nodeSizeAvg,
+  size_t minNodeSizeSpt,
+  size_t minNodeSizeAvg,
+  size_t minNodeSizeToSplitSpt,
+  size_t minNodeSizeToSplitAvg,
   unsigned int seed,
   size_t nthread,
   bool verbose,
@@ -42,8 +42,10 @@ honestRF::honestRF(
   this->_sampSize = sampSize;
   this->_splitRatio = splitRatio;
   this->_mtry = mtry;
-  this->_nodeSizeSpt = nodeSizeSpt;
-  this->_nodeSizeAvg = nodeSizeAvg;
+  this->_minNodeSizeAvg = minNodeSizeAvg;
+  this->_minNodeSizeSpt = minNodeSizeSpt;
+  this->_minNodeSizeToSplitAvg = minNodeSizeToSplitAvg;
+  this->_minNodeSizeToSplitSpt = minNodeSizeToSplitSpt;
   this->_seed = seed;
   this->_nthread = nthread;
   this->_verbose = verbose;
@@ -62,8 +64,8 @@ honestRF::honestRF(
   }
 
   if (
-    splitSampleSize < nodeSizeSpt ||
-    averageSampleSize < nodeSizeAvg
+    splitSampleSize < minNodeSizeToSplitSpt ||
+    averageSampleSize < minNodeSizeToSplitAvg
   ) {
     throw std::runtime_error("splitRatio too big or too small.");
   }
@@ -187,8 +189,10 @@ void honestRF::addTrees(size_t ntree) {
               new honestRFTree(
                 getTrainingData(),
                 getMtry(),
-                getNodeSizeSpt(),
-                getNodeSizeAvg(),
+                getMinNodeSizeSpt(),
+                getMinNodeSizeAvg(),
+                getMinNodeSizeToSplitSpt(),
+                getMinNodeSizeToSplitAvg(),
                 std::move(splitSampleIndex),
                 std::move(averageSampleIndex),
                 random_number_generator,

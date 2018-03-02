@@ -9,8 +9,10 @@
 
 honestRFTree::honestRFTree():
   _mtry(0),
-  _nodeSizeSpt(0),
-  _nodeSizeAvg(0),
+  _minNodeSizeSpt(0),
+  _minNodeSizeAvg(0),
+  _minNodeSizeToSplitSpt(0),
+  _minNodeSizeToSplitAvg(0),
   _averagingSampleIndex(nullptr),
   _splittingSampleIndex(nullptr),
   _root(nullptr) {};
@@ -20,8 +22,10 @@ honestRFTree::~honestRFTree() {};
 honestRFTree::honestRFTree(
   DataFrame* trainingData,
   size_t mtry,
-  size_t nodeSizeSpt,
-  size_t nodeSizeAvg,
+  size_t minNodeSizeSpt,
+  size_t minNodeSizeAvg,
+  size_t minNodeSizeToSplitSpt,
+  size_t minNodeSizeToSplitAvg,
   std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
   std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
   std::mt19937_64& random_number_generator,
@@ -31,8 +35,10 @@ honestRFTree::honestRFTree(
    * @brief Honest random forest tree constructor
    * @param trainingData    A DataFrame object
    * @param mtry    The total number of features to use for each split
-   * @param nodeSizeSpt    Minimum splitting size of leaf node
-   * @param nodeSizeAvg    Minimum averaging size of leaf node
+   * @param minNodeSizeSpt    Minimum splitting size of leaf node
+   * @param minNodeSizeAvg    Minimum averaging size of leaf node
+   * @param minNodeSizeToSplitSpt    Minimum splitting size of a splitting node
+   * @param minNodeSizeToSplitAvg    Minimum averaging size of a splitting node
    * @param splittingSampleIndex    A vector with index of splitting samples
    * @param averagingSampleIndex    A vector with index of averaging samples
    * @param random_number_generator    A mt19937 random generator
@@ -41,23 +47,29 @@ honestRFTree::honestRFTree(
    */
 
   /* Sanity Check */
-  if (nodeSizeAvg == 0) {
-    throw std::runtime_error("nodeSizeAvg cannot be set to 0.");
+  if (minNodeSizeAvg == 0) {
+    throw std::runtime_error("minNodeSizeAvg cannot be set to 0.");
   }
-  if (nodeSizeSpt == 0) {
-    throw std::runtime_error("nodeSizeSpt cannot be set to 0.");
+  if (minNodeSizeSpt == 0) {
+    throw std::runtime_error("minNodeSizeSpt cannot be set to 0.");
   }
-  if (nodeSizeAvg > (*averagingSampleIndex).size()) {
+  if (minNodeSizeToSplitSpt == 0) {
+    throw std::runtime_error("minNodeSizeToSplitSpt cannot be set to 0.");
+  }
+  if (minNodeSizeToSplitAvg == 0) {
+    throw std::runtime_error("minNodeSizeToSplitAvg cannot be set to 0.");
+  }
+  if (minNodeSizeToSplitAvg > (*averagingSampleIndex).size()) {
     std::ostringstream ostr;
-    ostr << "nodeSizeAvg cannot exceed total elements in the "
-      "averaging samples: nodeSizeAvg=" << nodeSizeAvg <<
+    ostr << "minNodeSizeToSplitAvg cannot exceed total elements in the "
+      "averaging samples: minNodeSizeToSplitAvg=" << minNodeSizeToSplitAvg <<
       ", averagingSampleSize=" << (*averagingSampleIndex).size() << ".";
     throw std::runtime_error(ostr.str());
   }
-  if (nodeSizeSpt > (*splittingSampleIndex).size()) {
+  if (minNodeSizeToSplitSpt > (*splittingSampleIndex).size()) {
     std::ostringstream ostr;
-    ostr << "nodeSizeSpt cannot exceed total elements in the "
-      "splitting samples: nodeSizeSpt=" << nodeSizeSpt <<
+    ostr << "minNodeSizeToSplitSpt cannot exceed total elements in the "
+      "splitting samples: minNodeSizeToSplitSpt=" << minNodeSizeToSplitSpt <<
       ", splittingSampleSize=" << (*splittingSampleIndex).size() << ".";
     throw std::runtime_error(ostr.str());
   }
@@ -79,8 +91,10 @@ honestRFTree::honestRFTree(
 
   /* Move all pointers to the current object */
   this->_mtry = mtry;
-  this->_nodeSizeSpt = nodeSizeSpt;
-  this->_nodeSizeAvg = nodeSizeAvg;
+  this->_minNodeSizeAvg = minNodeSizeAvg;
+  this->_minNodeSizeSpt = minNodeSizeSpt;
+  this->_minNodeSizeToSplitAvg = minNodeSizeToSplitAvg;
+  this->_minNodeSizeToSplitSpt = minNodeSizeToSplitSpt;
   this->_averagingSampleIndex = std::move(averagingSampleIndex);
   this->_splittingSampleIndex = std::move(splittingSampleIndex);
   std::unique_ptr< RFNode > root ( new RFNode() );
@@ -99,14 +113,18 @@ honestRFTree::honestRFTree(
 
 void honestRFTree::setDummyTree(
   size_t mtry,
-  size_t nodeSizeSpt,
-  size_t nodeSizeAvg,
+  size_t minNodeSizeSpt,
+  size_t minNodeSizeAvg,
+  size_t minNodeSizeToSplitSpt,
+  size_t minNodeSizeToSplitAvg,
   std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
   std::unique_ptr< std::vector<size_t> > averagingSampleIndex
 ){
   this->_mtry = mtry;
-  this->_nodeSizeSpt = nodeSizeSpt;
-  this->_nodeSizeAvg = nodeSizeAvg;
+  this->_minNodeSizeAvg = minNodeSizeAvg;
+  this->_minNodeSizeSpt = minNodeSizeSpt;
+  this->_minNodeSizeToSplitAvg = minNodeSizeToSplitAvg;
+  this->_minNodeSizeToSplitSpt = minNodeSizeToSplitSpt;
   this->_averagingSampleIndex = std::move(averagingSampleIndex);
   this->_splittingSampleIndex = std::move(splittingSampleIndex);
 }
@@ -233,6 +251,22 @@ void honestRFTree::recursivePartition(
   std::mt19937_64& random_number_generator,
   bool splitMiddle
 ){
+
+  if ((*averagingSampleIndex).size() < getMinNodeSizeAvg() ||
+    (*splittingSampleIndex).size() < getMinNodeSizeSpt()) {
+    // Create two lists on heap and transfer the owernship to the node
+    std::unique_ptr<std::vector<size_t> > averagingSampleIndex_(
+      new std::vector<size_t>(*averagingSampleIndex)
+    );
+    std::unique_ptr<std::vector<size_t> > splittingSampleIndex_(
+      new std::vector<size_t>(*splittingSampleIndex)
+    );
+    (*rootNode).setLeafNode(
+      std::move(averagingSampleIndex_),
+      std::move(splittingSampleIndex_)
+    );
+    return;
+  }
 
   // Sample mtry amounts of features
   std::vector<size_t> featureList = sampleFeatures(
@@ -656,12 +690,9 @@ void findBestSplitValueNonCategorical(
       currentSplitValue = (newFeatureValue + featureValue) / 2.0;
     } else {
       std::uniform_real_distribution<double> unif_dist;
-      long double tmp_random = unif_dist(random_number_generator) *
-        (newFeatureValue - featureValue);
-      if (tmp_random < 2 * std::numeric_limits<double>::epsilon()) {
-        tmp_random = 2 * std::numeric_limits<double>::epsilon();
-      }
-      currentSplitValue = tmp_random + featureValue;
+      double tmp_random = unif_dist(random_number_generator);
+      currentSplitValue =
+        tmp_random * (newFeatureValue - featureValue) + featureValue;
     }
 
     updateBestSplit(
@@ -784,8 +815,8 @@ void honestRFTree::selectBestFeature(
         bestSplitFeatureAll,
         bestSplitCountAll,
         trainingData,
-        getNodeSizeSpt(),
-        getNodeSizeAvg(),
+        getMinNodeSizeToSplitSpt(),
+        getMinNodeSizeToSplitAvg(),
         random_number_generator
       );
     } else {
@@ -799,8 +830,8 @@ void honestRFTree::selectBestFeature(
         bestSplitFeatureAll,
         bestSplitCountAll,
         trainingData,
-        getNodeSizeSpt(),
-        getNodeSizeAvg(),
+        getMinNodeSizeToSplitSpt(),
+        getMinNodeSizeToSplitAvg(),
         random_number_generator,
         splitMiddle
       );

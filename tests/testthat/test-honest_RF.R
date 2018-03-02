@@ -13,11 +13,11 @@ test_that("Tests that random forest is working correctly", {
     replace = TRUE,
     sample.fraction = .8,
     mtry = 3,
-    nodesizeSpl = 5,
+    nodesizeStrictSpl = 5,
     nthread = 2,
     splitrule = "variance",
     splitratio = 1,
-    nodesizeAvg = 5
+    nodesizeStrictAvg = 5
   )
 
   # Test predict

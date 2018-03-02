@@ -14,11 +14,11 @@ test_that("Tests large node size", {
     replace = TRUE,
     sampsize = nrow(x),
     mtry = 4,
-    nodesizeSpl = 80,
+    nodesizeStrictSpl = 80,
     nthread = 2,
     splitrule = "variance",
     splitratio = 1,
-    nodesizeAvg = 80
+    nodesizeStrictAvg = 80
   )
 
   # Test predict
