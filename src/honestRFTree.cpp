@@ -296,7 +296,7 @@ void honestRFTree::recursivePartition(
     splitMiddle,
     maxObs
   );
-  
+
   // Create a leaf node if the current bestSplitValue is NA
   if (std::isnan(bestSplitValue)) {
     // Create two lists on heap and transfer the owernship to the node
@@ -753,10 +753,21 @@ void findBestSplitValueNonCategorical(
     if (splitMiddle) {
       currentSplitValue = (newFeatureValue + featureValue) / 2.0;
     } else {
-      std::uniform_real_distribution<double> unif_dist;
-      double tmp_random = unif_dist(random_number_generator);
-      currentSplitValue =
-        tmp_random * (newFeatureValue - featureValue) + featureValue;
+      std::uniform_real_distribution<float> unif_dist;
+      float tmp_random = unif_dist(random_number_generator) *
+        (newFeatureValue - featureValue);
+      float episilon_lower = std::nextafter(featureValue, newFeatureValue);
+      float episilon_upper = std::nextafter(newFeatureValue, featureValue);
+      currentSplitValue = tmp_random + featureValue;
+      if (currentSplitValue < episilon_lower) {
+        currentSplitValue = episilon_lower;
+      }
+      if (currentSplitValue > episilon_upper) {
+        currentSplitValue = episilon_upper;
+      }
+      // double tmp_random = unif_dist(random_number_generator);
+      // currentSplitValue =
+      //   tmp_random * (newFeatureValue - featureValue) + featureValue;
     }
 
     updateBestSplit(
