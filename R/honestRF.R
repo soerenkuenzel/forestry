@@ -331,6 +331,10 @@ setClass(
 #' dataframe the old object created. It will save some space working on the same
 #' dataset.
 #' @param maxObs The max number of observations to split on
+#' @examples
+#' require(forestry)
+#' rf <- honestRF(x = iris[ ,-1], y = iris[ ,1])
+#' predict(rf, feature.new = iris[ ,-1])
 #' @export honestRF
 setGeneric(
   name="honestRF",

@@ -89,4 +89,9 @@ A `honestRF` object.
 \description{
 Initialize a `honestRF` object.
 }
+\examples{
+require(forestry)
+rf <- honestRF(x = iris[ ,-1], y = iris[ ,1])
+predict(rf, feature.new = iris[ ,-1])
+}
 \keyword{datasets}
