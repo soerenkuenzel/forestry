@@ -63,7 +63,7 @@ usage however since there will be no data available for splitting).}
 
 \item{verbose}{if training process in verbose mode}
 
-\item{nthread}{Number of threads to train and predict thre forest. The
+\item{nthread}{Number of threads to train and predict the forest. The
 default number is 0 which represents using all cores.}
 
 \item{splitrule}{only variance is implemented at this point and it contains
