@@ -10,22 +10,6 @@ RFNode::~RFNode() {
   //  std::cout << "RFNode() destructor is called." << std::endl;
 };
 
-RFNode::RFNode(
-  size_t splitFeature,
-  long double splitValue,
-  std::unique_ptr< RFNode > leftChild,
-  std::unique_ptr< RFNode > rightChild
-) {
-  // Split node constructor
-  this->_averageCount = 0;
-  this->_splitCount = 0;
-  this->_splitFeature = splitFeature;
-  this->_splitValue = splitValue;
-  // Give the ownership of the child pointer to the RFNode object
-  this->_leftChild = std::move(leftChild);
-  this->_rightChild = std::move(rightChild);
-}
-
 void RFNode::setLeafNode(
   std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
   std::unique_ptr< std::vector<size_t> > splittingSampleIndex

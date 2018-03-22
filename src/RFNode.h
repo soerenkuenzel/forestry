@@ -14,13 +14,6 @@ public:
   RFNode();
   virtual ~RFNode();
 
-  RFNode(
-    size_t splitFeature,
-    long double splitValue,
-    std::unique_ptr< RFNode > leftChild,
-    std::unique_ptr< RFNode > rightChild
-  );
-
   void setLeafNode(
     std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
     std::unique_ptr< std::vector<size_t> > splittingSampleIndex
