@@ -756,14 +756,14 @@ void findBestSplitValueNonCategorical(
       std::uniform_real_distribution<long double> unif_dist;
       long double tmp_random = unif_dist(random_number_generator) *
         (newFeatureValue - featureValue);
-      long double episilon_lower = std::nextafter(featureValue, newFeatureValue);
-      long double episilon_upper = std::nextafter(newFeatureValue, featureValue);
+      long double epsilon_lower = std::nextafter(featureValue, newFeatureValue);
+      long double epsilon_upper = std::nextafter(newFeatureValue, featureValue);
       currentSplitValue = tmp_random + featureValue;
-      if (currentSplitValue < episilon_lower) {
-        currentSplitValue = episilon_lower;
+      if (currentSplitValue > epsilon_upper) {
+        currentSplitValue = epsilon_upper;
       }
-      if (currentSplitValue > episilon_upper) {
-        currentSplitValue = episilon_upper;
+      if (currentSplitValue < epsilon_lower) {
+        currentSplitValue = epsilon_lower;
       }
       // double tmp_random = unif_dist(random_number_generator);
       // currentSplitValue =
