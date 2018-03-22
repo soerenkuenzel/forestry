@@ -29,7 +29,7 @@ void RFNode::setLeafNode(
 
 void RFNode::setSplitNode(
   size_t splitFeature,
-  float splitValue,
+  long double splitValue,
   std::unique_ptr< RFNode > leftChild,
   std::unique_ptr< RFNode > rightChild
 ) {
