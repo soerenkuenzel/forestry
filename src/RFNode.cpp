@@ -11,26 +11,8 @@ RFNode::~RFNode() {
 };
 
 RFNode::RFNode(
-  std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
-  std::unique_ptr< std::vector<size_t> > splittingSampleIndex
-) {
-  if (
-    (*averagingSampleIndex).size() == 0 &&
-    (*splittingSampleIndex).size() == 0
-  ) {
-    throw std::runtime_error("Intend to create an empty node.");
-  }
-  // Leaf node constructor
-  // Give the ownership of the index pointer to the RFNode object
-  this->_averagingSampleIndex = std::move(averagingSampleIndex);
-  this->_averageCount = (*_averagingSampleIndex).size();
-  this->_splittingSampleIndex = std::move(splittingSampleIndex);
-  this->_splitCount = (*_splittingSampleIndex).size();
-}
-
-RFNode::RFNode(
   size_t splitFeature,
-  float splitValue,
+  long double splitValue,
   std::unique_ptr< RFNode > leftChild,
   std::unique_ptr< RFNode > rightChild
 ) {
@@ -48,6 +30,12 @@ void RFNode::setLeafNode(
   std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
   std::unique_ptr< std::vector<size_t> > splittingSampleIndex
 ) {
+  if (
+      (*averagingSampleIndex).size() == 0 &&
+        (*splittingSampleIndex).size() == 0
+  ) {
+    throw std::runtime_error("Intend to create an empty node.");
+  }
   // Give the ownership of the index pointer to the RFNode object
   this->_averagingSampleIndex = std::move(averagingSampleIndex);
   this->_averageCount = (*_averagingSampleIndex).size();

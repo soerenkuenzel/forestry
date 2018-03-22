@@ -15,13 +15,8 @@ public:
   virtual ~RFNode();
 
   RFNode(
-    std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
-    std::unique_ptr< std::vector<size_t> > splittingSampleIndex
-  );
-
-  RFNode(
     size_t splitFeature,
-    float splitValue,
+    long double splitValue,
     std::unique_ptr< RFNode > leftChild,
     std::unique_ptr< RFNode > rightChild
   );
