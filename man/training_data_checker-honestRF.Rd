@@ -48,7 +48,7 @@ dataset is empty. If the ratio is 0, then the splitting data set is empty
 and all the data is used for the averaging data set (This is not a good
 usage however since there will be no data available for splitting).}
 
-\item{nthread}{Number of threads to train and predict thre forest. The
+\item{nthread}{Number of threads to train and predict the forest. The
 default number is 0 which represents using all cores.}
 
 \item{middleSplit}{if the split value is taking the average of two feature

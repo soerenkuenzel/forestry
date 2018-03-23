@@ -23,7 +23,7 @@ autohonestRF(x, y, sampsize = as.integer(nrow(x) * 0.75), num_iter = 1024,
 
 \item{seed}{random seed}
 
-\item{nthread}{Number of threads to train and predict thre forest. The
+\item{nthread}{Number of threads to train and predict theforest. The
 default number is 0 which represents using all cores.}
 }
 \value{

@@ -20,7 +20,7 @@
 
 \item{seed}{random seed}
 
-\item{nthread}{Number of threads to train and predict thre forest. The
+\item{nthread}{Number of threads to train and predict the forest. The
 default number is 0 which represents using all cores.}
 }
 \description{

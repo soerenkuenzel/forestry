@@ -32,7 +32,7 @@
 #' dataset is empty. If the ratio is 0, then the splitting data set is empty
 #' and all the data is used for the averaging data set (This is not a good
 #' usage however since there will be no data available for splitting).
-#' @param nthread Number of threads to train and predict thre forest. The
+#' @param nthread Number of threads to train and predict the forest. The
 #' default number is 0 which represents using all cores.
 #' @param middleSplit if the split value is taking the average of two feature
 #' values. If false, it will take a point based on a uniform distribution
@@ -317,7 +317,7 @@ setClass(
 #' usage however since there will be no data available for splitting).
 #' @param seed random seed
 #' @param verbose if training process in verbose mode
-#' @param nthread Number of threads to train and predict thre forest. The
+#' @param nthread Number of threads to train and predict the forest. The
 #' default number is 0 which represents using all cores.
 #' @param splitrule only variance is implemented at this point and it contains
 #' specifies the loss function according to which the splits of random forest
@@ -687,7 +687,7 @@ setMethod(
 #' @param eta Downsampling rate. Default value is 2.
 #' @param verbose if tuning process in verbose mode
 #' @param seed random seed
-#' @param nthread Number of threads to train and predict thre forest. The
+#' @param nthread Number of threads to train and predict the forest. The
 #' default number is 0 which represents using all cores.
 setGeneric(
   name="autohonestRF",
@@ -716,7 +716,7 @@ setGeneric(
 #' @param eta Downsampling rate. Default value is 2.
 #' @param verbose if tuning process in verbose mode
 #' @param seed random seed
-#' @param nthread Number of threads to train and predict thre forest. The
+#' @param nthread Number of threads to train and predict theforest. The
 #' default number is 0 which represents using all cores.
 #' @aliases autohonestRF,honestRF-method
 #' @return A `honestRF` object
