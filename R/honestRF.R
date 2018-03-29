@@ -1,60 +1,25 @@
 #-- Sanity Checker -------------------------------------------------------------
-#' @title training_data_checker-hoenstRF
-#' @name training_data_checker-honestRF
+#' @name training_data_checker
+#' @title Training data check
 #' @rdname training_data_checker-honestRF
 #' @description Check the input to honestRF constructor
-#' @param x A data frame of all training predictors.
-#' @param y A vector of all training responses.
-#' @param ntree The number of trees to grow in the forest. The default value is
-#' 500.
-#' @param replace An indicator of whether sampling of training data is with
-#' replacement. The default value is TRUE.
-#' @param sampsize The size of total samples to draw for the training data. If
-#' sampling with replacement, the default value is the length of the training
-#' data. If samplying without replacement, the default value is two-third of
-#' the length of the training data.
-#' @param mtry The number of variables randomly selected at each split point.
-#' The default value is set to be one third of total number of features of the
-#' training data.
-#' @param nodesizeSpl Minimum observations contained in terminal nodes. The
-#' default value is 3.
-#' @param nodesizeAvg Minimum size of terminal nodes for averaging dataset.
-#' The default value is 3.
-#' @param nodesizeStrictSpl Minimum observations to follow strictly in
-#' terminal nodes. The default value is 1.
-#' @param nodesizeStrictAvg Minimum size of terminal nodes for averaging
-#' dataset to follow strictly. The default value is 1.
-#' @param splitratio Proportion of the training data used as the splitting
-#' dataset. It is a ratio between 0 and 1. If the ratio is 1, then essentially
-#' splitting dataset becomes the total entire sampled set and the averaging
-#' dataset is empty. If the ratio is 0, then the splitting data set is empty
-#' and all the data is used for the averaging data set (This is not a good
-#' usage however since there will be no data available for splitting).
-#' @param nthread Number of threads to train and predict the forest. The
-#' default number is 0 which represents using all cores.
-#' @param middleSplit if the split value is taking the average of two feature
-#' values. If false, it will take a point based on a uniform distribution
-#' between two feature values. (Default = FALSE)
-#' @param doubleTree if the number of tree is doubled as averaging and splitting
-#' data can be exchanged to create decorrelated trees. (Default = FALSE)
-#' @export honestRF
-training_data_checker <- function(
-  x,
-  y,
-  ntree,
-  replace,
-  sampsize,
-  mtry,
-  nodesizeSpl,
-  nodesizeAvg,
-  nodesizeStrictSpl,
-  nodesizeStrictAvg,
-  splitratio,
-  nthread,
-  middleSplit,
-  doubleTree
-){
+#' @inheritParams honestRF
+training_data_checker <- function(x,
+                                  y,
+                                  ntree,
+                                  replace,
+                                  sampsize,
+                                  mtry,
+                                  nodesizeSpl,
+                                  nodesizeAvg,
+                                  nodesizeStrictSpl,
+                                  nodesizeStrictAvg,
+                                  splitratio,
+                                  nthread,
+                                  middleSplit,
+                                  doubleTree) {
   x <- as.data.frame(x)
+  nfeatures <- ncol(x)
 
   # Check if the input dimension of x matches y
   if (nrow(x) != length(y)) {
@@ -69,9 +34,6 @@ training_data_checker <- function(
     stop("y contains missing data.")
   }
 
-  nrows <- nrow(x)
-  nfeatures <- ncol(x)
-
   if (!is.logical(replace)) {
     stop("replace must be TRUE or FALSE.")
   }
@@ -85,8 +47,12 @@ training_data_checker <- function(
   }
 
   if (!replace && sampsize > nrow(x)) {
-    stop(paste("You cannot sample without replacement with size more than",
-               "total number of oberservations."))
+    stop(
+      paste(
+        "You cannot sample without replacement with size more than",
+        "total number of oberservations."
+      )
+    )
   }
   if (mtry <= 0 || mtry %% 1 != 0) {
     stop("mtry must be a positive integer.")
@@ -120,13 +86,21 @@ training_data_checker <- function(
   }
 
   if (nodesizeStrictSpl > splitSampleSize) {
-    warning(paste("nodesizeStrictSpl cannot exceed splitting sample size.",
-                  "We have set nodesizeStrictSpl to be the maximum"))
+    warning(
+      paste(
+        "nodesizeStrictSpl cannot exceed splitting sample size.",
+        "We have set nodesizeStrictSpl to be the maximum"
+      )
+    )
     nodesizeStrictSpl <<- splitSampleSize
   }
   if (nodesizeStrictAvg > avgSampleSize) {
-    warning(paste("nodesizeStrictAvg cannot exceed averaging sample size.",
-                  "We have set nodesizeStrictAvg to be the maximum"))
+    warning(
+      paste(
+        "nodesizeStrictAvg cannot exceed averaging sample size.",
+        "We have set nodesizeStrictAvg to be the maximum"
+      )
+    )
     nodesizeStrictAvg <<- avgSampleSize
   }
 
@@ -137,13 +111,21 @@ training_data_checker <- function(
       doubleTree <<- FALSE
     } else {
       if (nodesizeStrictAvg > splitSampleSize) {
-        warning(paste("nodesizeStrictAvg cannot exceed splitting sample size.",
-                      "We have set nodesizeStrictAvg to be the maximum"))
+        warning(
+          paste(
+            "nodesizeStrictAvg cannot exceed splitting sample size.",
+            "We have set nodesizeStrictAvg to be the maximum"
+          )
+        )
         nodesizeStrictAvg <<- splitSampleSize
       }
       if (nodesizeStrictSpl > avgSampleSize) {
-        warning(paste("nodesizeStrictSpl cannot exceed averaging sample size.",
-                      "We have set nodesizeStrictSpl to be the maximum"))
+        warning(
+          paste(
+            "nodesizeStrictSpl cannot exceed averaging sample size.",
+            "We have set nodesizeStrictSpl to be the maximum"
+          )
+        )
         nodesizeStrictSpl <<- avgSampleSize
       }
     }
@@ -152,22 +134,6 @@ training_data_checker <- function(
   if (splitratio < 0 || splitratio > 1) {
     stop("splitratio must in between 0 and 1.")
   }
-
-  # if (splitratio == 0 || splitratio == 1){
-  #
-  #   print("Note that honestRF is used as adaptive random forest.")
-  #   } else {
-  #
-  #     if (splitSampleSize < 2 * nodesizeSpl){
-  #       stop("splitratio is too small such that splitting data cannot even be
-  # splitted!")
-  #     }
-  #
-  #     if (avgSampleSize < 2 * nodesizeAvg) {
-  #       stop("splitratio is too big such that averaging data cannot even be
-  # splitted!")
-  #     }
-  # }
 
   if (nthread < 0 || nthread %% 1 != 0) {
     stop("nthread must be a nonegative integer.")
@@ -181,9 +147,9 @@ training_data_checker <- function(
         FALSE
       }
     )) {
-
       stop(paste0(
-        "nthread cannot exceed total cores in the computer: ", detectCores()
+        "nthread cannot exceed total cores in the computer: ",
+        detectCores()
       ))
     }
   }
