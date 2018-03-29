@@ -1,6 +1,4 @@
-##################
-# Sanity Checker #
-##################
+#-- Sanity Checker -------------------------------------------------------------
 #' @title training_data_checker-hoenstRF
 #' @name training_data_checker-honestRF
 #' @rdname training_data_checker-honestRF
@@ -40,7 +38,6 @@
 #' @param doubleTree if the number of tree is doubled as averaging and splitting
 #' data can be exchanged to create decorrelated trees. (Default = FALSE)
 #' @export honestRF
-
 training_data_checker <- function(
   x,
   y,
@@ -88,8 +85,8 @@ training_data_checker <- function(
   }
 
   if (!replace && sampsize > nrow(x)) {
-    stop("You cannot sample without replacement with size more than total
-         number of oberservations.")
+    stop(paste("You cannot sample without replacement with size more than",
+               "total number of oberservations."))
   }
   if (mtry <= 0 || mtry %% 1 != 0) {
     stop("mtry must be a positive integer.")
@@ -114,7 +111,7 @@ training_data_checker <- function(
 
   # if the splitratio is 1, then we use adaptive rf and avgSampleSize is the
   # equal to the total sampsize
-  if (splitratio == 0 || splitratio == 1){
+  if (splitratio == 0 || splitratio == 1) {
     splitSampleSize <- sampsize
     avgSampleSize <- sampsize
   } else {
@@ -123,53 +120,53 @@ training_data_checker <- function(
   }
 
   if (nodesizeStrictSpl > splitSampleSize) {
-    warning("nodesizeStrictSpl cannot exceed splitting sample size. We have set
-            nodesizeStrictSpl to be the maximum")
+    warning(paste("nodesizeStrictSpl cannot exceed splitting sample size.",
+                  "We have set nodesizeStrictSpl to be the maximum"))
     nodesizeStrictSpl <<- splitSampleSize
   }
   if (nodesizeStrictAvg > avgSampleSize) {
-    warning("nodesizeStrictAvg cannot exceed averaging sample size. We have set
-            nodesizeStrictAvg to be the maximum")
+    warning(paste("nodesizeStrictAvg cannot exceed averaging sample size.",
+                  "We have set nodesizeStrictAvg to be the maximum"))
     nodesizeStrictAvg <<- avgSampleSize
   }
 
   if (doubleTree) {
-    if (splitratio == 0 || splitratio == 1){
+    if (splitratio == 0 || splitratio == 1) {
       warning("Trees cannot be doubled if splitratio is 1. We have set
               doubleTree to FALSE")
       doubleTree <<- FALSE
     } else {
       if (nodesizeStrictAvg > splitSampleSize) {
-        warning("nodesizeStrictAvg cannot exceed splitting sample size. We have set
-                nodesizeStrictAvg to be the maximum")
+        warning(paste("nodesizeStrictAvg cannot exceed splitting sample size.",
+                      "We have set nodesizeStrictAvg to be the maximum"))
         nodesizeStrictAvg <<- splitSampleSize
       }
       if (nodesizeStrictSpl > avgSampleSize) {
-        warning("nodesizeStrictSpl cannot exceed averaging sample size. We have set
-                nodesizeStrictSpl to be the maximum")
+        warning(paste("nodesizeStrictSpl cannot exceed averaging sample size.",
+                      "We have set nodesizeStrictSpl to be the maximum"))
         nodesizeStrictSpl <<- avgSampleSize
       }
     }
   }
 
-  if (splitratio < 0 || splitratio > 1){
+  if (splitratio < 0 || splitratio > 1) {
     stop("splitratio must in between 0 and 1.")
   }
 
   # if (splitratio == 0 || splitratio == 1){
   #
   #   print("Note that honestRF is used as adaptive random forest.")
-
   #   } else {
   #
   #     if (splitSampleSize < 2 * nodesizeSpl){
-  #       stop("splitratio is too small such that splitting data cannot even be splitted!")
+  #       stop("splitratio is too small such that splitting data cannot even be
+  # splitted!")
   #     }
   #
   #     if (avgSampleSize < 2 * nodesizeAvg) {
-  #       stop("splitratio is too big such that averaging data cannot even be splitted!")
+  #       stop("splitratio is too big such that averaging data cannot even be
+  # splitted!")
   #     }
-
   # }
 
   if (nthread < 0 || nthread %% 1 != 0) {
@@ -178,9 +175,13 @@ training_data_checker <- function(
 
   if (nthread > 0) {
     #' @import parallel
-#    library(parallel)
-    if (tryCatch(nthread > parallel::detectCores(),
-                 error = function(x) {FALSE})) {
+    if (tryCatch(
+      nthread > parallel::detectCores(),
+      error = function(x) {
+        FALSE
+      }
+    )) {
+
       stop(paste0(
         "nthread cannot exceed total cores in the computer: ", detectCores()
       ))
@@ -190,8 +191,7 @@ training_data_checker <- function(
   if (!is.logical(middleSplit)) {
     stop("middleSplit must be TRUE or FALSE.")
   }
-
-  }
+}
 
 #' @title testing_data_checker-hoenstRF
 #' @name testing_data_checker-honestRF
@@ -207,12 +207,9 @@ testing_data_checker <- function(
   if (any(is.na(feature.new))) {
     stop("x contains missing data.")
   }
-
 }
 
-########################################
-### Honest Random Forest Constructor ###
-########################################
+# -- Honest Random Forest Constructor ------------------------------------------
 #' @title honestRF Constructor
 #' @name honestRF-class
 #' @rdname honestRF-class
@@ -259,25 +256,25 @@ testing_data_checker <- function(
 #' data can be exchanged to create decorrelated trees. (Default = FALSE)
 #' @exportClass honestRF
 setClass(
-  Class="honestRF",
-  slots=list(
-    forest="externalptr",
-    dataframe="externalptr",
-    categoricalFeatureCols="list",
-    categoricalFeatureMapping="list",
-    ntree="numeric",
-    replace="logical",
-    sampsize="numeric",
-    mtry="numeric",
-    nodesizeSpl="numeric",
-    nodesizeAvg="numeric",
-    nodesizeStrictSpl="numeric",
-    nodesizeStrictAvg="numeric",
-    splitratio="numeric",
-    middleSplit="logical",
-    y="vector",
-    maxObs="numeric",
-    doubleTree="logical"
+  Class = "honestRF",
+  slots = list(
+    forest = "externalptr",
+    dataframe = "externalptr",
+    categoricalFeatureCols = "list",
+    categoricalFeatureMapping = "list",
+    ntree = "numeric",
+    replace = "logical",
+    sampsize = "numeric",
+    mtry = "numeric",
+    nodesizeSpl = "numeric",
+    nodesizeAvg = "numeric",
+    nodesizeStrictSpl = "numeric",
+    nodesizeStrictAvg = "numeric",
+    splitratio = "numeric",
+    middleSplit = "logical",
+    y = "vector",
+    maxObs = "numeric",
+    doubleTree = "logical"
   )
 )
 
@@ -337,29 +334,27 @@ setClass(
 #' predict(rf, feature.new = iris[ ,-1])
 #' @export honestRF
 setGeneric(
-  name="honestRF",
-  def=function(
-    x,
-    y,
-    ntree,
-    replace,
-    sampsize,
-    sample.fraction,
-    mtry,
-    nodesizeSpl,
-    nodesizeAvg,
-    nodesizeStrictSpl,
-    nodesizeStrictAvg,
-    splitratio,
-    seed,
-    verbose,
-    nthread,
-    splitrule,
-    middleSplit,
-    maxObs,
-    doubleTree,
-    reuseHonestRF
-  ){
+  name = "honestRF",
+  def = function(x,
+                 y,
+                 ntree,
+                 replace,
+                 sampsize,
+                 sample.fraction,
+                 mtry,
+                 nodesizeSpl,
+                 nodesizeAvg,
+                 nodesizeStrictSpl,
+                 nodesizeStrictAvg,
+                 splitratio,
+                 seed,
+                 verbose,
+                 nthread,
+                 splitrule,
+                 middleSplit,
+                 maxObs,
+                 doubleTree,
+                 reuseHonestRF) {
     standardGeneric("honestRF")
   }
 )
@@ -370,30 +365,31 @@ setGeneric(
 #' @importFrom Rcpp evalCpp
 #' @useDynLib forestry
 #' @return A `honestRF` object.
-honestRF <- function(
-  x,
-  y,
-  ntree=500,
-  replace=TRUE,
-  sampsize=if (replace) nrow(x) else ceiling(.632*nrow(x)),
-  sample.fraction = NULL,
-  mtry=max(floor(ncol(x)/3), 1),
-  nodesizeSpl=3,
-  nodesizeAvg=3,
-  nodesizeStrictSpl=1,
-  nodesizeStrictAvg=1,
-  splitratio=1,
-  seed=as.integer(runif(1)*1000),
-  verbose=FALSE,
-  nthread=0,
-  splitrule="variance",
-  middleSplit=FALSE,
-  maxObs = length(y),
-  doubleTree=FALSE,
-  reuseHonestRF=NULL
-){
+honestRF <- function(x,
+                     y,
+                     ntree = 500,
+                     replace = TRUE,
+                     sampsize = if (replace)
+                       nrow(x)
+                     else
+                       ceiling(.632 * nrow(x)),
+                     sample.fraction = NULL,
+                     mtry = max(floor(ncol(x) / 3), 1),
+                     nodesizeSpl = 3,
+                     nodesizeAvg = 3,
+                     nodesizeStrictSpl = 1,
+                     nodesizeStrictAvg = 1,
+                     splitratio = 1,
+                     seed = as.integer(runif(1) * 1000),
+                     verbose = FALSE,
+                     nthread = 0,
+                     splitrule = "variance",
+                     middleSplit = FALSE,
+                     maxObs = length(y),
+                     doubleTree = FALSE,
+                     reuseHonestRF = NULL) {
   # only if sample.fraction is given, update sampsize
-  if(!is.null(sample.fraction))
+  if (!is.null(sample.fraction))
     sampsize <- ceiling(sample.fraction * nrow(x))
 
   x <- as.data.frame(x)
@@ -412,8 +408,8 @@ honestRF <- function(
     categoricalFeatureMapping <- preprocessedData$categoricalFeatureMapping
 
     categoricalFeatureCols_cpp <- unlist(categoricalFeatureCols)
-    if (is.null(categoricalFeatureCols_cpp)){
-      categoricalFeatureCols_cpp <- vector(mode="numeric", length=0)
+    if (is.null(categoricalFeatureCols_cpp)) {
+      categoricalFeatureCols_cpp <- vector(mode = "numeric", length = 0)
     } else {
       categoricalFeatureCols_cpp <- categoricalFeatureCols_cpp - 1
     }
@@ -435,39 +431,45 @@ honestRF <- function(
         numColumns, ntree, replace, sampsize, mtry,
         splitratio, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl,
 	nodesizeStrictAvg, seed, nthread, verbose, middleSplit,
-	maxObs, doubleTree, TRUE, rcppDataFrame
+	maxObs,
+	doubleTree,
+	TRUE,
+	rcppDataFrame
       )
       return(
         new(
           "honestRF",
-          forest=rcppForest,
-          dataframe=rcppDataFrame,
-          categoricalFeatureCols=categoricalFeatureCols,
-          categoricalFeatureMapping=categoricalFeatureMapping,
-          ntree=ntree * (doubleTree + 1),
-          replace=replace,
-          sampsize=sampsize,
-          mtry=mtry,
-          nodesizeSpl=nodesizeSpl,
-          nodesizeAvg=nodesizeAvg,
-          nodesizeStrictSpl=nodesizeStrictSpl,
-          nodesizeStrictAvg=nodesizeStrictAvg,
-          splitratio=splitratio,
-          middleSplit=middleSplit,
-          maxObs=maxObs,
-          doubleTree=doubleTree
+          forest = rcppForest,
+          dataframe = rcppDataFrame,
+          categoricalFeatureCols = categoricalFeatureCols,
+          categoricalFeatureMapping = categoricalFeatureMapping,
+          ntree = ntree * (doubleTree + 1),
+          replace = replace,
+          sampsize = sampsize,
+          mtry = mtry,
+          nodesizeSpl = nodesizeSpl,
+          nodesizeAvg = nodesizeAvg,
+          nodesizeStrictSpl = nodesizeStrictSpl,
+          nodesizeStrictAvg = nodesizeStrictAvg,
+          splitratio = splitratio,
+          middleSplit = middleSplit,
+          maxObs = maxObs,
+          doubleTree = doubleTree
         )
       )
-    }, error = function(err) {
-      print(err)
-      return(NULL)
-    })
+    },
+	error = function(err) {
+	  print(err)
+	  return(NULL)
+	})
 
   } else {
 
-    categoricalFeatureCols_cpp <- unlist(reuseHonestRF@categoricalFeatureCols)
-    if (is.null(categoricalFeatureCols_cpp)){
-      categoricalFeatureCols_cpp <- vector(mode="numeric", length=0)
+
+    categoricalFeatureCols_cpp <-
+      unlist(reuseHonestRF@categoricalFeatureCols)
+    if (is.null(categoricalFeatureCols_cpp)) {
+      categoricalFeatureCols_cpp <- vector(mode = "numeric", length = 0)
     } else {
       categoricalFeatureCols_cpp <- categoricalFeatureCols_cpp - 1
     }
@@ -491,22 +493,22 @@ honestRF <- function(
       return(
         new(
           "honestRF",
-          forest=rcppForest,
-          dataframe=reuseHonestRF@dataframe,
-          categoricalFeatureCols=reuseHonestRF@categoricalFeatureCols,
-          categoricalFeatureMapping=categoricalFeatureMapping,
-          ntree=ntree * (doubleTree + 1),
-          replace=replace,
-          sampsize=sampsize,
-          mtry=mtry,
-          nodesizeSpl=nodesizeSpl,
-          nodesizeAvg=nodesizeAvg,
-          nodesizeStrictSpl=nodesizeStrictSpl,
-          nodesizeStrictAvg=nodesizeStrictAvg,
-          splitratio=splitratio,
-          middleSplit=middleSplit,
-          maxObs=maxObs,
-          doubleTree=doubleTree
+          forest = rcppForest,
+          dataframe = reuseHonestRF@dataframe,
+          categoricalFeatureCols = reuseHonestRF@categoricalFeatureCols,
+          categoricalFeatureMapping = categoricalFeatureMapping,
+          ntree = ntree * (doubleTree + 1),
+          replace = replace,
+          sampsize = sampsize,
+          mtry = mtry,
+          nodesizeSpl = nodesizeSpl,
+          nodesizeAvg = nodesizeAvg,
+          nodesizeStrictSpl = nodesizeStrictSpl,
+          nodesizeStrictAvg = nodesizeStrictAvg,
+          splitratio = splitratio,
+          middleSplit = middleSplit,
+          maxObs = maxObs,
+          doubleTree = doubleTree
         )
       )
     }, error = function(err) {
@@ -520,9 +522,7 @@ honestRF <- function(
 }
 
 
-######################
-### Predict Method ###
-######################
+# -- Predict Method ------------------------------------------------------------
 #' predict-honestRF
 #' @name predict-honestRF
 #' @rdname predict-honestRF
@@ -533,12 +533,10 @@ honestRF <- function(
 #' @aliases predict,honestRF-method
 #' @exportMethod predict
 setMethod(
-  f="predict",
-  signature="honestRF",
-  definition=function(
-    object,
-    feature.new
-  ){
+  f = "predict",
+  signature = "honestRF",
+  definition = function(object,
+                        feature.new) {
 
     # Preprocess the data
     testing_data_checker(feature.new)
@@ -561,9 +559,7 @@ setMethod(
 )
 
 
-###########################
-### Calculate OOB Error ###
-###########################
+# -- Calculate OOB Error -------------------------------------------------------
 #' @title getOOB-honestRF
 #' @name getOOB-honestRF
 #' @rdname getOOB-honestRF
@@ -572,11 +568,9 @@ setMethod(
 #' @param noWarning flag to not display warnings
 #' @aliases getOOB
 setGeneric(
-  name="getOOB",
-  def=function(
-    object,
-    noWarning=FALSE
-  ){
+  name = "getOOB",
+  def = function(object,
+                 noWarning = FALSE) {
     standardGeneric("getOOB")
   }
 )
@@ -596,10 +590,11 @@ setMethod(
     noWarning
   ){
 
-    # (all) TODO: find a better threshold for throwing such warning. 25 is
+    # TODO (all): find a better threshold for throwing such warning. 25 is
     # currently set up arbitrarily.
     if (!object@replace &&
-        object@ntree * (rcpp_getObservationSizeInterface(object@dataframe) - object@sampsize) < 10) {
+        object@ntree * (rcpp_getObservationSizeInterface(object@dataframe) -
+                        object@sampsize) < 10) {
       if (!noWarning) {
         warning("Samples are drawn without replacement and sample size is too big!")
       }
@@ -619,9 +614,7 @@ setMethod(
 
 
 
-######################
-### Add More Trees ###
-######################
+# -- Add More Trees ------------------------------------------------------------
 #' @title addTrees-honestRF
 #' @name addTrees-honestRF
 #' @rdname addTrees-honestRF
@@ -630,11 +623,9 @@ setMethod(
 #' @param ntree Number of new trees to add
 #' @aliases addTrees
 setGeneric(
-  name="addTrees",
-  def=function(
-    object,
-    ntree
-  ){
+  name = "addTrees",
+  def = function(object,
+                 ntree) {
     standardGeneric("addTrees")
   }
 )
@@ -647,13 +638,10 @@ setGeneric(
 #' @exportMethod addTrees
 #' @return A `honestRF` object
 setMethod(
-  f="addTrees",
-  signature="honestRF",
-  definition=function(
-    object,
-    ntree
-  ){
-
+  f = "addTrees",
+  signature = "honestRF",
+  definition = function(object,
+                        ntree) {
     if (ntree <= 0 || ntree %% 1 != 0) {
       stop("ntree must be a positive integer.")
     }
@@ -671,9 +659,7 @@ setMethod(
 )
 
 
-#################
-### Auto-Tune ###
-#################
+# -- Auto-Tune -----------------------------------------------------------------
 #' @title autohonestRF-honestRF
 #' @name autohonestRF-honestRF
 #' @rdname autohonestRF-honestRF
@@ -690,17 +676,15 @@ setMethod(
 #' @param nthread Number of threads to train and predict the forest. The
 #' default number is 0 which represents using all cores.
 setGeneric(
-  name="autohonestRF",
-  def=function(
-    x,
-    y,
-    sampsize,
-    num_iter,
-    eta,
-    verbose,
-    seed,
-    nthread
-  ){
+  name = "autohonestRF",
+  def = function(x,
+                 y,
+                 sampsize,
+                 num_iter,
+                 eta,
+                 verbose,
+                 seed,
+                 nthread) {
     standardGeneric("autohonestRF")
   }
 )
@@ -735,7 +719,14 @@ autohonestRF <- function(x,
   }
 
   # Creat a dummy tree just to reuse its data.
-  dummy_tree <- honestRF(x, y, ntree=1, nodesizeSpl=nrow(x), nodesizeAvg=nrow(x))
+  dummy_tree <-
+    honestRF(
+      x,
+      y,
+      ntree = 1,
+      nodesizeSpl = nrow(x),
+      nodesizeAvg = nrow(x)
+    )
 
   # Number of unique executions of Successive Halving (minus one)
   s_max <- as.integer(log(num_iter) / log(eta))
@@ -821,7 +812,7 @@ autohonestRF <- function(x,
           sampsize = sampsize,
           nthread = nthread,
           middleSplit = allConfigs$middleSplit[j],
-          reuseHonestRF=dummy_tree
+          reuseHonestRF = dummy_tree
         )
       }, error = function(err) {
         val_models[[j]] <- NULL
@@ -874,9 +865,7 @@ autohonestRF <- function(x,
         #   print(paste(length(val_losses_idx$ix) - nrow(allConfigs),
         #               "configurations have been eliminated."))
         # }
-
       }
-
     }
     # End finite horizon successive halving with (n,r)
     if (!is.null(val_models[[1]])) {
@@ -915,5 +904,4 @@ autohonestRF <- function(x,
   }
 
   return(models[[model_losses_idx$ix[1]]])
-
 }

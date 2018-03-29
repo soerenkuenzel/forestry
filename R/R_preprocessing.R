@@ -1,15 +1,12 @@
-# ------------------------------------------------------------------------------
+# --header ---------------------------------------------------------------------
 # globally import the ability to create classes methods etc
-
 #' @import methods
 NULL
 # This is just here, because methods will be used in many places for creating
 # classes, methods etc etc.
 
 
-#-------------------------------------------------------------------------------
-# Methods for Preprocessing Data
-
+# -- Methods for Preprocessing Data --------------------------------------------
 #' @title preprocess_training
 #' @description Perform preprocessing for the training data, including
 #' converting data to dataframe, and encoding categorical data into numerical
