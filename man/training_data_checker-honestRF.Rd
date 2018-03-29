@@ -2,7 +2,7 @@
 % Please edit documentation in R/honestRF.R
 \name{training_data_checker}
 \alias{training_data_checker}
-\title{Check that the training data has the right formate}
+\title{Training data check}
 \usage{
 training_data_checker(x, y, ntree, replace, sampsize, mtry, nodesizeSpl,
   nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, splitratio, nthread,

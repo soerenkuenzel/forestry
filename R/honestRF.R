@@ -159,17 +159,12 @@ training_data_checker <- function(x,
   }
 }
 
-#' @title testing_data_checker-hoenstRF
+#' @title Test data check
 #' @name testing_data_checker-honestRF
-#' @rdname testing_data_checker-honestRF
 #' @description Check the testing data to do prediction
 #' @param feature.new A data frame of testing predictors.
-#' @export honestRF
-testing_data_checker <- function(
-  feature.new
-){
+testing_data_checker <- function(feature.new) {
   feature.new <- as.data.frame(feature.new)
-
   if (any(is.na(feature.new))) {
     stop("x contains missing data.")
   }

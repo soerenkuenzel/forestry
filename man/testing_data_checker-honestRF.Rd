@@ -3,7 +3,7 @@
 \name{testing_data_checker-honestRF}
 \alias{testing_data_checker-honestRF}
 \alias{testing_data_checker}
-\title{testing_data_checker-hoenstRF}
+\title{Test data check}
 \usage{
 testing_data_checker(feature.new)
 }
