@@ -6,10 +6,6 @@
 \title{autohonestRF-honestRF}
 \format{An object of class \code{NULL} of length 0.}
 \arguments{
-\item{x}{A data frame of all training predictors.}
-
-\item{y}{A vector of all training responses.}
-
 \item{sampsize}{The size of total samples to draw for the training data.}
 
 \item{num_iter}{Maximum iterations/epochs per configuration. Default is 1024.}
@@ -17,11 +13,6 @@
 \item{eta}{Downsampling rate. Default value is 2.}
 
 \item{verbose}{if tuning process in verbose mode}
-
-\item{seed}{random seed}
-
-\item{nthread}{Number of threads to train and predict the forest. The
-default number is 0 which represents using all cores.}
 }
 \description{
 Autotune a honestRF based on the input dataset. The methodology

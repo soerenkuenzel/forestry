@@ -3,7 +3,7 @@
 \docType{class}
 \name{honestRF-class}
 \alias{honestRF-class}
-\title{honestRF Constructor}
+\title{honestRF class}
 \description{
 `honestRF` object implementing the most basic version of
 a random forest.

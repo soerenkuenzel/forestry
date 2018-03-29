@@ -11,8 +11,7 @@ NULL
 #' @description Perform preprocessing for the training data, including
 #' converting data to dataframe, and encoding categorical data into numerical
 #' representation.
-#' @param x A data frame of all training predictors.
-#' @param y A vector of all training responses.
+#' @inheritParams honestRF
 #' @import plyr
 #' @return A list of two datasets along with necessary information that
 #' encoding the preprocessing.
@@ -75,7 +74,7 @@ preprocess_training <- function(x, y) {
 #' converting data to dataframe, and testing if the columns are consistent
 #' with the training data and encoding categorical data into numerical
 #' representation in the same way as training data.
-#' @param x A data frame of all training predictors.
+#' @inheritParams honestRF
 #' @param categoricalFeatureCols A list of index for all categorical data. Used
 #' for trees to detect categorical columns.
 #' @param categoricalFeatureMapping A list of encoding details for each

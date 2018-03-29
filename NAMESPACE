@@ -2,7 +2,6 @@
 
 export(autohonestRF)
 export(honestRF)
-exportClasses(honestRF)
 exportMethods(addTrees)
 exportMethods(getOOB)
 exportMethods(predict)

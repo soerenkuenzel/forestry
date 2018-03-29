@@ -171,9 +171,8 @@ testing_data_checker <- function(feature.new) {
 }
 
 # -- Honest Random Forest Constructor ------------------------------------------
-#' @title honestRF Constructor
+#' @title honestRF class
 #' @name honestRF-class
-#' @rdname honestRF-class
 #' @description `honestRF` object implementing the most basic version of
 #' a random forest.
 #' @slot forest An external pointer pointing to a C++ honestRF object
@@ -215,7 +214,6 @@ testing_data_checker <- function(feature.new) {
 #' @slot maxObs The max number of observations to split on (Default = nrows(y))
 #' @slot doubleTree if the number of tree is doubled as averaging and splitting
 #' data can be exchanged to create decorrelated trees. (Default = FALSE)
-#' @exportClass honestRF
 setClass(
   Class = "honestRF",
   slots = list(
@@ -322,7 +320,7 @@ setGeneric(
 
 #' @title honestRF-Constructor
 #' @rdname honestRF-honestRF
-#' @aliases honestRF,honestRF-method
+#' @aliases honestRF honestRF-method
 #' @importFrom Rcpp evalCpp
 #' @useDynLib forestry
 #' @return A `honestRF` object.
@@ -627,15 +625,11 @@ setMethod(
 #' @description Autotune a honestRF based on the input dataset. The methodology
 #' is based on paper `Hyperband: A Novel Bandit-Based Approach to
 #' Hyperparameter Optimization` by Lisha Li, et al.
-#' @param x A data frame of all training predictors.
-#' @param y A vector of all training responses.
+#' @inheritParams honestRF
 #' @param sampsize The size of total samples to draw for the training data.
 #' @param num_iter Maximum iterations/epochs per configuration. Default is 1024.
 #' @param eta Downsampling rate. Default value is 2.
 #' @param verbose if tuning process in verbose mode
-#' @param seed random seed
-#' @param nthread Number of threads to train and predict the forest. The
-#' default number is 0 which represents using all cores.
 setGeneric(
   name = "autohonestRF",
   def = function(x,
@@ -654,8 +648,7 @@ setGeneric(
 #' @description Autotune a honestRF based on the input dataset. The methodology
 #' is based on paper `Hyperband: A Novel Bandit-Based Approach to
 #' Hyperparameter Optimization` by Lisha Li, et al.
-#' @param x A data frame of all training predictors.
-#' @param y A vector of all training responses.
+#' @inheritParams honestRF
 #' @param sampsize The size of total samples to draw for the training data.
 #' @param num_iter Maximum iterations/epochs per configuration. Default is 1024.
 #' @param eta Downsampling rate. Default value is 2.

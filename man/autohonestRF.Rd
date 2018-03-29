@@ -13,7 +13,10 @@ autohonestRF(x, y, sampsize = as.integer(nrow(x) * 0.75), num_iter = 1024,
 
 \item{y}{A vector of all training responses.}
 
-\item{sampsize}{The size of total samples to draw for the training data.}
+\item{sampsize}{The size of total samples to draw for the training data. If
+sampling with replacement, the default value is the length of the training
+data. If samplying without replacement, the default value is two-third of
+the length of the training data.}
 
 \item{num_iter}{Maximum iterations/epochs per configuration. Default is 1024.}
 

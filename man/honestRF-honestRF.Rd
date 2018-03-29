@@ -4,7 +4,7 @@
 \name{honestRF-honestRF}
 \alias{honestRF-honestRF}
 \alias{honestRF}
-\alias{honestRF,honestRF-method}
+\alias{honestRF-method}
 \title{honestRF-Constructor}
 \format{An object of class \code{NULL} of length 0.}
 \usage{
