@@ -15,4 +15,6 @@ test_that("Tests that autotuning is working correctly", {
   y_pred <- predict(tuned_forest, x)
 
   expect_lt(mean((y_pred - y) ^ 2), .3)
+
+
 })

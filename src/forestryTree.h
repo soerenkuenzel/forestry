@@ -8,13 +8,13 @@
 #include "DataFrame.h"
 #include "RFNode.h"
 
-class honestRFTree {
+class forestryTree {
 
 public:
-  honestRFTree();
-  virtual ~honestRFTree();
+  forestryTree();
+  virtual ~forestryTree();
 
-  honestRFTree(
+  forestryTree(
     DataFrame* trainingData,
     size_t mtry,
     size_t minNodeSizeSpt,

@@ -5,15 +5,15 @@
 #include <vector>
 #include <string>
 #include "DataFrame.h"
-#include "honestRFTree.h"
+#include "forestryTree.h"
 
-class honestRF {
+class forestry {
 
 public:
-  honestRF();
-  virtual ~honestRF();
+  forestry();
+  virtual ~forestry();
 
-  honestRF(
+  forestry(
     DataFrame* trainingData,
     size_t ntree,
     bool replace,
@@ -89,7 +89,7 @@ public:
     return _seed;
   }
 
-  std::vector< std::unique_ptr< honestRFTree > >* getForest() {
+  std::vector< std::unique_ptr< forestryTree > >* getForest() {
     return _forest.get();
   }
 
@@ -120,7 +120,7 @@ private:
   size_t _minNodeSizeAvg;
   size_t _minNodeSizeToSplitSpt;
   size_t _minNodeSizeToSplitAvg;
-  std::unique_ptr< std::vector< std::unique_ptr< honestRFTree > > > _forest;
+  std::unique_ptr< std::vector< std::unique_ptr< forestryTree > > > _forest;
   unsigned int _seed;
   bool _verbose;
   size_t _nthread;

@@ -1,9 +1,9 @@
 #-- Sanity Checker -------------------------------------------------------------
 #' @name training_data_checker
 #' @title Training data check
-#' @rdname training_data_checker-honestRF
-#' @description Check the input to honestRF constructor
-#' @inheritParams honestRF
+#' @rdname training_data_checker-forestry
+#' @description Check the input to forestry constructor
+#' @inheritParams forestry
 training_data_checker <- function(x,
                                   y,
                                   ntree,
@@ -160,7 +160,7 @@ training_data_checker <- function(x,
 }
 
 #' @title Test data check
-#' @name testing_data_checker-honestRF
+#' @name testing_data_checker-forestry
 #' @description Check the testing data to do prediction
 #' @param feature.new A data frame of testing predictors.
 testing_data_checker <- function(feature.new) {
@@ -170,12 +170,12 @@ testing_data_checker <- function(feature.new) {
   }
 }
 
-# -- Honest Random Forest Constructor ------------------------------------------
-#' @title honestRF class
-#' @name honestRF-class
-#' @description `honestRF` object implementing the most basic version of
+# -- Random Forest Constructor -------------------------------------------------
+#' @title forestry class
+#' @name forestry-class
+#' @description `forestry` object implementing the most basic version of
 #' a random forest.
-#' @slot forest An external pointer pointing to a C++ honestRF object
+#' @slot forest An external pointer pointing to a C++ forestry object
 #' @slot dataframe An external pointer pointing to a C++ DataFrame object
 #' @slot y A vector of all training responses.
 #' @slot categoricalFeatureCols A list of index for all categorical data. Used
@@ -215,7 +215,7 @@ testing_data_checker <- function(feature.new) {
 #' @slot doubleTree if the number of tree is doubled as averaging and splitting
 #' data can be exchanged to create decorrelated trees. (Default = FALSE)
 setClass(
-  Class = "honestRF",
+  Class = "forestry",
   slots = list(
     forest = "externalptr",
     dataframe = "externalptr",
@@ -237,10 +237,10 @@ setClass(
   )
 )
 
-#' @title honestRF-Constructor
-#' @name honestRF-honestRF
-#' @rdname honestRF-honestRF
-#' @description Initialize a `honestRF` object.
+#' @title forestry-Constructor
+#' @name forestry-forestry
+#' @rdname forestry-forestry
+#' @description Initialize a `forestry` object.
 #' @param x A data frame of all training predictors.
 #' @param y A vector of all training responses.
 #' @param ntree The number of trees to grow in the forest. The default value is
@@ -283,17 +283,17 @@ setClass(
 #' between two feature values. (Default = FALSE)
 #' @param doubleTree if the number of tree is doubled as averaging and splitting
 #' data can be exchanged to create decorrelated trees. (Default = FALSE)
-#' @param reuseHonestRF pass in an `honestRF` object which will recycle the
+#' @param reuseforestry pass in an `forestry` object which will recycle the
 #' dataframe the old object created. It will save some space working on the same
 #' dataset.
 #' @param maxObs The max number of observations to split on
 #' @examples
 #' require(forestry)
-#' rf <- honestRF(x = iris[ ,-1], y = iris[ ,1])
+#' rf <- forestry(x = iris[ ,-1], y = iris[ ,1])
 #' predict(rf, feature.new = iris[ ,-1])
-#' @export honestRF
+#' @export forestry
 setGeneric(
-  name = "honestRF",
+  name = "forestry",
   def = function(x,
                  y,
                  ntree,
@@ -313,18 +313,18 @@ setGeneric(
                  middleSplit,
                  maxObs,
                  doubleTree,
-                 reuseHonestRF) {
-    standardGeneric("honestRF")
+                 reuseforestry) {
+    standardGeneric("forestry")
   }
 )
 
-#' @title honestRF-Constructor
-#' @rdname honestRF-honestRF
-#' @aliases honestRF honestRF-method
+#' @title forestry-Constructor
+#' @rdname forestry-forestry
+#' @aliases forestry forestry-method
 #' @importFrom Rcpp evalCpp
 #' @useDynLib forestry
-#' @return A `honestRF` object.
-honestRF <- function(x,
+#' @return A `forestry` object.
+forestry <- function(x,
                      y,
                      ntree = 500,
                      replace = TRUE,
@@ -346,7 +346,7 @@ honestRF <- function(x,
                      middleSplit = FALSE,
                      maxObs = length(y),
                      doubleTree = FALSE,
-                     reuseHonestRF = NULL) {
+                     reuseforestry = NULL) {
   # only if sample.fraction is given, update sampsize
   if (!is.null(sample.fraction))
     sampsize <- ceiling(sample.fraction * nrow(x))
@@ -360,7 +360,7 @@ honestRF <- function(x,
   nObservations <- length(y)
   numColumns <- ncol(x)
 
-  if (is.null(reuseHonestRF)) {
+  if (is.null(reuseforestry)) {
     preprocessedData <- preprocess_training(x, y)
     processed_x <- preprocessedData$x
     categoricalFeatureCols <- preprocessedData$categoricalFeatureCols
@@ -397,7 +397,7 @@ honestRF <- function(x,
       )
       return(
         new(
-          "honestRF",
+          "forestry",
           forest = rcppForest,
           dataframe = rcppDataFrame,
           categoricalFeatureCols = categoricalFeatureCols,
@@ -426,14 +426,14 @@ honestRF <- function(x,
 
 
     categoricalFeatureCols_cpp <-
-      unlist(reuseHonestRF@categoricalFeatureCols)
+      unlist(reuseforestry@categoricalFeatureCols)
     if (is.null(categoricalFeatureCols_cpp)) {
       categoricalFeatureCols_cpp <- vector(mode = "numeric", length = 0)
     } else {
       categoricalFeatureCols_cpp <- categoricalFeatureCols_cpp - 1
     }
 
-    categoricalFeatureMapping <- reuseHonestRF@categoricalFeatureMapping
+    categoricalFeatureMapping <- reuseforestry@categoricalFeatureMapping
 
     # Create rcpp object
     # Create a forest object
@@ -446,15 +446,15 @@ honestRF <- function(x,
         splitratio, nodesizeSpl, nodesizeAvg,
         nodesizeStrictSpl, nodesizeStrictAvg, seed,
         nthread, verbose, middleSplit, maxObs, doubleTree,
-        TRUE, reuseHonestRF@dataframe
+        TRUE, reuseforestry@dataframe
       )
 
       return(
         new(
-          "honestRF",
+          "forestry",
           forest = rcppForest,
-          dataframe = reuseHonestRF@dataframe,
-          categoricalFeatureCols = reuseHonestRF@categoricalFeatureCols,
+          dataframe = reuseforestry@dataframe,
+          categoricalFeatureCols = reuseforestry@categoricalFeatureCols,
           categoricalFeatureMapping = categoricalFeatureMapping,
           ntree = ntree * (doubleTree + 1),
           replace = replace,
@@ -482,18 +482,18 @@ honestRF <- function(x,
 
 
 # -- Predict Method ------------------------------------------------------------
-#' predict-honestRF
-#' @name predict-honestRF
-#' @rdname predict-honestRF
+#' predict-forestry
+#' @name predict-forestry
+#' @rdname predict-forestry
 #' @description Return the prediction from the forest.
-#' @param object A `honestRF` object.
+#' @param object A `forestry` object.
 #' @param feature.new A data frame of testing predictors.
 #' @return A vector of predicted responses.
-#' @aliases predict,honestRF-method
+#' @aliases predict,forestry-method
 #' @exportMethod predict
 setMethod(
   f = "predict",
-  signature = "honestRF",
+  signature = "forestry",
   definition = function(object,
                         feature.new) {
 
@@ -519,11 +519,11 @@ setMethod(
 
 
 # -- Calculate OOB Error -------------------------------------------------------
-#' @title getOOB-honestRF
-#' @name getOOB-honestRF
-#' @rdname getOOB-honestRF
+#' @title getOOB-forestry
+#' @name getOOB-forestry
+#' @rdname getOOB-forestry
 #' @description Calculate the out-of-bag error of a given forest.
-#' @param object A `honestRF` object.
+#' @param object A `forestry` object.
 #' @param noWarning flag to not display warnings
 #' @aliases getOOB
 setGeneric(
@@ -534,16 +534,16 @@ setGeneric(
   }
 )
 
-#' @title getOOB-honestRF
+#' @title getOOB-forestry
 #' @description Calculate the out-of-bag error of a given forest.
-#' @param object A `honestRF` object.
+#' @param object A `forestry` object.
 #' @param noWarning flag to not display warnings
-#' @aliases getOOB,honestRF-method
+#' @aliases getOOB,forestry-method
 #' @return The OOB error of the forest.
 #' @exportMethod getOOB
 setMethod(
   f="getOOB",
-  signature="honestRF",
+  signature="forestry",
   definition=function(
     object,
     noWarning
@@ -574,11 +574,11 @@ setMethod(
 
 
 # -- Add More Trees ------------------------------------------------------------
-#' @title addTrees-honestRF
-#' @name addTrees-honestRF
-#' @rdname addTrees-honestRF
+#' @title addTrees-forestry
+#' @name addTrees-forestry
+#' @rdname addTrees-forestry
 #' @description Add more trees to the existing forest.
-#' @param object A `honestRF` object.
+#' @param object A `forestry` object.
 #' @param ntree Number of new trees to add
 #' @aliases addTrees
 setGeneric(
@@ -589,16 +589,16 @@ setGeneric(
   }
 )
 
-#' @title addTrees-honestRF
+#' @title addTrees-forestry
 #' @description Add more trees to the existing forest.
-#' @param object A `honestRF` object.
+#' @param object A `forestry` object.
 #' @param ntree Number of new trees to add
-#' @aliases addTrees,honestRF-method
+#' @aliases addTrees,forestry-method
 #' @exportMethod addTrees
-#' @return A `honestRF` object
+#' @return A `forestry` object
 setMethod(
   f = "addTrees",
-  signature = "honestRF",
+  signature = "forestry",
   definition = function(object,
                         ntree) {
     if (ntree <= 0 || ntree %% 1 != 0) {
@@ -619,19 +619,19 @@ setMethod(
 
 
 # -- Auto-Tune -----------------------------------------------------------------
-#' @title autohonestRF-honestRF
-#' @name autohonestRF-honestRF
-#' @rdname autohonestRF-honestRF
-#' @description Autotune a honestRF based on the input dataset. The methodology
+#' @title autoforestry-forestry
+#' @name autoforestry-forestry
+#' @rdname autoforestry-forestry
+#' @description Autotune a forestry based on the input dataset. The methodology
 #' is based on paper `Hyperband: A Novel Bandit-Based Approach to
 #' Hyperparameter Optimization` by Lisha Li, et al.
-#' @inheritParams honestRF
+#' @inheritParams forestry
 #' @param sampsize The size of total samples to draw for the training data.
 #' @param num_iter Maximum iterations/epochs per configuration. Default is 1024.
 #' @param eta Downsampling rate. Default value is 2.
 #' @param verbose if tuning process in verbose mode
 setGeneric(
-  name = "autohonestRF",
+  name = "autoforestry",
   def = function(x,
                  y,
                  sampsize,
@@ -640,15 +640,15 @@ setGeneric(
                  verbose,
                  seed,
                  nthread) {
-    standardGeneric("autohonestRF")
+    standardGeneric("autoforestry")
   }
 )
 
-#' @title autohonestRF-honestRF
-#' @description Autotune a honestRF based on the input dataset. The methodology
+#' @title autoforestry-forestry
+#' @description Autotune a forestry based on the input dataset. The methodology
 #' is based on paper `Hyperband: A Novel Bandit-Based Approach to
 #' Hyperparameter Optimization` by Lisha Li, et al.
-#' @inheritParams honestRF
+#' @inheritParams forestry
 #' @param sampsize The size of total samples to draw for the training data.
 #' @param num_iter Maximum iterations/epochs per configuration. Default is 1024.
 #' @param eta Downsampling rate. Default value is 2.
@@ -656,11 +656,11 @@ setGeneric(
 #' @param seed random seed
 #' @param nthread Number of threads to train and predict theforest. The
 #' default number is 0 which represents using all cores.
-#' @aliases autohonestRF,honestRF-method
-#' @return A `honestRF` object
-#' @export autohonestRF
+#' @aliases autoforestry,forestry-method
+#' @return A `forestry` object
+#' @export autoforestry
 #' @import stats
-autohonestRF <- function(x,
+autoforestry <- function(x,
                          y,
                          sampsize = as.integer(nrow(x) * 0.75),
                          num_iter = 1024,
@@ -674,7 +674,7 @@ autohonestRF <- function(x,
 
   # Creat a dummy tree just to reuse its data.
   dummy_tree <-
-    honestRF(
+    forestry(
       x,
       y,
       ntree = 1,
@@ -754,7 +754,7 @@ autohonestRF <- function(x,
     r_old <- 1
     for (j in 1:nrow(allConfigs)) {
       tryCatch({
-        val_models[[j]] <- honestRF(
+        val_models[[j]] <- forestry(
           x = x,
           y = y,
           ntree = r_old,
@@ -766,7 +766,7 @@ autohonestRF <- function(x,
           sampsize = sampsize,
           nthread = nthread,
           middleSplit = allConfigs$middleSplit[j],
-          reuseHonestRF = dummy_tree
+          reuseforestry = dummy_tree
         )
       }, error = function(err) {
         val_models[[j]] <- NULL

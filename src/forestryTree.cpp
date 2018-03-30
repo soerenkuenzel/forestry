@@ -1,4 +1,4 @@
-#include "honestRFTree.h"
+#include "forestryTree.h"
 #include <math.h>
 #include <set>
 #include <map>
@@ -7,7 +7,7 @@
 #include "utils.h"
 // [[Rcpp::plugins(cpp11)]]
 
-honestRFTree::honestRFTree():
+forestryTree::forestryTree():
   _mtry(0),
   _minNodeSizeSpt(0),
   _minNodeSizeAvg(0),
@@ -17,9 +17,9 @@ honestRFTree::honestRFTree():
   _splittingSampleIndex(nullptr),
   _root(nullptr) {};
 
-honestRFTree::~honestRFTree() {};
+forestryTree::~forestryTree() {};
 
-honestRFTree::honestRFTree(
+forestryTree::forestryTree(
   DataFrame* trainingData,
   size_t mtry,
   size_t minNodeSizeSpt,
@@ -115,7 +115,7 @@ honestRFTree::honestRFTree(
   );
 }
 
-void honestRFTree::setDummyTree(
+void forestryTree::setDummyTree(
   size_t mtry,
   size_t minNodeSizeSpt,
   size_t minNodeSizeAvg,
@@ -133,7 +133,7 @@ void honestRFTree::setDummyTree(
   this->_splittingSampleIndex = std::move(splittingSampleIndex);
 }
 
-void honestRFTree::predict(
+void forestryTree::predict(
   std::vector<float> &outputPrediction,
   std::vector< std::vector<float> >* xNew,
   DataFrame* trainingData
@@ -246,7 +246,7 @@ void splitData(
 }
 
 
-void honestRFTree::recursivePartition(
+void forestryTree::recursivePartition(
     RFNode* rootNode,
     std::vector<size_t>* averagingSampleIndex,
     std::vector<size_t>* splittingSampleIndex,
@@ -841,7 +841,7 @@ void determineBestSplit(
 }
 
 
-void honestRFTree::selectBestFeature(
+void forestryTree::selectBestFeature(
   size_t &bestSplitFeature,
   long double &bestSplitValue,
   float &bestSplitLoss,
@@ -935,11 +935,11 @@ void honestRFTree::selectBestFeature(
 
 }
 
-void honestRFTree::printTree(){
+void forestryTree::printTree(){
   (*getRoot()).printSubtree();
 }
 
-void honestRFTree::getOOBindex(
+void forestryTree::getOOBindex(
     std::vector<size_t> &outputOOBIndex,
     size_t nRows
 ){
@@ -1000,7 +1000,7 @@ void honestRFTree::getOOBindex(
 
 }
 
-void honestRFTree::getOOBPrediction(
+void forestryTree::getOOBPrediction(
   std::vector<float> &outputOOBPrediction,
   std::vector<size_t> &outputOOBCount,
   DataFrame* trainingData

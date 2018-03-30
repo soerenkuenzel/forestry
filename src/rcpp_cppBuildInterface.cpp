@@ -1,16 +1,16 @@
 // [[Rcpp::plugins(cpp11)]]
 #include <Rcpp.h>
 #include "DataFrame.h"
-#include "honestRFTree.h"
+#include "forestryTree.h"
 #include "RFNode.h"
-#include "honestRF.h"
+#include "forestry.h"
 
-void freeHonestRF(
+void freeforestry(
   SEXP ptr
 ){
   if (NULL == R_ExternalPtrAddr(ptr))
     return;
-  honestRF* pm = (honestRF*)(R_ExternalPtrAddr(ptr));
+  forestry* pm = (forestry*)(R_ExternalPtrAddr(ptr));
   delete(pm);
   R_ClearExternalPtr(ptr);
 }
@@ -94,7 +94,7 @@ SEXP rcpp_cppBuildInterface(
     try {
       Rcpp::XPtr< DataFrame > trainingData(existing_dataframe) ;
 
-      honestRF* testFullForest = new honestRF(
+      forestry* testFullForest = new forestry(
         trainingData,
         (size_t) ntree,
         replace,
@@ -114,10 +114,10 @@ SEXP rcpp_cppBuildInterface(
       );
 
       // delete(testFullForest);
-      Rcpp::XPtr<honestRF> ptr(testFullForest, true) ;
+      Rcpp::XPtr<forestry> ptr(testFullForest, true) ;
       R_RegisterCFinalizerEx(
         ptr,
-        (R_CFinalizer_t) freeHonestRF,
+        (R_CFinalizer_t) freeforestry,
         (Rboolean) TRUE
       );
       return ptr;
@@ -156,7 +156,7 @@ SEXP rcpp_cppBuildInterface(
           (size_t) numColumns
       );
 
-      honestRF* testFullForest = new honestRF(
+      forestry* testFullForest = new forestry(
         trainingData,
         (size_t) ntree,
         replace,
@@ -176,10 +176,10 @@ SEXP rcpp_cppBuildInterface(
       );
 
       // delete(testFullForest);
-      Rcpp::XPtr<honestRF> ptr(testFullForest, true) ;
+      Rcpp::XPtr<forestry> ptr(testFullForest, true) ;
       R_RegisterCFinalizerEx(
         ptr,
-        (R_CFinalizer_t) freeHonestRF,
+        (R_CFinalizer_t) freeforestry,
         (Rboolean) TRUE
       );
       return ptr;
@@ -201,7 +201,7 @@ Rcpp::NumericVector rcpp_cppPredictInterface(
 
   try {
 
-    Rcpp::XPtr< honestRF > testFullForest(forest) ;
+    Rcpp::XPtr< forestry > testFullForest(forest) ;
 
     std::vector< std::vector<float> > featureData =
       Rcpp::as< std::vector< std::vector<float> > >(x);
@@ -232,7 +232,7 @@ float rcpp_OBBPredictInterface(
 ){
 
   try {
-    Rcpp::XPtr< honestRF > testFullForest(forest) ;
+    Rcpp::XPtr< forestry > testFullForest(forest) ;
     float OOBError = (*testFullForest).getOOBError();
     return OOBError;
   } catch(std::runtime_error const& err) {
@@ -268,7 +268,7 @@ void rcpp_AddTreeInterface(
     int ntree
 ){
   try {
-    Rcpp::XPtr< honestRF > testFullForest(forest) ;
+    Rcpp::XPtr< forestry > testFullForest(forest) ;
     (*testFullForest).addTrees(ntree);
   } catch(std::runtime_error const& err) {
     forward_exception_to_r(err);

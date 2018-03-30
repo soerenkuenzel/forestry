@@ -24,7 +24,8 @@ SystemRequirements: C++11
 Collate: 
     'R_preprocessing.R'
     'RcppExports.R'
-    'honestRF.R'
+    'forestry.R'
+    'backwards_compatible.R'
 Suggests:
     testthat,
     knitr,

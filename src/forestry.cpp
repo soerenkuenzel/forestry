@@ -1,27 +1,27 @@
-#include "honestRF.h"
+#include "forestry.h"
 #include <random>
 #include <thread>
 #include <mutex>
 #include "utils.h"
 #define DOPARELLEL true
 
-honestRF::honestRF():
+forestry::forestry():
   _trainingData(nullptr), _ntree(0), _replace(0), _sampSize(0),
   _splitRatio(0), _mtry(0), _minNodeSizeSpt(0), _minNodeSizeAvg(0),
   _minNodeSizeToSplitSpt(0), _minNodeSizeToSplitAvg(0), _forest(nullptr),
   _seed(0), _verbose(0), _nthread(0), _OOBError(0), _splitMiddle(0),
   _doubleTree(0){};
 
-honestRF::~honestRF(){
-//  for (std::vector<honestRFTree*>::iterator it = (*_forest).begin();
+forestry::~forestry(){
+//  for (std::vector<forestryTree*>::iterator it = (*_forest).begin();
 //       it != (*_forest).end();
 //       ++it) {
 //    delete(*it);
 //  }
-//  std::cout << "honestRF() destructor is called." << std::endl;
+//  std::cout << "forestry() destructor is called." << std::endl;
 };
 
-honestRF::honestRF(
+forestry::forestry(
   DataFrame* trainingData,
   size_t ntree,
   bool replace,
@@ -75,8 +75,8 @@ honestRF::honestRF(
     throw std::runtime_error("splitRatio too big or too small.");
   }
 
-  std::unique_ptr< std::vector< std::unique_ptr< honestRFTree > > > forest (
-    new std::vector< std::unique_ptr< honestRFTree > >
+  std::unique_ptr< std::vector< std::unique_ptr< forestryTree > > > forest (
+    new std::vector< std::unique_ptr< forestryTree > >
   );
   this->_forest = std::move(forest);
 
@@ -84,7 +84,7 @@ honestRF::honestRF(
   addTrees(ntree);
 }
 
-void honestRF::addTrees(size_t ntree) {
+void forestry::addTrees(size_t ntree) {
 
   int newStartingTreeNumber = (int) getNtree();
   int newEndingTreeNumber = newStartingTreeNumber + (int) ntree;
@@ -203,8 +203,8 @@ void honestRF::addTrees(size_t ntree) {
           }
 
           try{
-            honestRFTree *oneTree(
-              new honestRFTree(
+            forestryTree *oneTree(
+              new forestryTree(
                 getTrainingData(),
                 getMtry(),
                 getMinNodeSizeSpt(),
@@ -219,10 +219,10 @@ void honestRF::addTrees(size_t ntree) {
               )
             );
 
-            honestRFTree *anotherTree;
+            forestryTree *anotherTree;
             if (_doubleTree) {
               anotherTree =
-                new honestRFTree(
+                new forestryTree(
                     getTrainingData(),
                     getMtry(),
                     getMinNodeSizeSpt(),
@@ -278,7 +278,7 @@ void honestRF::addTrees(size_t ntree) {
   #endif
 }
 
-std::unique_ptr< std::vector<float> > honestRF::predict(
+std::unique_ptr< std::vector<float> > forestry::predict(
   std::vector< std::vector<float> >* xNew
 ){
 
@@ -318,7 +318,7 @@ std::unique_ptr< std::vector<float> > honestRF::predict(
   #endif
           try {
             std::vector<float> currentTreePrediction(numObservations);
-            honestRFTree *currentTree = (*getForest())[i].get();
+            forestryTree *currentTree = (*getForest())[i].get();
             (*currentTree).predict(
               currentTreePrediction,
               xNew,
@@ -366,7 +366,7 @@ std::unique_ptr< std::vector<float> > honestRF::predict(
   return prediction_;
 }
 
-void honestRF::calculateOOBError() {
+void forestry::calculateOOBError() {
 
   size_t numObservations = getTrainingData()->getNumRows();
 
@@ -411,7 +411,7 @@ void honestRF::calculateOOBError() {
               outputOOBPrediction_iteration[j] = 0;
               outputOOBCount_iteration[j] = 0;
             }
-            honestRFTree *currentTree = (*getForest())[i].get();
+            forestryTree *currentTree = (*getForest())[i].get();
             (*currentTree).getOOBPrediction(
               outputOOBPrediction_iteration,
               outputOOBCount_iteration,
