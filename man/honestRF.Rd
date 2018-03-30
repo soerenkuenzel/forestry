@@ -6,6 +6,9 @@
 \usage{
 honestRF(...)
 }
+\arguments{
+\item{...}{parameters which are passed directly to `forestry`}
+}
 \description{
 This function is deprecated and only exists for backwards
 backwards compatibility. The function you want to use is `forestry`.
