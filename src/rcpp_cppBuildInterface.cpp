@@ -196,9 +196,9 @@ SEXP rcpp_cppBuildInterface(
 // [[Rcpp::export]]
 Rcpp::NumericVector rcpp_cppPredictInterface(
   SEXP forest,
-  Rcpp::List x
+  Rcpp::List x,
+  std::string aggregation
 ){
-
   try {
 
     Rcpp::XPtr< forestry > testFullForest(forest) ;
@@ -207,7 +207,7 @@ Rcpp::NumericVector rcpp_cppPredictInterface(
       Rcpp::as< std::vector< std::vector<float> > >(x);
 
     std::unique_ptr< std::vector<float> > testForestPrediction (
-      (*testFullForest).predict(&featureData)
+      (*testFullForest).predict(&featureData, aggregation)
     );
 
     std::vector<float>* testForestPrediction_ =

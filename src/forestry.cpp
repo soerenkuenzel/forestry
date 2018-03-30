@@ -279,9 +279,9 @@ void forestry::addTrees(size_t ntree) {
 }
 
 std::unique_ptr< std::vector<float> > forestry::predict(
-  std::vector< std::vector<float> >* xNew
+  std::vector< std::vector<float> >* xNew,
+  std::string aggregation
 ){
-
   std::vector<float> prediction;
   size_t numObservations = (*xNew)[0].size();
   for (size_t j=0; j<numObservations; j++) {
@@ -322,7 +322,8 @@ std::unique_ptr< std::vector<float> > forestry::predict(
             (*currentTree).predict(
               currentTreePrediction,
               xNew,
-              getTrainingData()
+              getTrainingData(),
+              aggregation
             );
 
             #if DOPARELLEL

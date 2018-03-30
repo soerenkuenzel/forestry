@@ -42,7 +42,8 @@ public:
   void predict(
     std::vector<float> &outputPrediction,
     std::vector< std::vector<float> >* xNew,
-    DataFrame* trainingData
+    DataFrame* trainingData,
+    std::string aggregation = "average"
   );
 
   void recursivePartition(

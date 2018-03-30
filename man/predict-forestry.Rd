@@ -6,12 +6,15 @@
 \alias{predict,forestry-method}
 \title{predict-forestry}
 \usage{
-\S4method{predict}{forestry}(object, feature.new)
+\S4method{predict}{forestry}(object, feature.new, aggregation = "average")
 }
 \arguments{
 \item{object}{A `forestry` object.}
 
 \item{feature.new}{A data frame of testing predictors.}
+
+\item{aggregation}{How shall the leaf be aggregated. The default is to return
+the mean of the leave `average`. Other options are `weightmatrix`.}
 }
 \value{
 A vector of predicted responses.

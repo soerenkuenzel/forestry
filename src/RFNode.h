@@ -33,6 +33,13 @@ public:
     DataFrame* trainingData
   );
 
+  void get_idx_in_leaf(
+      std::vector<float> &outputPrediction,
+      std::vector<size_t>* updateIndex,
+      std::vector< std::vector<float> >* xNew,
+      DataFrame* trainingData
+  );
+
   bool is_leaf();
 
   void printSubtree(int indentSpace=0);

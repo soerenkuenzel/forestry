@@ -33,7 +33,8 @@ public:
   );
 
   std::unique_ptr< std::vector<float> > predict(
-    std::vector< std::vector<float> >* xNew
+    std::vector< std::vector<float> >* xNew,
+    std::string aggregation = "average"
   );
 
   void calculateOOBError();
