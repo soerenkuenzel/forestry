@@ -1,6 +1,6 @@
 # We are making sure here that RF is backwards compatible
 
-
+#' @include forestry.R
 # -- honestRF ------------------------------------------------------------------
 #' @title Honest Random Forest
 #' @description This function is deprecated and only exists for backwards

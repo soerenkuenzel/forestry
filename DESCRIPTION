@@ -21,13 +21,13 @@ Imports:
 LinkingTo: Rcpp
 RoxygenNote: 6.0.1
 SystemRequirements: C++11
-Collate: 
-    'R_preprocessing.R'
-    'RcppExports.R'
-    'forestry.R'
-    'backwards_compatible.R'
 Suggests:
     testthat,
     knitr,
     rmarkdown
 VignetteBuilder: knitr
+Collate: 
+    'R_preprocessing.R'
+    'RcppExports.R'
+    'forestry.R'
+    'backwards_compatible.R'

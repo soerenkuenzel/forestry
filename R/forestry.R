@@ -1,3 +1,4 @@
+#' @include R_preprocessing.R
 #-- Sanity Checker -------------------------------------------------------------
 #' @name training_data_checker
 #' @title Training data check
