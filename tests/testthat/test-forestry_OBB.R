@@ -1,12 +1,12 @@
 test_that("Tests if OOB calculation is working correctly", {
   x <- iris[, -1]
   y <- iris[, 1]
-
+  context('OOB calculation')
   # Set seed for reproductivity
   set.seed(24750371)
 
-  # Test honestRF (mimic RF)
-  forest <- honestRF(
+  # Test forestry (mimic RF)
+  forest <- forestry(
     x,
     y,
     ntree = 500,
@@ -24,7 +24,7 @@ test_that("Tests if OOB calculation is working correctly", {
   expect_lt(mean((getOOB(forest) - 15.79849)^2), .1)
 
   # Test a very extreme setting
-  forest <- honestRF(
+  forest <- forestry(
     x,
     y,
     ntree = 500,
