@@ -556,7 +556,8 @@ setMethod(
         object@ntree * (rcpp_getObservationSizeInterface(object@dataframe) -
                         object@sampsize) < 10) {
       if (!noWarning) {
-        warning("Samples are drawn without replacement and sample size is too big!")
+        warning(paste("Samples are drawn without replacement and sample size",
+                      "is too big!"))
       }
       return(NA)
     }
