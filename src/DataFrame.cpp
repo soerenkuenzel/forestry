@@ -1,7 +1,7 @@
 #include "DataFrame.h"
 
 DataFrame::DataFrame():
-  _featureData(nullptr), _outcomeData(nullptr),
+  _featureData(nullptr), _outcomeData(nullptr), _rowNumbers(nullptr),
   _categoricalFeatureCols(nullptr), _numRows(0), _numColumns(0) {}
 
 DataFrame::~DataFrame() {
@@ -20,6 +20,15 @@ DataFrame::DataFrame(
   this->_categoricalFeatureCols = std::move(categoricalFeatureCols);
   this->_numRows = numRows;
   this->_numColumns = numColumns;
+
+  // define the row numbers to be the numbers from 1 to nrow:
+  std::vector<size_t> rowNumberss;
+  for(size_t j=0; j<numRows; j++){
+    rowNumberss.push_back(j+1);
+  }
+  std::unique_ptr< std::vector<size_t> > rowNumbers (
+      new std::vector<size_t>(rowNumberss));
+  this->_rowNumbers = std::move(rowNumbers);
 }
 
 float DataFrame::getPoint(size_t rowIndex, size_t colIndex) {
@@ -76,4 +85,42 @@ float DataFrame::partitionMean(
     accummulatedSum += getOutcomePoint(*it);
   }
   return accummulatedSum / totalSampleSize;
+}
+
+//
+size_t DataFrame::get_all_row_idx(
+    std::vector<size_t>* sampleIndex
+){
+  size_t last_idx;
+  for (
+      std::vector<size_t>::iterator it = (*sampleIndex).begin();
+      it != (*sampleIndex).end();
+      ++it
+  ) {
+    last_idx = get_row_idx(*it);
+  }
+  return last_idx;
+}
+
+// std::vector<size_t>* DataFrame::get_all_row_idx(
+//     std::vector<size_t>* sampleIndex
+// ){
+//   std::vector<size_t> idx;
+//   for (
+//       std::vector<size_t>::iterator it = (*sampleIndex).begin();
+//       it != (*sampleIndex).end();
+//       ++it
+//   ) {
+//     idx.push_back(get_row_idx(*it));
+//   }
+//   return &idx;
+// }
+
+size_t DataFrame::get_row_idx(size_t rowIndex) {
+  // Check if rowIndex is valid
+  if (rowIndex < getNumRows()) {
+    return (*getRowNumbers())[rowIndex];
+  } else {
+    throw std::runtime_error("rowIndex is too large");
+  }
 }

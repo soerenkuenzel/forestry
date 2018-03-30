@@ -10,7 +10,7 @@ test_that("Tests that random forest is working correctly", {
   forest <- forestry(
     x,
     y,
-    ntree = 500,
+    ntree = 5,
     replace = TRUE,
     sample.fraction = .8,
     mtry = 3,
@@ -22,10 +22,10 @@ test_that("Tests that random forest is working correctly", {
   )
 
   # Test predict
-  y_pred <- predict(forest, x, aggregation = 'indices')
-  y_pred <- predict(forest, x)
+  y_pred <- predict(forest, x[1:5,], aggregation = 'indices')
+  y_pred <- predict(forest, x[1:5,])
 
   # Mean Square Error
-  sum((y_pred - y) ^ 2)
-  expect_equal(sum((y_pred - y) ^ 2), 9.736449, tolerance = 1e-6)
+  sum((y_pred - y[1:5]) ^ 2)
+  expect_equal(sum((y_pred - y[1:5]) ^ 2), 0.1891317, tolerance = 1e-6)
 })

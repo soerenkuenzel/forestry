@@ -21,7 +21,9 @@ void RFNode::get_idx_in_leaf(
     ) {
       outputPrediction[*it] = predictedMean - 1;
     }
-
+    std::cout << (*trainingData).getNumRows() << " > ";
+    std::cout << (*trainingData).get_all_row_idx(getAveragingIndex()) << "\n";
+    // (*trainingData).get_row_idx(getAveragingIndex())
   } else {
 
     // Separate prediction tasks to two children
