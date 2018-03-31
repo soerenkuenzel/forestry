@@ -31,7 +31,8 @@ public:
     std::vector<float> &outputPrediction,
     std::vector<size_t>* updateIndex,
     std::vector< std::vector<float> >* xNew,
-    DataFrame* trainingData
+    DataFrame* trainingData,
+    Eigen::MatrixXf* weightMatrix
   );
 
   void get_idx_in_leaf(

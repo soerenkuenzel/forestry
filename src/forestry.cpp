@@ -281,8 +281,7 @@ void forestry::addTrees(size_t ntree) {
 
 std::unique_ptr< std::vector<float> > forestry::predict(
   std::vector< std::vector<float> >* xNew,
-  Eigen::MatrixXf* weightMatrix,
-  std::string aggregation
+  Eigen::MatrixXf* weightMatrix
 ){
   std::vector<float> prediction;
   size_t numObservations = (*xNew)[0].size();
@@ -325,8 +324,7 @@ std::unique_ptr< std::vector<float> > forestry::predict(
               currentTreePrediction,
               xNew,
               getTrainingData(),
-              weightMatrix,
-              aggregation
+              weightMatrix
             );
 
             #if DOPARELLEL
@@ -366,6 +364,20 @@ std::unique_ptr< std::vector<float> > forestry::predict(
   std::unique_ptr< std::vector<float> > prediction_ (
     new std::vector<float>(prediction)
   );
+
+
+  // If we also update the weight matrix, we now have to divide every entry
+  // by the number of trees:
+
+  if (weightMatrix) {
+    size_t nrow = (*xNew)[0].size(); // number of features to be predicted
+    size_t ncol = getNtrain(); // number of train data
+    for ( size_t i = 0; i < nrow; i++){
+      for (size_t j = 0; j < ncol; j++){
+        (*weightMatrix)(i,j) /= _ntree;
+      }
+    }
+  }
 
   return prediction_;
 }

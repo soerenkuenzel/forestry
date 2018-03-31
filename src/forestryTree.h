@@ -44,8 +44,7 @@ public:
     std::vector<float> &outputPrediction,
     std::vector< std::vector<float> >* xNew,
     DataFrame* trainingData,
-    Eigen::MatrixXf* weightMatrix = NULL,
-    std::string aggregation = "average"
+    Eigen::MatrixXf* weightMatrix = NULL
   );
 
   void recursivePartition(

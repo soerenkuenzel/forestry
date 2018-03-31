@@ -1,3 +1,4 @@
+library(testthat)
 test_that("Tests that random forest is working correctly", {
   x <- iris[, -1]
   y <- iris[, 1]
@@ -10,7 +11,7 @@ test_that("Tests that random forest is working correctly", {
   forest <- forestry(
     x,
     y,
-    ntree = 5,
+    ntree = 500,
     replace = TRUE,
     sample.fraction = .8,
     mtry = 3,
@@ -22,11 +23,20 @@ test_that("Tests that random forest is working correctly", {
   )
 
   # Test predict
-  (weight_matrix <- predict(forest, x[1:10,], aggregation = 'weightmatrix'))
+  full_predicitons <- predict(forest, x[1:10,], aggregation = 'weightmatrix')
+  y_pred <- predict(forest, x[1:10,])
+  expect_equal(full_predicitons$predictions, y_pred)
 
-  cbind(weight_matrix %*% as.matrix(y) / 5, (y_pred <- predict(forest, x[1:10,])))
+  expect_equal(full_predicitons$weightMatrix %*% as.matrix(y),
+               as.matrix(y_pred), tolerance = 1e-5)
 
-  # Mean Square Error
-  sum((y_pred - y[1:5]) ^ 2)
-  expect_equal(sum((y_pred - y[1:5]) ^ 2), 0.1891317, tolerance = 1e-6)
+  full_predicitons <- predict(forest, x, aggregation = 'weightmatrix')
+  y_pred <- predict(forest, x)
+  expect_equal(full_predicitons$predictions, y_pred)
+
+  expect_equal(full_predicitons$weightMatrix %*% as.matrix(y),
+               as.matrix(y_pred), tolerance = 1e-5)
+
+
+
 })

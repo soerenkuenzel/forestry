@@ -207,6 +207,7 @@ Rcpp::List rcpp_cppPredictInterface(
     std::vector< std::vector<float> > featureData =
       Rcpp::as< std::vector< std::vector<float> > >(x);
 
+    std::unique_ptr< std::vector<float> > testForestPrediction;
     // We always initialize the weightMatrix. If the aggregation is weightmatrix
     // then we inialize the empty weight matrix
     Eigen::MatrixXf weightMatrix;
@@ -215,11 +216,13 @@ Rcpp::List rcpp_cppPredictInterface(
       size_t ncol = (*testFullForest).getNtrain(); // number of train data
       weightMatrix.resize(nrow, ncol); // initialize the space for the matrix
       weightMatrix = Eigen::MatrixXf::Zero(nrow, ncol); // set it all to 0
-    }
 
-    std::unique_ptr< std::vector<float> > testForestPrediction (
-        (*testFullForest).predict(&featureData, &weightMatrix, aggregation)
-    );
+      // The idea is that, if the weightMatrix is point to NULL it won't be
+      // be updated, but otherwise it will be updated:
+      testForestPrediction = (*testFullForest).predict(&featureData, &weightMatrix);
+    } else {
+      testForestPrediction = (*testFullForest).predict(&featureData, NULL);
+    }
 
     std::vector<float>* testForestPrediction_ =
       new std::vector<float>(*testForestPrediction.get());

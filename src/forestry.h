@@ -35,8 +35,7 @@ public:
 
   std::unique_ptr< std::vector<float> > predict(
     std::vector< std::vector<float> >* xNew,
-    Eigen::MatrixXf* weightMatrix,
-    std::string aggregation = "average"
+    Eigen::MatrixXf* weightMatrix
   );
 
   void calculateOOBError();

@@ -517,7 +517,7 @@ setMethod(
     if (aggregation == "average") {
       return(rcppPrediction$prediction)
     } else if (aggregation == "weightmatrix") {
-      return(rcppPrediction$weightMatrix)
+      return(rcppPrediction)
     }
   }
 )

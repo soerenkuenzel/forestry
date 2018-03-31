@@ -138,11 +138,8 @@ void forestryTree::predict(
   std::vector<float> &outputPrediction,
   std::vector< std::vector<float> >* xNew,
   DataFrame* trainingData,
-  Eigen::MatrixXf* weightMatrix,
-  std::string aggregation
+  Eigen::MatrixXf* weightMatrix
 ){
-
-  if (aggregation == "average") {
     // If we are estimating the average in each leaf:
     struct rangeGenerator {
       size_t currentNumber;
@@ -153,27 +150,7 @@ void forestryTree::predict(
     std::vector<size_t> updateIndex(outputPrediction.size());
     rangeGenerator _rangeGenerator(0);
     std::generate(updateIndex.begin(), updateIndex.end(), _rangeGenerator);
-    (*getRoot()).predict(outputPrediction, &updateIndex, xNew, trainingData);
-
-  } else if (aggregation == "weightmatrix") {
-
-    // std::cout << "It is test";
-    struct rangeGenerator {
-      size_t currentNumber;
-      rangeGenerator(size_t startNumber): currentNumber(startNumber) {};
-      size_t operator()() {return currentNumber++; }
-    };
-
-    std::vector<size_t> updateIndex(outputPrediction.size());
-    rangeGenerator _rangeGenerator(0);
-    std::generate(updateIndex.begin(), updateIndex.end(), _rangeGenerator);
-    (*getRoot()).get_idx_in_leaf(outputPrediction, &updateIndex, xNew, trainingData, weightMatrix);
-
-  } else {
-
-    std::cout << "It is unknown";
-  }
-
+    (*getRoot()).predict(outputPrediction, &updateIndex, xNew, trainingData, weightMatrix);
 }
 
 
