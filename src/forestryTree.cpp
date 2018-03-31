@@ -1,4 +1,5 @@
 #include "forestryTree.h"
+#include <RcppEigen.h>
 #include <math.h>
 #include <set>
 #include <map>
@@ -136,19 +137,22 @@ void forestryTree::setDummyTree(
 void forestryTree::predict(
   std::vector<float> &outputPrediction,
   std::vector< std::vector<float> >* xNew,
-  DataFrame* trainingData
+  DataFrame* trainingData,
+  Eigen::MatrixXf* weightMatrix,
+  std::mutex* threadLock
 ){
+    // If we are estimating the average in each leaf:
+    struct rangeGenerator {
+      size_t currentNumber;
+      rangeGenerator(size_t startNumber): currentNumber(startNumber) {};
+      size_t operator()() {return currentNumber++; }
+    };
 
-  struct rangeGenerator {
-    size_t currentNumber;
-    rangeGenerator(size_t startNumber): currentNumber(startNumber) {};
-    size_t operator()() {return currentNumber++; }
-  };
-
-  std::vector<size_t> updateIndex(outputPrediction.size());
-  rangeGenerator _rangeGenerator(0);
-  std::generate(updateIndex.begin(), updateIndex.end(), _rangeGenerator);
-  (*getRoot()).predict(outputPrediction, &updateIndex, xNew, trainingData);
+    std::vector<size_t> updateIndex(outputPrediction.size());
+    rangeGenerator _rangeGenerator(0);
+    std::generate(updateIndex.begin(), updateIndex.end(), _rangeGenerator);
+    (*getRoot()).predict(outputPrediction, &updateIndex, xNew, trainingData,
+                         weightMatrix, threadLock);
 }
 
 

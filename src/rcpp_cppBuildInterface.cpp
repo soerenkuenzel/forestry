@@ -1,5 +1,6 @@
 // [[Rcpp::plugins(cpp11)]]
 #include <Rcpp.h>
+#include <RcppEigen.h>
 #include "DataFrame.h"
 #include "forestryTree.h"
 #include "RFNode.h"
@@ -194,11 +195,11 @@ SEXP rcpp_cppBuildInterface(
 }
 
 // [[Rcpp::export]]
-Rcpp::NumericVector rcpp_cppPredictInterface(
+Rcpp::List rcpp_cppPredictInterface(
   SEXP forest,
-  Rcpp::List x
+  Rcpp::List x,
+  std::string aggregation
 ){
-
   try {
 
     Rcpp::XPtr< forestry > testFullForest(forest) ;
@@ -206,16 +207,32 @@ Rcpp::NumericVector rcpp_cppPredictInterface(
     std::vector< std::vector<float> > featureData =
       Rcpp::as< std::vector< std::vector<float> > >(x);
 
-    std::unique_ptr< std::vector<float> > testForestPrediction (
-      (*testFullForest).predict(&featureData)
-    );
+    std::unique_ptr< std::vector<float> > testForestPrediction;
+    // We always initialize the weightMatrix. If the aggregation is weightmatrix
+    // then we inialize the empty weight matrix
+    Eigen::MatrixXf weightMatrix;
+    if(aggregation == "weightmatrix") {
+      size_t nrow = featureData[0].size(); // number of features to be predicted
+      size_t ncol = (*testFullForest).getNtrain(); // number of train data
+      weightMatrix.resize(nrow, ncol); // initialize the space for the matrix
+      weightMatrix = Eigen::MatrixXf::Zero(nrow, ncol); // set it all to 0
+
+      // The idea is that, if the weightMatrix is point to NULL it won't be
+      // be updated, but otherwise it will be updated:
+      testForestPrediction = (*testFullForest).predict(&featureData, &weightMatrix);
+    } else {
+      testForestPrediction = (*testFullForest).predict(&featureData, NULL);
+    }
 
     std::vector<float>* testForestPrediction_ =
       new std::vector<float>(*testForestPrediction.get());
 
-    Rcpp::NumericVector output = Rcpp::wrap(*testForestPrediction_);
+    Rcpp::NumericVector predictions = Rcpp::wrap(*testForestPrediction_);
 
-    return output;
+    return Rcpp::List::create(Rcpp::Named("predictions") = predictions,
+                              Rcpp::Named("weightMatrix") = weightMatrix);
+
+    // return output;
 
   } catch(std::runtime_error const& err) {
     forward_exception_to_r(err);

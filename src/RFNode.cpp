@@ -1,4 +1,5 @@
 #include "RFNode.h"
+#include <RcppEigen.h>
 
 RFNode::RFNode():
   _averagingSampleIndex(nullptr), _splittingSampleIndex(nullptr),
@@ -48,7 +49,9 @@ void RFNode::predict(
   std::vector<float> &outputPrediction,
   std::vector<size_t>* updateIndex,
   std::vector< std::vector<float> >* xNew,
-  DataFrame* trainingData
+  DataFrame* trainingData,
+  Eigen::MatrixXf* weightMatrix,
+  std::mutex* threadLock
 ) {
 
   // If the node is a leaf, aggregate all its averaging data samples
@@ -64,6 +67,24 @@ void RFNode::predict(
       ++it
     ) {
       outputPrediction[*it] = predictedMean;
+    }
+
+    if(weightMatrix){
+      // If weightMatrix is not a NULL pointer, then we want to update it,
+      // because we have choosen aggregation = "weightmatrix".
+      std::vector<size_t> idx_in_leaf =
+        (*trainingData).get_all_row_idx(getAveragingIndex());
+      // The following will lock the access to weightMatrix
+      std::lock_guard<std::mutex> lock(*threadLock);
+      for (
+          std::vector<size_t>::iterator it = (*updateIndex).begin();
+          it != (*updateIndex).end();
+          ++it ) {
+        for (size_t i = 0; i<idx_in_leaf.size(); i++) {
+          (*weightMatrix)(*it, idx_in_leaf[i] - 1) +=
+                        (double) 1.0 / idx_in_leaf.size();
+        }
+      }
     }
 
   } else {
@@ -119,7 +140,9 @@ void RFNode::predict(
         outputPrediction,
         leftPartitionIndex,
         xNew,
-        trainingData
+        trainingData,
+        weightMatrix,
+        threadLock
       );
     }
     if ((*rightPartitionIndex).size() > 0) {
@@ -127,7 +150,9 @@ void RFNode::predict(
         outputPrediction,
         rightPartitionIndex,
         xNew,
-        trainingData
+        trainingData,
+        weightMatrix,
+        threadLock
       );
     }
 

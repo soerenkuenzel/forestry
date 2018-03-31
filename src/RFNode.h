@@ -1,6 +1,7 @@
 #ifndef FORESTRYCPP_RFNODE_H
 #define FORESTRYCPP_RFNODE_H
 
+#include <RcppEigen.h>
 #include <iostream>
 #include <vector>
 #include <string>
@@ -30,7 +31,9 @@ public:
     std::vector<float> &outputPrediction,
     std::vector<size_t>* updateIndex,
     std::vector< std::vector<float> >* xNew,
-    DataFrame* trainingData
+    DataFrame* trainingData,
+    Eigen::MatrixXf* weightMatrix,
+    std::mutex* threadLock
   );
 
   bool is_leaf();

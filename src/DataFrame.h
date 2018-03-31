@@ -51,9 +51,18 @@ public:
     return _categoricalFeatureCols.get();
   }
 
+  std::vector<size_t>* getRowNumbers() {
+    return _rowNumbers.get();
+  }
+
+  std::vector<size_t> get_all_row_idx(std::vector<size_t>* sampleIndex);
+
+  size_t get_row_idx(size_t rowIndex);
+
 private:
   std::unique_ptr< std::vector< std::vector<float> > > _featureData;
   std::unique_ptr< std::vector<float> > _outcomeData;
+  std::unique_ptr< std::vector<size_t> > _rowNumbers;
   std::unique_ptr< std::vector<size_t> > _categoricalFeatureCols;
   std::size_t _numRows;
   std::size_t _numColumns;

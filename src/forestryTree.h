@@ -1,6 +1,7 @@
 #ifndef HTECPP_RFTREE_H
 #define HTECPP_RFTREE_H
 
+#include <RcppEigen.h>
 #include <iostream>
 #include <vector>
 #include <string>
@@ -42,7 +43,9 @@ public:
   void predict(
     std::vector<float> &outputPrediction,
     std::vector< std::vector<float> >* xNew,
-    DataFrame* trainingData
+    DataFrame* trainingData,
+    Eigen::MatrixXf* weightMatrix = NULL,
+    std::mutex* threadLock = NULL
   );
 
   void recursivePartition(

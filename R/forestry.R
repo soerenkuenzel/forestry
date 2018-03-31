@@ -489,6 +489,8 @@ forestry <- function(x,
 #' @description Return the prediction from the forest.
 #' @param object A `forestry` object.
 #' @param feature.new A data frame of testing predictors.
+#' @param aggregation How shall the leaf be aggregated. The default is to return
+#' the mean of the leave `average`. Other options are `weightmatrix`.
 #' @return A vector of predicted responses.
 #' @aliases predict,forestry-method
 #' @exportMethod predict
@@ -496,25 +498,27 @@ setMethod(
   f = "predict",
   signature = "forestry",
   definition = function(object,
-                        feature.new) {
-
+                        feature.new,
+                        aggregation = "average") {
     # Preprocess the data
     testing_data_checker(feature.new)
 
-    processed_x <- preprocess_testing(
-      feature.new,
-      object@categoricalFeatureCols,
-      object@categoricalFeatureMapping
-    )
+    processed_x <- preprocess_testing(feature.new,
+                                      object@categoricalFeatureCols,
+                                      object@categoricalFeatureMapping)
 
     rcppPrediction <- tryCatch({
-      return(rcpp_cppPredictInterface(object@forest, processed_x))
+      rcpp_cppPredictInterface(object@forest, processed_x, aggregation)
     }, error = function(err) {
       print(err)
       return(NULL)
     })
 
-    return(rcppPrediction)
+    if (aggregation == "average") {
+      return(rcppPrediction$prediction)
+    } else if (aggregation == "weightmatrix") {
+      return(rcppPrediction)
+    }
   }
 )
 

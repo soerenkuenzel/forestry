@@ -1,6 +1,7 @@
 #ifndef HTECPP_RF_H
 #define HTECPP_RF_H
 
+#include <RcppEigen.h>
 #include <iostream>
 #include <vector>
 #include <string>
@@ -33,7 +34,8 @@ public:
   );
 
   std::unique_ptr< std::vector<float> > predict(
-    std::vector< std::vector<float> >* xNew
+    std::vector< std::vector<float> >* xNew,
+    Eigen::MatrixXf* weightMatrix
   );
 
   void calculateOOBError();
@@ -73,7 +75,12 @@ public:
     return _ntree;
   }
 
+  size_t getNtrain(){
+    return (*_trainingData).getNumRows();
+  }
+
   size_t getSampleSize() {
+    // This is the sample size used for each tree in the bootstrap not ntrain
     return _sampSize;
   }
 
