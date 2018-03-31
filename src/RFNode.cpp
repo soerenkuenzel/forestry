@@ -1,6 +1,9 @@
 #include "RFNode.h"
 #include <RcppEigen.h>
 
+std::mutex mutex_weightMatrix;
+
+
 RFNode::RFNode():
   _averagingSampleIndex(nullptr), _splittingSampleIndex(nullptr),
   _splitFeature(0), _splitValue(0),
@@ -50,8 +53,7 @@ void RFNode::predict(
   std::vector<size_t>* updateIndex,
   std::vector< std::vector<float> >* xNew,
   DataFrame* trainingData,
-  Eigen::MatrixXf* weightMatrix,
-  std::mutex* threadLock
+  Eigen::MatrixXf* weightMatrix
 ) {
 
   // If the node is a leaf, aggregate all its averaging data samples
@@ -75,7 +77,7 @@ void RFNode::predict(
       std::vector<size_t> idx_in_leaf =
         (*trainingData).get_all_row_idx(getAveragingIndex());
       // The following will lock the access to weightMatrix
-      std::lock_guard<std::mutex> lock(*threadLock);
+      std::lock_guard<std::mutex> lock(mutex_weightMatrix);
       for (
           std::vector<size_t>::iterator it = (*updateIndex).begin();
           it != (*updateIndex).end();
@@ -141,8 +143,7 @@ void RFNode::predict(
         leftPartitionIndex,
         xNew,
         trainingData,
-        weightMatrix,
-        threadLock
+        weightMatrix
       );
     }
     if ((*rightPartitionIndex).size() > 0) {
@@ -151,8 +152,7 @@ void RFNode::predict(
         rightPartitionIndex,
         xNew,
         trainingData,
-        weightMatrix,
-        threadLock
+        weightMatrix
       );
     }
 

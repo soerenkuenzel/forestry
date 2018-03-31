@@ -32,8 +32,7 @@ public:
     std::vector<size_t>* updateIndex,
     std::vector< std::vector<float> >* xNew,
     DataFrame* trainingData,
-    Eigen::MatrixXf* weightMatrix,
-    std::mutex* threadLock
+    Eigen::MatrixXf* weightMatrix
   );
 
   bool is_leaf();
