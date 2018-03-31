@@ -490,7 +490,7 @@ forestry <- function(x,
 #' @param object A `forestry` object.
 #' @param feature.new A data frame of testing predictors.
 #' @param aggregation How shall the leaf be aggregated. The default is to return
-#' the mean of the leave `average`. Other options are `weightmatrix`.
+#' the mean of the leave `average`. Other options are `weightMatrix`.
 #' @return A vector of predicted responses.
 #' @aliases predict,forestry-method
 #' @exportMethod predict
@@ -516,7 +516,7 @@ setMethod(
 
     if (aggregation == "average") {
       return(rcppPrediction$prediction)
-    } else if (aggregation == "weightmatrix") {
+    } else if (aggregation == "weightMatrix") {
       return(rcppPrediction)
     }
   }

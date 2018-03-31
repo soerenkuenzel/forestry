@@ -14,7 +14,7 @@
 \item{feature.new}{A data frame of testing predictors.}
 
 \item{aggregation}{How shall the leaf be aggregated. The default is to return
-the mean of the leave `average`. Other options are `weightmatrix`.}
+the mean of the leave `average`. Other options are `weightMatrix`.}
 }
 \value{
 A vector of predicted responses.

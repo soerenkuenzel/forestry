@@ -208,10 +208,10 @@ Rcpp::List rcpp_cppPredictInterface(
       Rcpp::as< std::vector< std::vector<float> > >(x);
 
     std::unique_ptr< std::vector<float> > testForestPrediction;
-    // We always initialize the weightMatrix. If the aggregation is weightmatrix
+    // We always initialize the weightMatrix. If the aggregation is weightMatrix
     // then we inialize the empty weight matrix
     Eigen::MatrixXf weightMatrix;
-    if(aggregation == "weightmatrix") {
+    if(aggregation == "weightMatrix") {
       size_t nrow = featureData[0].size(); // number of features to be predicted
       size_t ncol = (*testFullForest).getNtrain(); // number of train data
       weightMatrix.resize(nrow, ncol); // initialize the space for the matrix
