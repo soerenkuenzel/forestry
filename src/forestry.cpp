@@ -4,7 +4,7 @@
 #include <thread>
 #include <mutex>
 #include "utils.h"
-#define DOPARELLEL false
+#define DOPARELLEL true
 
 forestry::forestry():
   _trainingData(nullptr), _ntree(0), _replace(0), _sampSize(0),
@@ -324,7 +324,8 @@ std::unique_ptr< std::vector<float> > forestry::predict(
               currentTreePrediction,
               xNew,
               getTrainingData(),
-              weightMatrix
+              weightMatrix,
+              &threadLock
             );
 
             #if DOPARELLEL

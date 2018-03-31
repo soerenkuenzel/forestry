@@ -50,7 +50,8 @@ void RFNode::predict(
   std::vector<size_t>* updateIndex,
   std::vector< std::vector<float> >* xNew,
   DataFrame* trainingData,
-  Eigen::MatrixXf* weightMatrix
+  Eigen::MatrixXf* weightMatrix,
+  std::mutex* threadLock
 ) {
 
   // If the node is a leaf, aggregate all its averaging data samples
@@ -71,14 +72,17 @@ void RFNode::predict(
     if(weightMatrix){
       // If weightMatrix is not a NULL pointer, then we want to update it,
       // because we have choosen aggregation = "weightmatrix".
-      std::vector<size_t> idx_in_leaf = (*trainingData).get_all_row_idx(getAveragingIndex());
-
+      std::vector<size_t> idx_in_leaf =
+        (*trainingData).get_all_row_idx(getAveragingIndex());
+      // The following will lock the access to weightMatrix
+      std::lock_guard<std::mutex> lock(*threadLock);
       for (
           std::vector<size_t>::iterator it = (*updateIndex).begin();
           it != (*updateIndex).end();
           ++it ) {
         for (size_t i = 0; i<idx_in_leaf.size(); i++) {
-          (*weightMatrix)(*it, idx_in_leaf[i] - 1) += (double) 1.0 / idx_in_leaf.size();
+          (*weightMatrix)(*it, idx_in_leaf[i] - 1) +=
+                        (double) 1.0 / idx_in_leaf.size();
         }
       }
     }
@@ -137,7 +141,8 @@ void RFNode::predict(
         leftPartitionIndex,
         xNew,
         trainingData,
-        weightMatrix
+        weightMatrix,
+        threadLock
       );
     }
     if ((*rightPartitionIndex).size() > 0) {
@@ -146,7 +151,8 @@ void RFNode::predict(
         rightPartitionIndex,
         xNew,
         trainingData,
-        weightMatrix
+        weightMatrix,
+        threadLock
       );
     }
 

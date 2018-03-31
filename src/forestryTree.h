@@ -44,7 +44,8 @@ public:
     std::vector<float> &outputPrediction,
     std::vector< std::vector<float> >* xNew,
     DataFrame* trainingData,
-    Eigen::MatrixXf* weightMatrix = NULL
+    Eigen::MatrixXf* weightMatrix = NULL,
+    std::mutex* threadLock = NULL
   );
 
   void recursivePartition(
