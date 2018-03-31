@@ -1,5 +1,7 @@
 #include "RFNode.h"
 #include <RcppEigen.h>
+#include <mutex>
+#include <thread>
 
 std::mutex mutex_weightMatrix;
 
