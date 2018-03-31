@@ -1,10 +1,13 @@
 #include "RFNode.h"
+#include <RcppEigen.h>
+
 
 void RFNode::get_idx_in_leaf(
     std::vector<float> &outputPrediction,
     std::vector<size_t>* updateIndex,
     std::vector< std::vector<float> >* xNew,
-    DataFrame* trainingData
+    DataFrame* trainingData,
+    Eigen::MatrixXf* weightMatrix
 ) {
 
   // If the node is a leaf, aggregate all its averaging data samples
@@ -23,12 +26,27 @@ void RFNode::get_idx_in_leaf(
     }
 
     std::vector<size_t> idx_in_leaf = (*trainingData).get_all_row_idx(getAveragingIndex());
-    //
-    std::cout << "Length after calling the fkt " << idx_in_leaf.size() << "\n";
+
+    for (
+        std::vector<size_t>::iterator it = (*updateIndex).begin();
+        it != (*updateIndex).end();
+        ++it ) {
+      for (size_t i = 0; i<idx_in_leaf.size(); i++) {
+        (*weightMatrix)(*it, idx_in_leaf[i] - 1) += (double) 1.0 / idx_in_leaf.size();
+      }
+    }
 
     for (size_t i = 0; i<idx_in_leaf.size(); i++) {
       std::cout << idx_in_leaf[i] <<" ";
     }
+
+    // -------------------------------------------------------------------------
+    // notes:
+    for (size_t i = 0; i<idx_in_leaf.size(); i++) {
+      std::cout << idx_in_leaf[i] <<" ";
+    }
+    std::cout << "Length after calling the fkt " << idx_in_leaf.size() << "\n";
+    // -------------------------------------------------------------------------
 
   } else {
 
@@ -83,16 +101,16 @@ void RFNode::get_idx_in_leaf(
           outputPrediction,
           leftPartitionIndex,
           xNew,
-          trainingData
-      );
+          trainingData,
+          weightMatrix);;
     }
     if ((*rightPartitionIndex).size() > 0) {
       (*getRightChild()).get_idx_in_leaf(
           outputPrediction,
           rightPartitionIndex,
           xNew,
-          trainingData
-      );
+          trainingData,
+          weightMatrix);;
     }
 
     delete(leftPartitionIndex);

@@ -1,4 +1,5 @@
 #include "forestryTree.h"
+#include <RcppEigen.h>
 #include <math.h>
 #include <set>
 #include <map>
@@ -137,6 +138,7 @@ void forestryTree::predict(
   std::vector<float> &outputPrediction,
   std::vector< std::vector<float> >* xNew,
   DataFrame* trainingData,
+  Eigen::MatrixXf* weightMatrix,
   std::string aggregation
 ){
 
@@ -153,7 +155,7 @@ void forestryTree::predict(
     std::generate(updateIndex.begin(), updateIndex.end(), _rangeGenerator);
     (*getRoot()).predict(outputPrediction, &updateIndex, xNew, trainingData);
 
-  } else if (aggregation == "indices") {
+  } else if (aggregation == "weightmatrix") {
 
     // std::cout << "It is test";
     struct rangeGenerator {
@@ -165,7 +167,7 @@ void forestryTree::predict(
     std::vector<size_t> updateIndex(outputPrediction.size());
     rangeGenerator _rangeGenerator(0);
     std::generate(updateIndex.begin(), updateIndex.end(), _rangeGenerator);
-    (*getRoot()).get_idx_in_leaf(outputPrediction, &updateIndex, xNew, trainingData);
+    (*getRoot()).get_idx_in_leaf(outputPrediction, &updateIndex, xNew, trainingData, weightMatrix);
 
   } else {
 

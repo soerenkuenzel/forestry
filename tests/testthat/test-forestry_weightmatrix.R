@@ -22,8 +22,9 @@ test_that("Tests that random forest is working correctly", {
   )
 
   # Test predict
-  y_pred <- predict(forest, x[1:5,], aggregation = 'indices')
-  y_pred <- predict(forest, x[1:5,])
+  (weight_matrix <- predict(forest, x[1:10,], aggregation = 'weightmatrix'))
+
+  cbind(weight_matrix %*% as.matrix(y) / 5, (y_pred <- predict(forest, x[1:10,])))
 
   # Mean Square Error
   sum((y_pred - y[1:5]) ^ 2)

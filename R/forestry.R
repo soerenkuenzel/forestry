@@ -500,24 +500,25 @@ setMethod(
   definition = function(object,
                         feature.new,
                         aggregation = "average") {
-
     # Preprocess the data
     testing_data_checker(feature.new)
 
-    processed_x <- preprocess_testing(
-      feature.new,
-      object@categoricalFeatureCols,
-      object@categoricalFeatureMapping
-    )
+    processed_x <- preprocess_testing(feature.new,
+                                      object@categoricalFeatureCols,
+                                      object@categoricalFeatureMapping)
 
     rcppPrediction <- tryCatch({
-      return(rcpp_cppPredictInterface(object@forest, processed_x, aggregation))
+      rcpp_cppPredictInterface(object@forest, processed_x, aggregation)
     }, error = function(err) {
       print(err)
       return(NULL)
     })
 
-    return(rcppPrediction)
+    if (aggregation == "average") {
+      return(rcppPrediction$prediction)
+    } else if (aggregation == "weightmatrix") {
+      return(rcppPrediction$weightMatrix)
+    }
   }
 )
 

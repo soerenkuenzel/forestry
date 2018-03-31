@@ -1,9 +1,10 @@
 #include "forestry.h"
+#include <RcppEigen.h>
 #include <random>
 #include <thread>
 #include <mutex>
 #include "utils.h"
-#define DOPARELLEL true
+#define DOPARELLEL false
 
 forestry::forestry():
   _trainingData(nullptr), _ntree(0), _replace(0), _sampSize(0),
@@ -280,6 +281,7 @@ void forestry::addTrees(size_t ntree) {
 
 std::unique_ptr< std::vector<float> > forestry::predict(
   std::vector< std::vector<float> >* xNew,
+  Eigen::MatrixXf* weightMatrix,
   std::string aggregation
 ){
   std::vector<float> prediction;
@@ -323,6 +325,7 @@ std::unique_ptr< std::vector<float> > forestry::predict(
               currentTreePrediction,
               xNew,
               getTrainingData(),
+              weightMatrix,
               aggregation
             );
 
