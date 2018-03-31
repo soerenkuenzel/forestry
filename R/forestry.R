@@ -289,9 +289,18 @@ setClass(
 #' dataset.
 #' @param maxObs The max number of observations to split on
 #' @examples
-#' require(forestry)
-#' rf <- forestry(x = iris[ ,-1], y = iris[ ,1])
-#' predict(rf, feature.new = iris[ ,-1])
+#' set.seed(292315)
+#' library(forestry)
+#' test_idx <- sample(nrow(iris), 3)
+#' x_train <- iris[-test_idx, -1]
+#' y_train <- iris[-test_idx, 1]
+#' x_test <- iris[test_idx, -1]
+#'
+#' rf <- forestry(x = x_train, y = y_train)
+#' weights = predict(rf, x_test, aggregation = "weightMatrix")$weightMatrix
+#'
+#' weights %*% y_train
+#' predict(rf, x_test)
 #' @export forestry
 setGeneric(
   name = "forestry",
