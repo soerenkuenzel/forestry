@@ -15,15 +15,21 @@ void RFNode::get_idx_in_leaf(
 
     // Give all updateIndex the mean of the node as prediction values
     for (
-        std::vector<size_t>::iterator it = (*updateIndex).begin();
-        it != (*updateIndex).end();
-        ++it
+      std::vector<size_t>::iterator it = (*updateIndex).begin();
+      it != (*updateIndex).end();
+      ++it
     ) {
       outputPrediction[*it] = predictedMean - 1;
     }
-    std::cout << (*trainingData).getNumRows() << " > ";
-    std::cout << (*trainingData).get_all_row_idx(getAveragingIndex()) << "\n";
-    // (*trainingData).get_row_idx(getAveragingIndex())
+
+    std::vector<size_t> idx_in_leaf = (*trainingData).get_all_row_idx(getAveragingIndex());
+    //
+    std::cout << "Length after calling the fkt " << idx_in_leaf.size() << "\n";
+
+    for (size_t i = 0; i<idx_in_leaf.size(); i++) {
+      std::cout << idx_in_leaf[i] <<" ";
+    }
+
   } else {
 
     // Separate prediction tasks to two children

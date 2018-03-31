@@ -55,8 +55,7 @@ public:
     return _rowNumbers.get();
   }
 
-  size_t get_all_row_idx(std::vector<size_t>* sampleIndex);
-  // std::vector<size_t>* get_all_row_idx(std::vector<size_t>* sampleIndex);
+  std::vector<size_t> get_all_row_idx(std::vector<size_t>* sampleIndex);
 
   size_t get_row_idx(size_t rowIndex);
 

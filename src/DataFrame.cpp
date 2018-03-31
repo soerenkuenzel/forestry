@@ -87,34 +87,19 @@ float DataFrame::partitionMean(
   return accummulatedSum / totalSampleSize;
 }
 
-//
-size_t DataFrame::get_all_row_idx(
+std::vector<size_t> DataFrame::get_all_row_idx(
     std::vector<size_t>* sampleIndex
 ){
-  size_t last_idx;
+  std::vector<size_t> idx;
   for (
       std::vector<size_t>::iterator it = (*sampleIndex).begin();
       it != (*sampleIndex).end();
       ++it
   ) {
-    last_idx = get_row_idx(*it);
+    idx.push_back(get_row_idx(*it));
   }
-  return last_idx;
+  return idx;
 }
-
-// std::vector<size_t>* DataFrame::get_all_row_idx(
-//     std::vector<size_t>* sampleIndex
-// ){
-//   std::vector<size_t> idx;
-//   for (
-//       std::vector<size_t>::iterator it = (*sampleIndex).begin();
-//       it != (*sampleIndex).end();
-//       ++it
-//   ) {
-//     idx.push_back(get_row_idx(*it));
-//   }
-//   return &idx;
-// }
 
 size_t DataFrame::get_row_idx(size_t rowIndex) {
   // Check if rowIndex is valid
