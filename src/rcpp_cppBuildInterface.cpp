@@ -301,28 +301,10 @@ Rcpp::List rcpp_CppToR_translator(
 ){
   try {
     Rcpp::XPtr< forestry > testFullForest(forest) ;
-    std::cout << "Starting to translate Forest to R.\n";
-
     std::unique_ptr< std::vector<tree_info> > forest_dta(
       new std::vector<tree_info>
     );
     (*testFullForest).fillinTreeInfo(forest_dta);
-
-
-
-    // ////////////////////////////////////////////////////////////////////////////
-    // for(int i = 0; i<4; i++) {
-    //   std::cout << ((*forest_dta)[0]).var_id[i] << "\n";
-    //   std::cout << ((*forest_dta)[0]).split_val[i] << "\n";
-    // }
-    // std::cout << "\nAnother tree:\n";
-    // for(int i = 0; i<4; i++) {
-    //   std::cout << ((*forest_dta)[1]).var_id[i] << "\n";
-    //   std::cout << ((*forest_dta)[1]).split_val[i] << "\n";
-    // }
-    // ////////////////////////////////////////////////////////////////////////////
-
-    std::cout << "Translation done.\n";
 
     // Return the lis of list. For each tree an element in the first list:
     Rcpp::List list_to_return;
