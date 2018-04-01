@@ -99,6 +99,17 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// rcpp_CppToR_translator
+Rcpp::List rcpp_CppToR_translator(SEXP forest);
+RcppExport SEXP _forestry_rcpp_CppToR_translator(SEXP forestSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type forest(forestSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_CppToR_translator(forest));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_forestry_rcpp_cppDataFrameInterface", (DL_FUNC) &_forestry_rcpp_cppDataFrameInterface, 5},
@@ -107,6 +118,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_forestry_rcpp_OBBPredictInterface", (DL_FUNC) &_forestry_rcpp_OBBPredictInterface, 1},
     {"_forestry_rcpp_getObservationSizeInterface", (DL_FUNC) &_forestry_rcpp_getObservationSizeInterface, 1},
     {"_forestry_rcpp_AddTreeInterface", (DL_FUNC) &_forestry_rcpp_AddTreeInterface, 2},
+    {"_forestry_rcpp_CppToR_translator", (DL_FUNC) &_forestry_rcpp_CppToR_translator, 1},
     {NULL, NULL, 0}
 };
 

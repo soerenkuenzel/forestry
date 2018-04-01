@@ -8,6 +8,7 @@
 #include <random>
 #include "DataFrame.h"
 #include "RFNode.h"
+#include "utils.h"
 
 class forestryTree {
 
@@ -46,6 +47,8 @@ public:
     DataFrame* trainingData,
     Eigen::MatrixXf* weightMatrix = NULL
   );
+
+  std::unique_ptr<tree_info> getTreeInfo();
 
   void recursivePartition(
     RFNode* rootNode,

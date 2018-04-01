@@ -25,3 +25,7 @@ rcpp_AddTreeInterface <- function(forest, ntree) {
     invisible(.Call('_forestry_rcpp_AddTreeInterface', PACKAGE = 'forestry', forest, ntree))
 }
 
+rcpp_CppToR_translator <- function(forest) {
+    .Call('_forestry_rcpp_CppToR_translator', PACKAGE = 'forestry', forest)
+}
+

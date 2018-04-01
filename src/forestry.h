@@ -7,6 +7,7 @@
 #include <string>
 #include "DataFrame.h"
 #include "forestryTree.h"
+#include "utils.h"
 
 class forestry {
 
@@ -36,6 +37,10 @@ public:
   std::unique_ptr< std::vector<float> > predict(
     std::vector< std::vector<float> >* xNew,
     Eigen::MatrixXf* weightMatrix
+  );
+
+  void fillinTreeInfo(
+      std::unique_ptr< std::vector< tree_info > > const & forest_dta
   );
 
   void calculateOOBError();

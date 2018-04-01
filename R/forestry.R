@@ -179,9 +179,14 @@ testing_data_checker <- function(feature.new) {
 #' @slot forest An external pointer pointing to a C++ forestry object
 #' @slot dataframe An external pointer pointing to a C++ DataFrame object
 #' @slot processed_dta The R version of the training data frame. This will be an
-#'   emapty dataframe, if the forest was created with the saveable = FALSE
+#'   emapty dataframe, if the forest was created with the `saveable = FALSE`
 #'   option. It is only used to reconstruct the forest after saving and loading
 #'   it.
+#' @slot forest_R This is a list containing for each tree a new list element.
+#'   The list elements are in turn two lists: One containing the slit variable
+#'   and the other one containing the split value. This is only saved, when
+#'   `saveable = FALSE` and it will be used to reconstruct the C++ tree after
+#'   saving and then reloding the tree.
 #' @slot y A vector of all training responses.
 #' @slot categoricalFeatureCols A list of index for all categorical data. Used
 #'   for trees to detect categorical columns.
@@ -225,6 +230,7 @@ setClass(
     forest = "externalptr",
     dataframe = "externalptr",
     processed_dta = "list",
+    forest_R = "list",
     categoricalFeatureCols = "list",
     categoricalFeatureMapping = "list",
     ntree = "numeric",
@@ -398,20 +404,6 @@ forestry <- function(x,
       categoricalFeatureCols_cpp <- categoricalFeatureCols_cpp - 1
     }
 
-    if (saveable) {
-      # if saveable is set to be true, then we want to save the entire training
-      # data frame.
-      processed_dta <- list(
-        "processed_x" = processed_x,
-        "y" = y,
-        "categoricalFeatureCols_cpp" = categoricalFeatureCols_cpp,
-        "nObservations" = nObservations,
-        "numColumns" = numColumns
-      )
-    } else {
-      processed_dta <- list()
-    }
-
     # Create rcpp object
     # Create a forest object
     forest <- tryCatch({
@@ -445,12 +437,30 @@ forestry <- function(x,
         TRUE,
         rcppDataFrame
       )
+
+      if (saveable) {
+        # if saveable is set to be true, then we want to save the entire training
+        # data frame.
+        processed_dta <- list(
+          "processed_x" = processed_x,
+          "y" = y,
+          "categoricalFeatureCols_cpp" = categoricalFeatureCols_cpp,
+          "nObservations" = nObservations,
+          "numColumns" = numColumns
+        )
+        forest_R <- CppToR_translator(rcppForest)
+      } else {
+        processed_dta <- list()
+        forest_R <- list()
+      }
+
       return(
         new(
           "forestry",
           forest = rcppForest,
           dataframe = rcppDataFrame,
           processed_dta = processed_dta,
+          forest_R = forest_R,
           categoricalFeatureCols = categoricalFeatureCols,
           categoricalFeatureMapping = categoricalFeatureMapping,
           ntree = ntree * (doubleTree + 1),
@@ -519,6 +529,7 @@ forestry <- function(x,
           forest = rcppForest,
           dataframe = reuseforestry@dataframe,
           processed_dta = reuseforestry@processed_dta,
+          forest_R = reuseforestry@forest_R,
           categoricalFeatureCols = reuseforestry@categoricalFeatureCols,
           categoricalFeatureMapping = categoricalFeatureMapping,
           ntree = ntree * (doubleTree + 1),
@@ -929,3 +940,39 @@ autoforestry <- function(x,
 
   return(models[[model_losses_idx$ix[1]]])
 }
+
+# -- Translate rcpp forest to R ------------------------------------------------
+#' @title Cpp to R translator
+#' @name CppToR_translator
+#' @description Translates the forest to a list which can then be used with the
+#'   RToCPP_translator to create an CPP forest object again
+#' @param object A `forestry` object.
+setGeneric(
+  name = "CppToR_translator",
+  def = function(object) {
+    standardGeneric("CppToR_translator")
+  }
+)
+
+#' @title CppToR_translator
+#' @description Add more trees to the existing forest.
+#' @exportMethod CppToR_translator
+#' @inheritParams CppToR_translator
+#' @return A list of lists. Each sublist contains the information to span a
+#'   tree.
+setMethod(
+  f = "CppToR_translator",
+  signature = "externalptr",
+  definition = function(object) {
+    tryCatch({
+      return(rcpp_CppToR_translator(object))
+    }, error = function(err) {
+      print(err)
+      return(NA)
+    })
+  }
+)
+
+
+
+

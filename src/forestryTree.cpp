@@ -1043,3 +1043,14 @@ void forestryTree::getOOBPrediction(
     outputOOBCount[OOBSampleIndex] += 1;
   }
 }
+
+
+// -----------------------------------------------------------------------------
+std::unique_ptr<tree_info> forestryTree::getTreeInfo(){
+  std::unique_ptr<tree_info> treeInfo(
+    new tree_info
+  );
+  (*getRoot()).write_node_info(treeInfo);
+  return treeInfo;
+}
+

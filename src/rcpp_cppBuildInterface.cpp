@@ -5,6 +5,7 @@
 #include "forestryTree.h"
 #include "RFNode.h"
 #include "forestry.h"
+#include "utils.h"
 
 void freeforestry(
   SEXP ptr
@@ -131,13 +132,13 @@ SEXP rcpp_cppBuildInterface(
   } else {
 
     try {
-      std::unique_ptr<std::vector< std::vector<float> > > featureDataRcpp (
+      std::unique_ptr< std::vector< std::vector<float> > > featureDataRcpp (
           new std::vector< std::vector<float> >(
               Rcpp::as< std::vector< std::vector<float> > >(x)
           )
       );
 
-      std::unique_ptr<std::vector<float>> outcomeDataRcpp (
+      std::unique_ptr< std::vector<float> > outcomeDataRcpp (
           new std::vector<float>(
               Rcpp::as< std::vector<float> >(y)
           )
@@ -293,3 +294,57 @@ void rcpp_AddTreeInterface(
     ::Rf_error("c++ exception (unknown reason)");
   }
 }
+
+// [[Rcpp::export]]
+Rcpp::List rcpp_CppToR_translator(
+    SEXP forest
+){
+  try {
+    Rcpp::XPtr< forestry > testFullForest(forest) ;
+    std::cout << "Starting to translate Forest to R.\n";
+
+    std::unique_ptr< std::vector<tree_info> > forest_dta(
+      new std::vector<tree_info>
+    );
+    (*testFullForest).fillinTreeInfo(forest_dta);
+
+
+
+    // ////////////////////////////////////////////////////////////////////////////
+    // for(int i = 0; i<4; i++) {
+    //   std::cout << ((*forest_dta)[0]).var_id[i] << "\n";
+    //   std::cout << ((*forest_dta)[0]).split_val[i] << "\n";
+    // }
+    // std::cout << "\nAnother tree:\n";
+    // for(int i = 0; i<4; i++) {
+    //   std::cout << ((*forest_dta)[1]).var_id[i] << "\n";
+    //   std::cout << ((*forest_dta)[1]).split_val[i] << "\n";
+    // }
+    // ////////////////////////////////////////////////////////////////////////////
+
+    std::cout << "Translation done.\n";
+
+    // Return the lis of list. For each tree an element in the first list:
+    Rcpp::List list_to_return;
+    for(size_t i=0; i!=forest_dta->size(); i++){
+      Rcpp::NumericVector var_id = Rcpp::wrap(((*forest_dta)[0]).var_id);
+      Rcpp::NumericVector split_val = Rcpp::wrap(((*forest_dta)[0]).split_val);
+
+      Rcpp::List list_i =
+        Rcpp::List::create(Rcpp::Named("var_id") = var_id,
+                           Rcpp::Named("split_val") = split_val);
+
+      list_to_return.push_back(list_i);
+    }
+
+    return list_to_return;
+
+  } catch(std::runtime_error const& err) {
+    forward_exception_to_r(err);
+  } catch(...) {
+    ::Rf_error("c++ exception (unknown reason)");
+  }
+}
+
+
+

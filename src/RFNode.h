@@ -8,6 +8,7 @@
 #include <memory>
 #include <algorithm>
 #include "DataFrame.h"
+#include "utils.h"
 
 class RFNode {
 
@@ -33,6 +34,10 @@ public:
     std::vector< std::vector<float> >* xNew,
     DataFrame* trainingData,
     Eigen::MatrixXf* weightMatrix
+  );
+
+  void write_node_info(
+    std::unique_ptr<tree_info> const & treeInfo
   );
 
   bool is_leaf();

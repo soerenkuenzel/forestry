@@ -476,3 +476,28 @@ void forestry::calculateOOBError() {
 
   this->_OOBError = OOB_MSE;
 };
+
+
+// -----------------------------------------------------------------------------
+
+void forestry::fillinTreeInfo(
+    std::unique_ptr< std::vector< tree_info > > const & forest_dta
+){
+  for(int i=0; i<((int) getNtree()); i++ ) {
+    // read out each tree and add it to the forest_dta:
+    try {
+      forestryTree *currentTree = (*getForest())[i].get();
+      std::unique_ptr<tree_info> treeInfo_i = (*currentTree).getTreeInfo();
+
+      forest_dta->push_back(*treeInfo_i);
+
+    } catch (std::runtime_error &err) {
+      std::cerr << err.what() << std::endl;
+
+    }
+    std::cout << "Done with tree " << i + 1 << " of " << getNtree() << ".\n";
+
+  }
+  return ;
+};
+

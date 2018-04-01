@@ -85,7 +85,9 @@ same dataset.}
 
 \item{saveable}{If TRUE, then RF is created in such a way that it can be
 saved and loaded using save(...) and load(...). Setting it to TRUE
-(default) will, however, take longer and it will use more memory.}
+(default) will, however, take longer and it will use more memory. When
+training many RF, it makes a lot of sense to set this to FALSE to save
+time and memory.}
 }
 \value{
 A `forestry` object.

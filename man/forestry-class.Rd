@@ -18,10 +18,16 @@
 
 \item{\code{dataframe}}{An external pointer pointing to a C++ DataFrame object}
 
-\item{\code{dataframe_R}}{The R version of the training data frame. This will be an
-emapty dataframe, if the forest was created with the saveable = FALSE
+\item{\code{processed_dta}}{The R version of the training data frame. This will be an
+emapty dataframe, if the forest was created with the `saveable = FALSE`
 option. It is only used to reconstruct the forest after saving and loading
 it.}
+
+\item{\code{forest_R}}{This is a list containing for each tree a new list element.
+The list elements are in turn two lists: One containing the slit variable
+and the other one containing the split value. This is only saved, when
+`saveable = FALSE` and it will be used to reconstruct the C++ tree after
+saving and then reloding the tree.}
 
 \item{\code{y}}{A vector of all training responses.}
 

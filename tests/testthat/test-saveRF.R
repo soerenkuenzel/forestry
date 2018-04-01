@@ -1,6 +1,6 @@
-library(testthat)
-test_that("Tests that saving RF and laoding it works", {
-  context("Save and Load RF")
+# library(testthat)
+# test_that("Tests that saving RF and laoding it works", {
+  # context("Save and Load RF")
 
   set.seed(238943202)
   x <- iris[,-1]
@@ -25,38 +25,25 @@ test_that("Tests that saving RF and laoding it works", {
   testthat::expect_equal(forest@processed_dta$y[2], 4.9)
   # ----------------------------------------------------------------------------
   # load RF
+  CppToR_translator(forest@forest)
 
 
 
 
   # ----------------------------------------------------------------------------
   # translate Ranger and randomForest
+  rfr <-
+    ranger::ranger(
+      y ~ .,
+      data = x,
+      write.forest = TRUE,
+      respect.unordered.factors = 'partition'
+    )
+  rfr$forest$child.nodeIDs[[1]]
+  rfr$forest$split.varIDs[[1]]
+  rfr$forest$split.values[[1]]
 #
-#   # Test predict
-#   y_pred <- predict(forest, x)
-#
-#   cars
-#   x <- as.data.frame(x)
-#   x$Species <- as.character(x$Species)
-#
-#   unordered <- ifelse(rbinom(nrow(x), 1, .5) == 1, 'sa', 'go')
-#   unordered[1:10] <- 1
-#
-#   unordered[40:50] <- 22
-#   x$uu <- unordered
-#   mode(x$uu)
-#   rfr <-
-#     ranger::ranger(
-#       y ~ .,
-#       data = x,
-#       write.forest = TRUE,
-#       respect.unordered.factors = 'partition'
-#     )
-#   rfr$forest$child.nodeIDs[[1]]
-#   rfr$forest$split.varIDs[[1]]
-#   rfr$forest$split.values[[1]]
 #   rfr$forest$is.ordered
-#
 #   rfr$forest$independent.variable.names
-})
-
+# })
+#

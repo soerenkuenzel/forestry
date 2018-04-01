@@ -2,6 +2,7 @@
 #include <RcppEigen.h>
 #include <mutex>
 #include <thread>
+#include "utils.h"
 
 std::mutex mutex_weightMatrix;
 
@@ -196,4 +197,26 @@ void RFNode::printSubtree(int indentSpace) {
     (*getRightChild()).printSubtree(indentSpace+2);
 
   }
+}
+
+// -----------------------------------------------------------------------------
+
+void RFNode::write_node_info(
+    std::unique_ptr<tree_info> const & treeInfo
+){
+  if (is_leaf()) {
+    // If it is a leaf: set everything to be 0
+    treeInfo->var_id.push_back(0);
+    treeInfo->split_val.push_back(0);
+
+  } else {
+    // If it is a usual node: remember split var and split value and recursively
+    // call write_node_info on the left and the right child.
+    treeInfo->var_id.push_back(getSplitFeature() + 1);
+    treeInfo->split_val.push_back(getSplitValue());
+
+    getLeftChild()->write_node_info(treeInfo);
+    getRightChild()->write_node_info(treeInfo);
+  }
+  return;
 }

@@ -10,4 +10,10 @@ void print_vector(
   std::vector<size_t> v
 );
 
+
+struct tree_info {
+  std::vector< size_t > var_id;
+  std::vector< long double > split_val;
+};
+
 #endif //FORESTRYCPP_UTILS_H
