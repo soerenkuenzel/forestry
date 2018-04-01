@@ -6,8 +6,8 @@
 \alias{forestry-class}
 \title{forestry class}
 \description{
-`forestry` object implementing the most basic version of
-a random forest.
+`forestry` object implementing the most basic version of a
+  random forest.
 
 `honestRF` class only exists for backwards compatibility reasons
 }
@@ -17,6 +17,11 @@ a random forest.
 \item{\code{forest}}{An external pointer pointing to a C++ forestry object}
 
 \item{\code{dataframe}}{An external pointer pointing to a C++ DataFrame object}
+
+\item{\code{dataframe_R}}{The R version of the training data frame. This will be an
+emapty dataframe, if the forest was created with the saveable = FALSE
+option. It is only used to reconstruct the forest after saving and loading
+it.}
 
 \item{\code{y}}{A vector of all training responses.}
 
@@ -38,21 +43,21 @@ sampling with replacement, the default value is the length of the training
 data. If samplying without replacement, the default value is two-third of
 the length of the training data.}
 
-\item{\code{mtry}}{The number of variables randomly selected at each split point.
-The default value is set to be one third of total number of features of the
+\item{\code{mtry}}{The number of variables randomly selected at each split point. The
+default value is set to be one third of total number of features of the
 training data.}
 
 \item{\code{nodesizeSpl}}{The minimum observations contained in terminal nodes. The
 default value is 3.}
 
-\item{\code{nodesizeAvg}}{Minimum size of terminal nodes for averaging dataset.
-The default value is 3.}
+\item{\code{nodesizeAvg}}{Minimum size of terminal nodes for averaging dataset. The
+default value is 3.}
 
-\item{\code{nodesizeStrictSpl}}{Minimum observations to follow strictly in
-terminal nodes. The default value is 1.}
+\item{\code{nodesizeStrictSpl}}{Minimum observations to follow strictly in terminal
+nodes. The default value is 1.}
 
-\item{\code{nodesizeStrictAvg}}{Minimum size of terminal nodes for averaging
-dataset to follow strictly. The default value is 1.}
+\item{\code{nodesizeStrictAvg}}{Minimum size of terminal nodes for averaging dataset
+to follow strictly. The default value is 1.}
 
 \item{\code{splitratio}}{Proportion of the training data used as the splitting
 dataset. It is a ratio between 0 and 1. If the ratio is 1, then essentially

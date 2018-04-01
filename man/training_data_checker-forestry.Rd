@@ -31,14 +31,14 @@ training data.}
 \item{nodesizeSpl}{Minimum observations contained in terminal nodes. The
 default value is 3.}
 
-\item{nodesizeAvg}{Minimum size of terminal nodes for averaging dataset.
-The default value is 3.}
+\item{nodesizeAvg}{Minimum size of terminal nodes for averaging dataset. The
+default value is 3.}
 
-\item{nodesizeStrictSpl}{Minimum observations to follow strictly in
-terminal nodes. The default value is 1.}
+\item{nodesizeStrictSpl}{Minimum observations to follow strictly in terminal
+nodes. The default value is 1.}
 
-\item{nodesizeStrictAvg}{Minimum size of terminal nodes for averaging
-dataset to follow strictly. The default value is 1.}
+\item{nodesizeStrictAvg}{Minimum size of terminal nodes for averaging dataset
+to follow strictly. The default value is 1.}
 
 \item{splitratio}{Proportion of the training data used as the splitting
 dataset. It is a ratio between 0 and 1. If the ratio is 1, then essentially
@@ -47,8 +47,8 @@ dataset is empty. If the ratio is 0, then the splitting data set is empty
 and all the data is used for the averaging data set (This is not a good
 usage however since there will be no data available for splitting).}
 
-\item{nthread}{Number of threads to train and predict the forest. The
-default number is 0 which represents using all cores.}
+\item{nthread}{Number of threads to train and predict the forest. The default
+number is 0 which represents using all cores.}
 
 \item{middleSplit}{if the split value is taking the average of two feature
 values. If false, it will take a point based on a uniform distribution

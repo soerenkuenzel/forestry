@@ -16,7 +16,7 @@
 }
 \description{
 Autotune a forestry based on the input dataset. The methodology
-is based on paper `Hyperband: A Novel Bandit-Based Approach to
-Hyperparameter Optimization` by Lisha Li, et al.
+  is based on paper `Hyperband: A Novel Bandit-Based Approach to
+  Hyperparameter Optimization` by Lisha Li, et al.
 }
 \keyword{datasets}

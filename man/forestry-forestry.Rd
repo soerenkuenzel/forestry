@@ -14,7 +14,7 @@ forestry(x, y, ntree = 500, replace = TRUE, sampsize = if (replace)
   nodesizeStrictSpl = 1, nodesizeStrictAvg = 1, splitratio = 1,
   seed = as.integer(runif(1) * 1000), verbose = FALSE, nthread = 0,
   splitrule = "variance", middleSplit = FALSE, maxObs = length(y),
-  doubleTree = FALSE, reuseforestry = NULL)
+  doubleTree = FALSE, reuseforestry = NULL, saveable = TRUE)
 }
 \arguments{
 \item{x}{A data frame of all training predictors.}
@@ -33,8 +33,8 @@ data. If samplying without replacement, the default value is two-third of
 the length of the training data.}
 
 \item{sample.fraction}{if this is given, then sampsize is ignored and set to
-be round(length(y) * sample.fraction). It must be a real number between 0 and
-1}
+be round(length(y) * sample.fraction). It must be a real number between 0
+and 1}
 
 \item{mtry}{The number of variables randomly selected at each split point.
 The default value is set to be one third of total number of features of the
@@ -43,14 +43,14 @@ training data.}
 \item{nodesizeSpl}{Minimum observations contained in terminal nodes. The
 default value is 3.}
 
-\item{nodesizeAvg}{Minimum size of terminal nodes for averaging dataset.
-The default value is 3.}
+\item{nodesizeAvg}{Minimum size of terminal nodes for averaging dataset. The
+default value is 3.}
 
-\item{nodesizeStrictSpl}{Minimum observations to follow strictly in
-terminal nodes. The default value is 1.}
+\item{nodesizeStrictSpl}{Minimum observations to follow strictly in terminal
+nodes. The default value is 1.}
 
-\item{nodesizeStrictAvg}{Minimum size of terminal nodes for averaging
-dataset to follow strictly. The default value is 1.}
+\item{nodesizeStrictAvg}{Minimum size of terminal nodes for averaging dataset
+to follow strictly. The default value is 1.}
 
 \item{splitratio}{Proportion of the training data used as the splitting
 dataset. It is a ratio between 0 and 1. If the ratio is 1, then essentially
@@ -63,8 +63,8 @@ usage however since there will be no data available for splitting).}
 
 \item{verbose}{if training process in verbose mode}
 
-\item{nthread}{Number of threads to train and predict the forest. The
-default number is 0 which represents using all cores.}
+\item{nthread}{Number of threads to train and predict the forest. The default
+number is 0 which represents using all cores.}
 
 \item{splitrule}{only variance is implemented at this point and it contains
 specifies the loss function according to which the splits of random forest
@@ -80,8 +80,12 @@ between two feature values. (Default = FALSE)}
 data can be exchanged to create decorrelated trees. (Default = FALSE)}
 
 \item{reuseforestry}{pass in an `forestry` object which will recycle the
-dataframe the old object created. It will save some space working on the same
-dataset.}
+dataframe the old object created. It will save some space working on the
+same dataset.}
+
+\item{saveable}{If TRUE, then RF is created in such a way that it can be
+saved and loaded using save(...) and load(...). Setting it to TRUE
+(default) will, however, take longer and it will use more memory.}
 }
 \value{
 A `forestry` object.

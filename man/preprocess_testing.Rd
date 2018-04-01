@@ -20,8 +20,8 @@ corresponding numeric representation.}
 A preprocessed training dataaset x
 }
 \description{
-Perform preprocessing for the testing data, including
-converting data to dataframe, and testing if the columns are consistent
-with the training data and encoding categorical data into numerical
-representation in the same way as training data.
+Perform preprocessing for the testing data, including converting
+  data to dataframe, and testing if the columns are consistent with the
+  training data and encoding categorical data into numerical representation
+  in the same way as training data.
 }

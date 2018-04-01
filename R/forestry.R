@@ -174,52 +174,57 @@ testing_data_checker <- function(feature.new) {
 # -- Random Forest Constructor -------------------------------------------------
 #' @title forestry class
 #' @name forestry-class
-#' @description `forestry` object implementing the most basic version of
-#' a random forest.
+#' @description `forestry` object implementing the most basic version of a
+#'   random forest.
 #' @slot forest An external pointer pointing to a C++ forestry object
 #' @slot dataframe An external pointer pointing to a C++ DataFrame object
+#' @slot dataframe_R The R version of the training data frame. This will be an
+#'   emapty dataframe, if the forest was created with the saveable = FALSE
+#'   option. It is only used to reconstruct the forest after saving and loading
+#'   it.
 #' @slot y A vector of all training responses.
 #' @slot categoricalFeatureCols A list of index for all categorical data. Used
-#' for trees to detect categorical columns.
+#'   for trees to detect categorical columns.
 #' @slot categoricalFeatureMapping A list of encoding details for each
-#' categorical column, including all unique factor values and their
-#' corresponding numeric representation.
+#'   categorical column, including all unique factor values and their
+#'   corresponding numeric representation.
 #' @slot ntree The number of trees to grow in the forest. The default value is
-#' 500.
+#'   500.
 #' @slot replace An indicator of whether sampling of training data is with
-#' replacement. The default value is TRUE.
+#'   replacement. The default value is TRUE.
 #' @slot sampsize The size of total samples to draw for the training data. If
-#' sampling with replacement, the default value is the length of the training
-#' data. If samplying without replacement, the default value is two-third of
-#' the length of the training data.
-#' @slot mtry The number of variables randomly selected at each split point.
-#' The default value is set to be one third of total number of features of the
-#' training data.
+#'   sampling with replacement, the default value is the length of the training
+#'   data. If samplying without replacement, the default value is two-third of
+#'   the length of the training data.
+#' @slot mtry The number of variables randomly selected at each split point. The
+#'   default value is set to be one third of total number of features of the
+#'   training data.
 #' @slot nodesizeSpl The minimum observations contained in terminal nodes. The
-#' default value is 3.
-#' @slot nodesizeAvg Minimum size of terminal nodes for averaging dataset.
-#' The default value is 3.
-#' @slot nodesizeStrictSpl Minimum observations to follow strictly in
-#' terminal nodes. The default value is 1.
-#' @slot nodesizeStrictAvg Minimum size of terminal nodes for averaging
-#' dataset to follow strictly. The default value is 1.
+#'   default value is 3.
+#' @slot nodesizeAvg Minimum size of terminal nodes for averaging dataset. The
+#'   default value is 3.
+#' @slot nodesizeStrictSpl Minimum observations to follow strictly in terminal
+#'   nodes. The default value is 1.
+#' @slot nodesizeStrictAvg Minimum size of terminal nodes for averaging dataset
+#'   to follow strictly. The default value is 1.
 #' @slot splitratio Proportion of the training data used as the splitting
-#' dataset. It is a ratio between 0 and 1. If the ratio is 1, then essentially
-#' splitting dataset becomes the total entire sampled set and the averaging
-#' dataset is empty. If the ratio is 0, then the splitting data set is empty
-#' and all the data is used for the averaging data set (This is not a good
-#' usage however since there will be no data available for splitting).
+#'   dataset. It is a ratio between 0 and 1. If the ratio is 1, then essentially
+#'   splitting dataset becomes the total entire sampled set and the averaging
+#'   dataset is empty. If the ratio is 0, then the splitting data set is empty
+#'   and all the data is used for the averaging data set (This is not a good
+#'   usage however since there will be no data available for splitting).
 #' @slot middleSplit if the split value is taking the average of two feature
-#' values. If false, it will take a point based on a uniform distribution
-#' between two feature values. (Default = FALSE)
+#'   values. If false, it will take a point based on a uniform distribution
+#'   between two feature values. (Default = FALSE)
 #' @slot maxObs The max number of observations to split on (Default = nrows(y))
 #' @slot doubleTree if the number of tree is doubled as averaging and splitting
-#' data can be exchanged to create decorrelated trees. (Default = FALSE)
+#'   data can be exchanged to create decorrelated trees. (Default = FALSE)
 setClass(
   Class = "forestry",
   slots = list(
     forest = "externalptr",
     dataframe = "externalptr",
+    dataframe_R = "data.frame",
     categoricalFeatureCols = "list",
     categoricalFeatureMapping = "list",
     ntree = "numeric",
@@ -246,49 +251,52 @@ setClass(
 #' @param x A data frame of all training predictors.
 #' @param y A vector of all training responses.
 #' @param ntree The number of trees to grow in the forest. The default value is
-#' 500.
+#'   500.
 #' @param replace An indicator of whether sampling of training data is with
-#' replacement. The default value is TRUE.
+#'   replacement. The default value is TRUE.
 #' @param sampsize The size of total samples to draw for the training data. If
-#' sampling with replacement, the default value is the length of the training
-#' data. If samplying without replacement, the default value is two-third of
-#' the length of the training data.
+#'   sampling with replacement, the default value is the length of the training
+#'   data. If samplying without replacement, the default value is two-third of
+#'   the length of the training data.
 #' @param sample.fraction if this is given, then sampsize is ignored and set to
-#' be round(length(y) * sample.fraction). It must be a real number between 0 and
-#' 1
+#'   be round(length(y) * sample.fraction). It must be a real number between 0
+#'   and 1
 #' @param mtry The number of variables randomly selected at each split point.
-#' The default value is set to be one third of total number of features of the
-#' training data.
+#'   The default value is set to be one third of total number of features of the
+#'   training data.
 #' @param nodesizeSpl Minimum observations contained in terminal nodes. The
-#' default value is 3.
-#' @param nodesizeAvg Minimum size of terminal nodes for averaging dataset.
-#' The default value is 3.
-#' @param nodesizeStrictSpl Minimum observations to follow strictly in
-#' terminal nodes. The default value is 1.
-#' @param nodesizeStrictAvg Minimum size of terminal nodes for averaging
-#' dataset to follow strictly. The default value is 1.
+#'   default value is 3.
+#' @param nodesizeAvg Minimum size of terminal nodes for averaging dataset. The
+#'   default value is 3.
+#' @param nodesizeStrictSpl Minimum observations to follow strictly in terminal
+#'   nodes. The default value is 1.
+#' @param nodesizeStrictAvg Minimum size of terminal nodes for averaging dataset
+#'   to follow strictly. The default value is 1.
 #' @param splitratio Proportion of the training data used as the splitting
-#' dataset. It is a ratio between 0 and 1. If the ratio is 1, then essentially
-#' splitting dataset becomes the total entire sampled set and the averaging
-#' dataset is empty. If the ratio is 0, then the splitting data set is empty
-#' and all the data is used for the averaging data set (This is not a good
-#' usage however since there will be no data available for splitting).
+#'   dataset. It is a ratio between 0 and 1. If the ratio is 1, then essentially
+#'   splitting dataset becomes the total entire sampled set and the averaging
+#'   dataset is empty. If the ratio is 0, then the splitting data set is empty
+#'   and all the data is used for the averaging data set (This is not a good
+#'   usage however since there will be no data available for splitting).
 #' @param seed random seed
 #' @param verbose if training process in verbose mode
-#' @param nthread Number of threads to train and predict the forest. The
-#' default number is 0 which represents using all cores.
+#' @param nthread Number of threads to train and predict the forest. The default
+#'   number is 0 which represents using all cores.
 #' @param splitrule only variance is implemented at this point and it contains
-#' specifies the loss function according to which the splits of random forest
-#' should be made
+#'   specifies the loss function according to which the splits of random forest
+#'   should be made
 #' @param middleSplit if the split value is taking the average of two feature
-#' values. If false, it will take a point based on a uniform distribution
-#' between two feature values. (Default = FALSE)
+#'   values. If false, it will take a point based on a uniform distribution
+#'   between two feature values. (Default = FALSE)
 #' @param doubleTree if the number of tree is doubled as averaging and splitting
-#' data can be exchanged to create decorrelated trees. (Default = FALSE)
+#'   data can be exchanged to create decorrelated trees. (Default = FALSE)
 #' @param reuseforestry pass in an `forestry` object which will recycle the
-#' dataframe the old object created. It will save some space working on the same
-#' dataset.
+#'   dataframe the old object created. It will save some space working on the
+#'   same dataset.
 #' @param maxObs The max number of observations to split on
+#' @param saveable If TRUE, then RF is created in such a way that it can be
+#'   saved and loaded using save(...) and load(...). Setting it to TRUE
+#'   (default) will, however, take longer and it will use more memory.
 #' @examples
 #' set.seed(292315)
 #' library(forestry)
@@ -357,7 +365,8 @@ forestry <- function(x,
                      middleSplit = FALSE,
                      maxObs = length(y),
                      doubleTree = FALSE,
-                     reuseforestry = NULL) {
+                     reuseforestry = NULL,
+                     saveable = TRUE) {
   # only if sample.fraction is given, update sampsize
   if (!is.null(sample.fraction))
     sampsize <- ceiling(sample.fraction * nrow(x))
@@ -500,7 +509,7 @@ forestry <- function(x,
 #' @param object A `forestry` object.
 #' @param feature.new A data frame of testing predictors.
 #' @param aggregation How shall the leaf be aggregated. The default is to return
-#' the mean of the leave `average`. Other options are `weightMatrix`.
+#'   the mean of the leave `average`. Other options are `weightMatrix`.
 #' @return A vector of predicted responses.
 #' @aliases predict,forestry-method
 #' @exportMethod predict
@@ -639,8 +648,8 @@ setMethod(
 #' @name autoforestry-forestry
 #' @rdname autoforestry-forestry
 #' @description Autotune a forestry based on the input dataset. The methodology
-#' is based on paper `Hyperband: A Novel Bandit-Based Approach to
-#' Hyperparameter Optimization` by Lisha Li, et al.
+#'   is based on paper `Hyperband: A Novel Bandit-Based Approach to
+#'   Hyperparameter Optimization` by Lisha Li, et al.
 #' @inheritParams forestry
 #' @param sampsize The size of total samples to draw for the training data.
 #' @param num_iter Maximum iterations/epochs per configuration. Default is 1024.
@@ -662,16 +671,16 @@ setGeneric(
 
 #' @title autoforestry-forestry
 #' @description Autotune a forestry based on the input dataset. The methodology
-#' is based on paper `Hyperband: A Novel Bandit-Based Approach to
-#' Hyperparameter Optimization` by Lisha Li, et al.
+#'   is based on paper `Hyperband: A Novel Bandit-Based Approach to
+#'   Hyperparameter Optimization` by Lisha Li, et al.
 #' @inheritParams forestry
 #' @param sampsize The size of total samples to draw for the training data.
 #' @param num_iter Maximum iterations/epochs per configuration. Default is 1024.
 #' @param eta Downsampling rate. Default value is 2.
 #' @param verbose if tuning process in verbose mode
 #' @param seed random seed
-#' @param nthread Number of threads to train and predict theforest. The
-#' default number is 0 which represents using all cores.
+#' @param nthread Number of threads to train and predict theforest. The default
+#'   number is 0 which represents using all cores.
 #' @aliases autoforestry,forestry-method
 #' @return A `forestry` object
 #' @export autoforestry
