@@ -178,7 +178,7 @@ testing_data_checker <- function(feature.new) {
 #'   random forest.
 #' @slot forest An external pointer pointing to a C++ forestry object
 #' @slot dataframe An external pointer pointing to a C++ DataFrame object
-#' @slot dataframe_R The R version of the training data frame. This will be an
+#' @slot processed_dta The R version of the training data frame. This will be an
 #'   emapty dataframe, if the forest was created with the saveable = FALSE
 #'   option. It is only used to reconstruct the forest after saving and loading
 #'   it.
@@ -224,7 +224,7 @@ setClass(
   slots = list(
     forest = "externalptr",
     dataframe = "externalptr",
-    dataframe_R = "data.frame",
+    processed_dta = "list",
     categoricalFeatureCols = "list",
     categoricalFeatureMapping = "list",
     ntree = "numeric",
@@ -296,7 +296,9 @@ setClass(
 #' @param maxObs The max number of observations to split on
 #' @param saveable If TRUE, then RF is created in such a way that it can be
 #'   saved and loaded using save(...) and load(...). Setting it to TRUE
-#'   (default) will, however, take longer and it will use more memory.
+#'   (default) will, however, take longer and it will use more memory. When
+#'   training many RF, it makes a lot of sense to set this to FALSE to save
+#'   time and memory.
 #' @examples
 #' set.seed(292315)
 #' library(forestry)
@@ -332,7 +334,8 @@ setGeneric(
                  middleSplit,
                  maxObs,
                  doubleTree,
-                 reuseforestry) {
+                 reuseforestry,
+                 saveable) {
     standardGeneric("forestry")
   }
 )
@@ -383,8 +386,10 @@ forestry <- function(x,
   if (is.null(reuseforestry)) {
     preprocessedData <- preprocess_training(x, y)
     processed_x <- preprocessedData$x
-    categoricalFeatureCols <- preprocessedData$categoricalFeatureCols
-    categoricalFeatureMapping <- preprocessedData$categoricalFeatureMapping
+    categoricalFeatureCols <-
+      preprocessedData$categoricalFeatureCols
+    categoricalFeatureMapping <-
+      preprocessedData$categoricalFeatureMapping
 
     categoricalFeatureCols_cpp <- unlist(categoricalFeatureCols)
     if (is.null(categoricalFeatureCols_cpp)) {
@@ -393,33 +398,59 @@ forestry <- function(x,
       categoricalFeatureCols_cpp <- categoricalFeatureCols_cpp - 1
     }
 
+    if (saveable) {
+      # if saveable is set to be true, then we want to save the entire training
+      # data frame.
+      processed_dta <- list(
+        "processed_x" = processed_x,
+        "y" = y,
+        "categoricalFeatureCols_cpp" = categoricalFeatureCols_cpp,
+        "nObservations" = nObservations,
+        "numColumns" = numColumns
+      )
+    } else {
+      processed_dta <- list()
+    }
+
     # Create rcpp object
     # Create a forest object
     forest <- tryCatch({
-      rcppDataFrame <- rcpp_cppDataFrameInterface(
-        processed_x, y,
-        categoricalFeatureCols_cpp,
-        nObservations,
-        numColumns
-      )
+      rcppDataFrame <- rcpp_cppDataFrameInterface(processed_x,
+                                                  y,
+                                                  categoricalFeatureCols_cpp,
+                                                  nObservations,
+                                                  numColumns)
 
       rcppForest <- rcpp_cppBuildInterface(
-        processed_x, y,
+        processed_x,
+        y,
         categoricalFeatureCols_cpp,
         nObservations,
-        numColumns, ntree, replace, sampsize, mtry,
-        splitratio, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl,
-	nodesizeStrictAvg, seed, nthread, verbose, middleSplit,
-	maxObs,
-	doubleTree,
-	TRUE,
-	rcppDataFrame
+        numColumns,
+        ntree,
+        replace,
+        sampsize,
+        mtry,
+        splitratio,
+        nodesizeSpl,
+        nodesizeAvg,
+        nodesizeStrictSpl,
+        nodesizeStrictAvg,
+        seed,
+        nthread,
+        verbose,
+        middleSplit,
+        maxObs,
+        doubleTree,
+        TRUE,
+        rcppDataFrame
       )
       return(
         new(
           "forestry",
           forest = rcppForest,
           dataframe = rcppDataFrame,
+          processed_dta = processed_dta,
           categoricalFeatureCols = categoricalFeatureCols,
           categoricalFeatureMapping = categoricalFeatureMapping,
           ntree = ntree * (doubleTree + 1),
@@ -437,14 +468,12 @@ forestry <- function(x,
         )
       )
     },
-	error = function(err) {
-	  print(err)
-	  return(NULL)
-	})
+    error = function(err) {
+      print(err)
+      return(NULL)
+    })
 
   } else {
-
-
     categoricalFeatureCols_cpp <-
       unlist(reuseforestry@categoricalFeatureCols)
     if (is.null(categoricalFeatureCols_cpp)) {
@@ -453,20 +482,35 @@ forestry <- function(x,
       categoricalFeatureCols_cpp <- categoricalFeatureCols_cpp - 1
     }
 
-    categoricalFeatureMapping <- reuseforestry@categoricalFeatureMapping
+    categoricalFeatureMapping <-
+      reuseforestry@categoricalFeatureMapping
 
     # Create rcpp object
     # Create a forest object
     forest <- tryCatch({
       rcppForest <- rcpp_cppBuildInterface(
-        x, y,
+        x,
+        y,
         categoricalFeatureCols_cpp,
         nObservations,
-        numColumns, ntree, replace, sampsize, mtry,
-        splitratio, nodesizeSpl, nodesizeAvg,
-        nodesizeStrictSpl, nodesizeStrictAvg, seed,
-        nthread, verbose, middleSplit, maxObs, doubleTree,
-        TRUE, reuseforestry@dataframe
+        numColumns,
+        ntree,
+        replace,
+        sampsize,
+        mtry,
+        splitratio,
+        nodesizeSpl,
+        nodesizeAvg,
+        nodesizeStrictSpl,
+        nodesizeStrictAvg,
+        seed,
+        nthread,
+        verbose,
+        middleSplit,
+        maxObs,
+        doubleTree,
+        TRUE,
+        reuseforestry@dataframe
       )
 
       return(
@@ -474,6 +518,7 @@ forestry <- function(x,
           "forestry",
           forest = rcppForest,
           dataframe = reuseforestry@dataframe,
+          processed_dta = reuseforestry@processed_dta,
           categoricalFeatureCols = reuseforestry@categoricalFeatureCols,
           categoricalFeatureMapping = categoricalFeatureMapping,
           ntree = ntree * (doubleTree + 1),

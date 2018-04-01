@@ -3,32 +3,29 @@ test_that("Tests that saving RF and laoding it works", {
   context("Save and Load RF")
 
   set.seed(238943202)
-  # ----------------------------------------------------------------------------
-  # Save RF
   x <- iris[,-1]
   y <- iris[, 1]
-  # Set seed for reproductivity
-  set.seed(24750371)
 
-  # Test forestry (mimic RF)
+  # ----------------------------------------------------------------------------
+  # Check that saving TRUE / FALSE saves and does not save the training data.
   forest <- forestry(
     x,
     y,
-    ntree = 500,
-    replace = TRUE,
-    sample.fraction = .8,
-    mtry = 3,
-    nodesizeStrictSpl = 5,
-    nthread = 2,
-    splitrule = "variance",
-    splitratio = 1,
-    nodesizeStrictAvg = 5
+    ntree = 3,
+    saveable = FALSE
   )
+  testthat::expect_equal(forest@processed_dta, list())
 
-  forest
-
+  forest <- forestry(
+    x,
+    y,
+    ntree = 3,
+    saveable = TRUE
+  )
+  testthat::expect_equal(forest@processed_dta$y[2], 4.9)
   # ----------------------------------------------------------------------------
   # load RF
+
 
 
 
