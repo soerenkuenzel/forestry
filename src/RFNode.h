@@ -23,7 +23,7 @@ public:
 
   void setSplitNode(
     size_t splitFeature,
-    long double splitValue,
+    double splitValue,
     std::unique_ptr< RFNode > leftChild,
     std::unique_ptr< RFNode > rightChild
   );
@@ -52,7 +52,7 @@ public:
     }
   }
 
-  long double getSplitValue() {
+  double getSplitValue() {
     if (is_leaf()) {
       throw "Cannot get split feature for a leaf.";
     } else {
@@ -92,7 +92,7 @@ private:
   std::unique_ptr< std::vector<size_t> > _averagingSampleIndex;
   std::unique_ptr< std::vector<size_t> > _splittingSampleIndex;
   size_t _splitFeature;
-  long double _splitValue;
+  double _splitValue;
   std::unique_ptr< RFNode > _leftChild;
   std::unique_ptr< RFNode > _rightChild;
   size_t _averageCount;
