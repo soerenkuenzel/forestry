@@ -1,7 +1,7 @@
 Package: forestry
 Type: Package
 Title: Forestry
-Version: 0.5.0.000
+Version: 0.5.0.001
 Author: Sören Künzel, Theo Saarinen, Jasjeet Sekhon, Allen Tang
 Maintainer: Sören Künzel <srk@berkeley.edu>, Allen Tang <actang.me@gmail.com>
 Description: Gradient Boosting, Random Forests, Tree Estimators, Optimal Trees,

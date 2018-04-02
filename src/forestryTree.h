@@ -59,7 +59,7 @@ public:
 
   void selectBestFeature(
     size_t& bestSplitFeature,
-    long double& bestSplitValue,
+    double& bestSplitValue,
     float& bestSplitLoss,
     std::vector<size_t>* featureList,
     std::vector<size_t>* averagingSampleIndex,

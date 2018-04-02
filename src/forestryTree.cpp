@@ -284,7 +284,7 @@ void forestryTree::recursivePartition(
 
   // Select best feature
   size_t bestSplitFeature;
-  long double bestSplitValue;
+  double bestSplitValue;
   float bestSplitLoss;
 
   selectBestFeature(
@@ -375,11 +375,11 @@ void forestryTree::recursivePartition(
 
 void updateBestSplit(
   float* bestSplitLossAll,
-  long double* bestSplitValueAll,
+  double* bestSplitValueAll,
   size_t* bestSplitFeatureAll,
   size_t* bestSplitCountAll,
   float currentSplitLoss,
-  long double currentSplitValue,
+  double currentSplitValue,
   size_t currentFeature,
   size_t bestSplitTableIndex,
   std::mt19937_64& random_number_generator
@@ -416,7 +416,7 @@ void findBestSplitValueCategorical(
   size_t bestSplitTableIndex,
   size_t currentFeature,
   float* bestSplitLossAll,
-  long double* bestSplitValueAll,
+  double* bestSplitValueAll,
   size_t* bestSplitFeatureAll,
   size_t* bestSplitCountAll,
   DataFrame* trainingData,
@@ -564,7 +564,7 @@ void findBestSplitValueNonCategorical(
   size_t bestSplitTableIndex,
   size_t currentFeature,
   float* bestSplitLossAll,
-  long double* bestSplitValueAll,
+  double* bestSplitValueAll,
   size_t* bestSplitFeatureAll,
   size_t* bestSplitCountAll,
   DataFrame* trainingData,
@@ -752,15 +752,15 @@ void findBestSplitValueNonCategorical(
       (splitTotalCount - splitLeftPartitionCount) * rightPartitionMean
       * rightPartitionMean;
 
-    long double currentSplitValue;
+    double currentSplitValue;
     if (splitMiddle) {
       currentSplitValue = (newFeatureValue + featureValue) / 2.0;
     } else {
-      std::uniform_real_distribution<long double> unif_dist;
-      long double tmp_random = unif_dist(random_number_generator) *
+      std::uniform_real_distribution<double> unif_dist;
+      double tmp_random = unif_dist(random_number_generator) *
         (newFeatureValue - featureValue);
-      long double epsilon_lower = std::nextafter(featureValue, newFeatureValue);
-      long double epsilon_upper = std::nextafter(newFeatureValue, featureValue);
+      double epsilon_lower = std::nextafter(featureValue, newFeatureValue);
+      double epsilon_upper = std::nextafter(newFeatureValue, featureValue);
       currentSplitValue = tmp_random + featureValue;
       if (currentSplitValue > epsilon_upper) {
         currentSplitValue = epsilon_upper;
@@ -792,11 +792,11 @@ void findBestSplitValueNonCategorical(
 
 void determineBestSplit(
   size_t &bestSplitFeature,
-  long double &bestSplitValue,
+  double &bestSplitValue,
   float &bestSplitLoss,
   size_t mtry,
   float* bestSplitLossAll,
-  long double* bestSplitValueAll,
+  double* bestSplitValueAll,
   size_t* bestSplitFeatureAll,
   size_t* bestSplitCountAll,
   std::mt19937_64& random_number_generator
@@ -837,7 +837,7 @@ void determineBestSplit(
   } else {
     // If none of the features are possible, return NA
     bestSplitFeature = std::numeric_limits<size_t>::quiet_NaN();
-    bestSplitValue = std::numeric_limits<long double>::quiet_NaN();
+    bestSplitValue = std::numeric_limits<double>::quiet_NaN();
     bestSplitLoss = std::numeric_limits<float>::quiet_NaN();
   }
 
@@ -846,7 +846,7 @@ void determineBestSplit(
 
 void forestryTree::selectBestFeature(
   size_t &bestSplitFeature,
-  long double &bestSplitValue,
+  double &bestSplitValue,
   float &bestSplitLoss,
   std::vector<size_t>* featureList,
   std::vector<size_t>* averagingSampleIndex,
@@ -862,12 +862,12 @@ void forestryTree::selectBestFeature(
 
   // Initialize the minimum loss for each feature
   float* bestSplitLossAll = new float[mtry];
-  long double* bestSplitValueAll = new long double[mtry];
+  double* bestSplitValueAll = new double[mtry];
   size_t* bestSplitFeatureAll = new size_t[mtry];
   size_t* bestSplitCountAll = new size_t[mtry];
   for (size_t i=0; i<mtry; i++) {
     bestSplitLossAll[i] = -std::numeric_limits<float>::infinity();
-    bestSplitValueAll[i] = std::numeric_limits<long double>::quiet_NaN();
+    bestSplitValueAll[i] = std::numeric_limits<double>::quiet_NaN();
     bestSplitFeatureAll[i] = std::numeric_limits<size_t>::quiet_NaN();
     bestSplitCountAll[i] = 0;
   }
