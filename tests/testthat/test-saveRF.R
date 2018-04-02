@@ -3,7 +3,7 @@ test_that("Tests that saving RF and laoding it works", {
   context("Save and Load RF")
 
   set.seed(238943202)
-  x <- iris[, -1]
+  x <- iris[,-1]
   y <- iris[, 1]
 
   #-- Translating C++ to R ------------------------------------------------
@@ -20,12 +20,11 @@ test_that("Tests that saving RF and laoding it works", {
                      ntree = 3,
                      saveable = TRUE)
   testthat::expect_equal(forest@processed_dta$y[2], 4.9)
-  expect_length(forest@forest_R[[3]]$var_id[1:5],
-                5)
-
+  testthat::expect_length(forest@forest_R[[3]]$var_id[1:5],
+                          5)
   # Check that saving the forest works well.
-  expect_length(CppToR_translator(forest@forest)[[3]]$var_id[1:5],
-                5)
+  testthat::expect_length(CppToR_translator(forest@forest)[[3]]$var_id[1:5],
+                          5)
 
   #-- Translating R to C++ ------------------------------------------------
   save(forest, file = "tests/testthat/forest.Rda")
@@ -36,6 +35,7 @@ test_that("Tests that saving RF and laoding it works", {
   forest@forest
   forest <- relinkCPP_prt(forest)
   forest@dataframe
+  forest@forest_R[[1]]
   forest@forest
 
   #

@@ -339,9 +339,41 @@ SEXP rcpp_reconstructree(
   Rcpp::NumericVector catCols,
   Rcpp::List forest_R
 ){
-  //////////////////////////////////////////////////////////////////////////////
+  // Decode catCols and forest_R
+  std::unique_ptr< std::vector<size_t> > categoricalFeatureColsRcpp (
+      new std::vector<size_t>(
+          Rcpp::as< std::vector<size_t> >(catCols)
+      )
+  ); // contains the col indices of features.
 
 
+  // Decode the forest_R data and create appropriate pointers to pointers:
+  std::unique_ptr< std::vector< std::vector<int> > > var_ids(
+      new std::vector< std::vector<int> >
+  );
+  std::unique_ptr< std::vector< std::vector<double> > > split_vals(
+      new  std::vector< std::vector<double> >
+  );
+  std::unique_ptr< std::vector< std::vector<size_t> > > leaf_idxs(
+      new  std::vector< std::vector<size_t> >
+  );
+
+
+  for(size_t i=0; i!=forest_R.size(); i++){
+    var_ids->push_back(
+        Rcpp::as< std::vector<int> > ((Rcpp::as<Rcpp::List>(forest_R[i]))[0])
+    );
+    split_vals->push_back(
+        Rcpp::as< std::vector<double> > ((Rcpp::as<Rcpp::List>(forest_R[i]))[1])
+      );
+    leaf_idxs->push_back(
+        Rcpp::as< std::vector<size_t> > ((Rcpp::as<Rcpp::List>(forest_R[i]))[2])
+      );
+
+  }
+
+
+  // call the forest::constructor
 
   //////////////////////////////////////////////////////////////////////////////
   std::cout << "Reconstructing Forestry";
