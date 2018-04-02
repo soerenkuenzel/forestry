@@ -12,8 +12,13 @@ void print_vector(
 
 
 struct tree_info {
-  std::vector< size_t > var_id;
+  std::vector< int > var_id;
+  // contains the variable id for a splitting node and the negative number of
+  // observations in a leaf for a leaf node
   std::vector< long double > split_val;
+  // contains the split values for regular nodes
+  std::vector< size_t > leaf_idx;
+  // contains the indices of observations in a leaf.
 };
 
 #endif //FORESTRYCPP_UTILS_H

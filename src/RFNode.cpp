@@ -202,12 +202,20 @@ void RFNode::printSubtree(int indentSpace) {
 // -----------------------------------------------------------------------------
 
 void RFNode::write_node_info(
-    std::unique_ptr<tree_info> const & treeInfo
+    std::unique_ptr<tree_info> const & treeInfo,
+    DataFrame* trainingData
 ){
   if (is_leaf()) {
     // If it is a leaf: set everything to be 0
-    treeInfo->var_id.push_back(0);
+    treeInfo->var_id.push_back(-getAveragingIndex()->size());
     treeInfo->split_val.push_back(0);
+
+    std::vector<size_t> idx_in_leaf =
+      (*trainingData).get_all_row_idx(getAveragingIndex());
+    for (size_t i = 0; i<idx_in_leaf.size(); i++) {
+      treeInfo->leaf_idx.push_back(idx_in_leaf[i]);
+    }
+
 
   } else {
     // If it is a usual node: remember split var and split value and recursively
@@ -215,8 +223,8 @@ void RFNode::write_node_info(
     treeInfo->var_id.push_back(getSplitFeature() + 1);
     treeInfo->split_val.push_back(getSplitValue());
 
-    getLeftChild()->write_node_info(treeInfo);
-    getRightChild()->write_node_info(treeInfo);
+    getLeftChild()->write_node_info(treeInfo, trainingData);
+    getRightChild()->write_node_info(treeInfo, trainingData);
   }
   return;
 }

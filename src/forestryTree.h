@@ -48,7 +48,9 @@ public:
     Eigen::MatrixXf* weightMatrix = NULL
   );
 
-  std::unique_ptr<tree_info> getTreeInfo();
+  std::unique_ptr<tree_info> getTreeInfo(
+      DataFrame* trainingData
+  );
 
   void recursivePartition(
     RFNode* rootNode,

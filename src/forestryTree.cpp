@@ -1046,11 +1046,13 @@ void forestryTree::getOOBPrediction(
 
 
 // -----------------------------------------------------------------------------
-std::unique_ptr<tree_info> forestryTree::getTreeInfo(){
+std::unique_ptr<tree_info> forestryTree::getTreeInfo(
+    DataFrame* trainingData
+){
   std::unique_ptr<tree_info> treeInfo(
     new tree_info
   );
-  (*getRoot()).write_node_info(treeInfo);
+  (*getRoot()).write_node_info(treeInfo, trainingData);
   return treeInfo;
 }
 

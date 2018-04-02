@@ -492,7 +492,8 @@ void forestry::fillinTreeInfo(
     // read out each tree and add it to the forest_dta:
     try {
       forestryTree *currentTree = (*getForest())[i].get();
-      std::unique_ptr<tree_info> treeInfo_i = (*currentTree).getTreeInfo();
+      std::unique_ptr<tree_info> treeInfo_i =
+        (*currentTree).getTreeInfo(_trainingData);
 
       forest_dta->push_back(*treeInfo_i);
 

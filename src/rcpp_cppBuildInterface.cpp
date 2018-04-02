@@ -309,12 +309,15 @@ Rcpp::List rcpp_CppToR_translator(
     // Return the lis of list. For each tree an element in the first list:
     Rcpp::List list_to_return;
     for(size_t i=0; i!=forest_dta->size(); i++){
-      Rcpp::NumericVector var_id = Rcpp::wrap(((*forest_dta)[0]).var_id);
-      Rcpp::NumericVector split_val = Rcpp::wrap(((*forest_dta)[0]).split_val);
+      Rcpp::NumericVector var_id = Rcpp::wrap(((*forest_dta)[i]).var_id);
+      Rcpp::NumericVector split_val = Rcpp::wrap(((*forest_dta)[i]).split_val);
+      Rcpp::NumericVector leaf_idx = Rcpp::wrap(((*forest_dta)[i]).leaf_idx);
+
 
       Rcpp::List list_i =
         Rcpp::List::create(Rcpp::Named("var_id") = var_id,
-                           Rcpp::Named("split_val") = split_val);
+                           Rcpp::Named("split_val") = split_val,
+                           Rcpp::Named("leaf_idx") = leaf_idx);
 
       list_to_return.push_back(list_i);
     }
@@ -336,7 +339,11 @@ SEXP rcpp_reconstructree(
   Rcpp::NumericVector catCols,
   Rcpp::List forest_R
 ){
+  //////////////////////////////////////////////////////////////////////////////
 
+
+
+  //////////////////////////////////////////////////////////////////////////////
   std::cout << "Reconstructing Forestry";
 
   forestry* testFullForest = NULL;

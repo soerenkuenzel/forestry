@@ -37,7 +37,8 @@ public:
   );
 
   void write_node_info(
-    std::unique_ptr<tree_info> const & treeInfo
+    std::unique_ptr<tree_info> const & treeInfo,
+    DataFrame* trainingData
   );
 
   bool is_leaf();
