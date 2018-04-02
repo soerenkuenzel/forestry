@@ -29,3 +29,7 @@ rcpp_CppToR_translator <- function(forest) {
     .Call('_forestry_rcpp_CppToR_translator', PACKAGE = 'forestry', forest)
 }
 
+rcpp_reconstructree <- function(dataframe, catCols, forest_R) {
+    .Call('_forestry_rcpp_reconstructree', PACKAGE = 'forestry', dataframe, catCols, forest_R)
+}
+

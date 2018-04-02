@@ -941,7 +941,7 @@ autoforestry <- function(x,
   return(models[[model_losses_idx$ix[1]]])
 }
 
-# -- Translate rcpp forest to R ------------------------------------------------
+# -- Translate C++ to R --------------------------------------------------------
 #' @title Cpp to R translator
 #' @name CppToR_translator
 #' @description Translates the forest to a list which can then be used with the
@@ -975,4 +975,108 @@ setMethod(
 
 
 
+# -- Translate R to C++ --------------------------------------------------------
+#' #' @title R to Cpp translator
+#' #' @name RToCpp_translator
+#' #' @description Translates the forest to a list which can then be used with the
+#' #'   RToCPP_translator to create an CPP forest object again
+#' #' @param object The `forest_R` slot of a forestry object. It will be used to
+#' #'   create the Cpp tree.
+#' setGeneric(
+#'   name = "RToCpp_translator",
+#'   def = function(object) {
+#'     standardGeneric("RToCpp_translator")
+#'   }
+#' )
+#'
+#' #' @title RToCpp_translator
+#' #' @description Add more trees to the existing forest.
+#' #' @exportMethod RToCpp_translator
+#' #' @inheritParams RToCpp_translator
+#' #' @return A list of lists. Each sublist contains the information to span a
+#' #'   tree.
+#' setMethod(
+#'   f = "RToCpp_translator",
+#'   signature = "list",
+#'   definition = function(object) {
+#'     tryCatch({
+#'       return(rcpp_RToCpp_translator(object))
+#'     }, error = function(err) {
+#'       print(err)
+#'       return(NA)
+#'     })
+#'   }
+#' )
+
+# -- relink CPP ptr ------
+#' @title relink CPP ptr
+#' @name relinkCPP_prt-forestry
+#' @rdname relinkCPP
+#' @description When a `foresty` object is saved and then reloaded the Cpp
+#'   pointers for the data set and the Cpp forest have to be reconstructed
+#' @param object an object of class `forestry`
+#' @examples
+#' set.seed(323652639)
+#' x <- iris[, -1]
+#' y <- iris[, 1]
+#' forest <- forestry(x, y, ntree = 3)
+#' save(forest, file = "tests/testthat/forest.Rda")
+#' load("tests/testthat/forest.Rda", verbose = TRUE)
+#' relinkCPP_prt(forest)
+#' @export relinkCPP_prt
+setGeneric(
+  name = "relinkCPP_prt",
+  def = function(object) {
+    standardGeneric("relinkCPP_prt")
+  }
+)
+
+#' @title relink CPP ptr
+#' @name relinkCPP_prt-forestry
+#' @rdname relinkCPP
+#' @description When a `foresty` object is saved and then reloaded the Cpp
+#'   pointers for the data set and the Cpp forest have to be reconstructed
+#' @inheritParams relinkCPP_prt
+#' @return A list of lists. Each sublist contains the information to span a
+#'   tree.
+#' @exportMethod relinkCPP_prt
+setMethod(
+  f = "relinkCPP_prt",
+  signature = "forestry",
+  definition = function(object) {
+
+    # 1.) reconnect the data.frame to a cpp data.frame
+    tryCatch({
+      object@dataframe <-
+        rcpp_cppDataFrameInterface(
+          x = object@processed_dta$processed_x,
+          y = object@processed_dta$y,
+          catCols = object@processed_dta$categoricalFeatureCols_cpp,
+          numRows = length(object@processed_dta$y),
+          numColumns = ncol(object@processed_dta$processed_x)
+        )
+    }, error = function(err) {
+      print('Problem when trying to load the R data frame back into R')
+      print(err)
+      return(NA)
+    })
+
+    # 2.) reconnect the forest.
+    tryCatch({
+      object@forest <- rcpp_reconstructree(
+        dataframe = object@dataframe,
+        catCols = object@processed_dta$categoricalFeatureCols_cpp,
+        forest_R = object@forest_R
+        )
+
+
+    }, error = function(err) {
+      print('Problem when trying to create the forest object in Cpp')
+      print(err)
+      return(NA)
+    })
+
+    return(object)
+  }
+)
 

@@ -329,4 +329,24 @@ Rcpp::List rcpp_CppToR_translator(
 }
 
 
+////////////////////////////////////////////////////////////////////////////////
+// [[Rcpp::export]]
+SEXP rcpp_reconstructree(
+  SEXP dataframe,
+  Rcpp::NumericVector catCols,
+  Rcpp::List forest_R
+){
 
+  std::cout << "Reconstructing Forestry";
+
+  forestry* testFullForest = NULL;
+
+  // delete(testFullForest);
+  Rcpp::XPtr<forestry> ptr(testFullForest, true) ;
+  R_RegisterCFinalizerEx(
+    ptr,
+    (R_CFinalizer_t) freeforestry,
+    (Rboolean) TRUE
+  );
+  return ptr;
+}

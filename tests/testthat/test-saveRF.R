@@ -6,6 +6,7 @@ test_that("Tests that saving RF and laoding it works", {
   x <- iris[, -1]
   y <- iris[, 1]
 
+  #-- Translating C++ to R ------------------------------------------------
   # Check that saving TRUE / FALSE saves and does not save the training data.
   forest <- forestry(x,
                      y,
@@ -26,7 +27,19 @@ test_that("Tests that saving RF and laoding it works", {
   expect_length(CppToR_translator(forest@forest)[[3]]$var_id[1:5],
                 5)
 
-  # ----------------------------------------------------------------------------
+  #-- Translating R to C++ ------------------------------------------------
+  save(forest, file = "tests/testthat/forest.Rda")
+  load("tests/testthat/forest.Rda", verbose = TRUE)
+  str(forest)
+
+  forest@dataframe
+  forest@forest
+  forest <- relinkCPP_prt(forest)
+  forest@dataframe
+  forest@forest
+
+  #
+
   # translate Ranger and randomForest
   # rfr <-
   #   ranger::ranger(
