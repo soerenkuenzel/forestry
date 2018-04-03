@@ -1071,11 +1071,20 @@ void forestryTree::reconstruct_tree(
     size_t minNodeSizeAvg,
     size_t minNodeSizeToSplitSpt,
     size_t minNodeSizeToSplitAvg,
-    std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
-    std::unique_ptr< std::vector<size_t> > averagingSampleIndex){
+    std::vector<size_t> splittingSampleIndex,
+    std::vector<size_t> averagingSampleIndex){
 
-  _averagingSampleIndex = std::move(averagingSampleIndex);
-  _splittingSampleIndex = std::move(splittingSampleIndex);
+  // Reassigning the _averagingSampleIndex and _splittingSampleIndex for that
+  // tree.
+  _averagingSampleIndex = std::unique_ptr< std::vector<size_t> > (
+    &averagingSampleIndex
+  );
+  _splittingSampleIndex = std::unique_ptr< std::vector<size_t> > (
+    &splittingSampleIndex
+  );
+
+
+
 
   std::cout << "We are constructing one tree";
 

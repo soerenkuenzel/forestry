@@ -21,9 +21,6 @@ test_that("Tests that saving RF and laoding it works", {
                      splitratio = .03,
                      ntree = 3,
                      saveable = TRUE)
-  table(forest@forest_R[[3]]$leaf_idx)
-  table(forest@forest_R[[3]]$averagingSampleIndex)
-  table(forest@forest_R[[3]]$splittingSampleIndex)
 
 
   testthat::expect_equal(forest@processed_dta$y[2], 4.9)

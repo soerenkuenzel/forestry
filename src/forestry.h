@@ -47,7 +47,11 @@ public:
       std::unique_ptr< std::vector<size_t> > & categoricalFeatureColsRcpp,
       std::unique_ptr< std::vector< std::vector<int> >  > & var_ids,
       std::unique_ptr< std::vector< std::vector<double> >  > & split_vals,
-      std::unique_ptr< std::vector< std::vector<size_t> >  > & leaf_idxs);
+      std::unique_ptr< std::vector< std::vector<size_t> >  > & leaf_idxs,
+      std::unique_ptr< std::vector< std::vector<size_t> >  > &
+        averagingSampleIndex,
+      std::unique_ptr< std::vector< std::vector<size_t> >  > &
+        splittingSampleIndex);
 
   void calculateOOBError();
 

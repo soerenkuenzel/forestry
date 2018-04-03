@@ -58,8 +58,8 @@ public:
     size_t minNodeSizeAvg,
     size_t minNodeSizeToSplitSpt,
     size_t minNodeSizeToSplitAvg,
-    std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
-    std::unique_ptr< std::vector<size_t> > averagingSampleIndex);
+    std::vector<size_t> splittingSampleIndex,
+    std::vector<size_t> averagingSampleIndex);
 
   void recursivePartition(
     RFNode* rootNode,

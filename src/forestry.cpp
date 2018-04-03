@@ -519,7 +519,11 @@ void forestry::reconstructTrees(
     std::unique_ptr< std::vector<size_t> > & categoricalFeatureColsRcpp,
     std::unique_ptr< std::vector< std::vector<int> >  > & var_ids,
     std::unique_ptr< std::vector< std::vector<double> >  > & split_vals,
-    std::unique_ptr< std::vector< std::vector<size_t> >  > & leaf_idxs){
+    std::unique_ptr< std::vector< std::vector<size_t> >  > & leaf_idxs,
+    std::unique_ptr< std::vector< std::vector<size_t> >  > &
+      averagingSampleIndex,
+    std::unique_ptr< std::vector< std::vector<size_t> >  > &
+      splittingSampleIndex){
 
   std::cout << "reconstructTrees is running";
 
@@ -528,18 +532,14 @@ void forestry::reconstructTrees(
       try{
         forestryTree *oneTree = new forestryTree();
 
-        // TODO:
-        std::unique_ptr<std::vector<size_t> > splitSampleIndex;
-        std::unique_ptr<std::vector<size_t> > averageSampleIndex;
-
         oneTree->reconstruct_tree(
                 getMtry(),
                 getMinNodeSizeSpt(),
                 getMinNodeSizeAvg(),
                 getMinNodeSizeToSplitSpt(),
                 getMinNodeSizeToSplitAvg(),
-                std::move(splitSampleIndex),
-                std::move(averageSampleIndex));
+                (*averagingSampleIndex)[i],
+                (*splittingSampleIndex)[i]);
 
         (*getForest()).emplace_back(oneTree);
         _ntree = _ntree + 1;
