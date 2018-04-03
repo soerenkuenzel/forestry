@@ -17,6 +17,7 @@ test_that("Tests that saving RF and laoding it works", {
 
   forest <- forestry(x,
                      y,
+                     sample.fraction = .5,
                      ntree = 3,
                      saveable = TRUE)
   testthat::expect_equal(forest@processed_dta$y[2], 4.9)
@@ -27,6 +28,19 @@ test_that("Tests that saving RF and laoding it works", {
                           5)
 
   #-- Translating R to C++ ------------------------------------------------
+
+
+  forest <- forestry(x,
+                     y,
+                     sample.fraction = .5,
+                     ntree = 3,
+                     saveable = TRUE)
+  s <- forest@forest_R[[1]]$var_id
+  sum(s[s < 0])
+
+  forest@forest_R[[1]]$leaf_idx
+
+
   save(forest, file = "tests/testthat/forest.Rda")
   load("tests/testthat/forest.Rda", verbose = TRUE)
   str(forest)
@@ -35,8 +49,12 @@ test_that("Tests that saving RF and laoding it works", {
   forest@forest
   forest <- relinkCPP_prt(forest)
   forest@dataframe
-  forest@forest_R[[1]]
   forest@forest
+
+  s <- forest@forest_R[[1]]$var_id
+  sum(s[s < 0])
+
+  forest@forest_R[[1]]$leaf_idx
 
   #
 

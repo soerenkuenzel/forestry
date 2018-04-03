@@ -337,15 +337,28 @@ Rcpp::List rcpp_CppToR_translator(
 SEXP rcpp_reconstructree(
   SEXP dataframe,
   Rcpp::NumericVector catCols,
-  Rcpp::List forest_R
+  Rcpp::List forest_R,
+  bool replace,
+  int sampsize,
+  float splitratio,
+  int mtry,
+  int nodesizeSpl,
+  int nodesizeAvg,
+  int nodesizeStrictSpl,
+  int nodesizeStrictAvg,
+  int seed,
+  int nthread,
+  bool verbose,
+  bool middleSplit,
+  int maxObs,
+  bool doubleTree
 ){
   // Decode catCols and forest_R
   std::unique_ptr< std::vector<size_t> > categoricalFeatureColsRcpp (
       new std::vector<size_t>(
           Rcpp::as< std::vector<size_t> >(catCols)
       )
-  ); // contains the col indices of features.
-
+  ); // contains the col indices of categorical features.
 
   // Decode the forest_R data and create appropriate pointers to pointers:
   std::unique_ptr< std::vector< std::vector<int> > > var_ids(
@@ -369,19 +382,39 @@ SEXP rcpp_reconstructree(
     leaf_idxs->push_back(
         Rcpp::as< std::vector<size_t> > ((Rcpp::as<Rcpp::List>(forest_R[i]))[2])
       );
-
   }
 
+  // Setting up an empytforest with all parameters but without any trees as the
+  // trees will be constructed from the R data set.
+  forestry* testFullForest = new forestry(
+    (DataFrame*) dataframe,
+    (size_t) 0,
+    (bool) replace,
+    (size_t) sampsize,
+    (float) splitratio,
+    (size_t) mtry,
+    (size_t) nodesizeSpl,
+    (size_t) nodesizeAvg,
+    (size_t) nodesizeStrictSpl,
+    (size_t) nodesizeStrictAvg,
+    (unsigned int) seed,
+    (size_t) nthread,
+    (bool) verbose,
+    (bool) middleSplit,
+    (size_t) maxObs,
+    (bool) doubleTree
+  );
 
-  // call the forest::constructor
+  testFullForest->reconstructTrees(categoricalFeatureColsRcpp,
+                                   var_ids,
+                                   split_vals,
+                                   leaf_idxs);
+
 
   //////////////////////////////////////////////////////////////////////////////
-  std::cout << "Reconstructing Forestry";
-
-  forestry* testFullForest = NULL;
 
   // delete(testFullForest);
-  Rcpp::XPtr<forestry> ptr(testFullForest, true) ;
+  Rcpp::XPtr<forestry> ptr(testFullForest, true);
   R_RegisterCFinalizerEx(
     ptr,
     (R_CFinalizer_t) freeforestry,

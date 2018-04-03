@@ -24,39 +24,6 @@ When a `foresty` object is saved and then reloaded the Cpp
 When a `foresty` object is saved and then reloaded the Cpp
   pointers for the data set and the Cpp forest have to be reconstructed
 }
-\details{
-#' @title R to Cpp translator
-#' @name RToCpp_translator
-#' @description Translates the forest to a list which can then be used with the
-#'   RToCPP_translator to create an CPP forest object again
-#' @param object The `forest_R` slot of a forestry object. It will be used to
-#'   create the Cpp tree.
-setGeneric(
-  name = "RToCpp_translator",
-  def = function(object) {
-    standardGeneric("RToCpp_translator")
-  }
-)
-
-#' @title RToCpp_translator
-#' @description Add more trees to the existing forest.
-#' @exportMethod RToCpp_translator
-#' @inheritParams RToCpp_translator
-#' @return A list of lists. Each sublist contains the information to span a
-#'   tree.
-setMethod(
-  f = "RToCpp_translator",
-  signature = "list",
-  definition = function(object) {
-    tryCatch({
-      return(rcpp_RToCpp_translator(object))
-    }, error = function(err) {
-      print(err)
-      return(NA)
-    })
-  }
-)
-}
 \examples{
 set.seed(323652639)
 x <- iris[, -1]

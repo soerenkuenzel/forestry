@@ -973,42 +973,7 @@ setMethod(
   }
 )
 
-
-
-# -- Translate R to C++ --------------------------------------------------------
-#' #' @title R to Cpp translator
-#' #' @name RToCpp_translator
-#' #' @description Translates the forest to a list which can then be used with the
-#' #'   RToCPP_translator to create an CPP forest object again
-#' #' @param object The `forest_R` slot of a forestry object. It will be used to
-#' #'   create the Cpp tree.
-#' setGeneric(
-#'   name = "RToCpp_translator",
-#'   def = function(object) {
-#'     standardGeneric("RToCpp_translator")
-#'   }
-#' )
-#'
-#' #' @title RToCpp_translator
-#' #' @description Add more trees to the existing forest.
-#' #' @exportMethod RToCpp_translator
-#' #' @inheritParams RToCpp_translator
-#' #' @return A list of lists. Each sublist contains the information to span a
-#' #'   tree.
-#' setMethod(
-#'   f = "RToCpp_translator",
-#'   signature = "list",
-#'   definition = function(object) {
-#'     tryCatch({
-#'       return(rcpp_RToCpp_translator(object))
-#'     }, error = function(err) {
-#'       print(err)
-#'       return(NA)
-#'     })
-#'   }
-#' )
-
-# -- relink CPP ptr ------
+# -- relink forest CPP ptr -----------------------------------------------------
 #' @title relink CPP ptr
 #' @name relinkCPP_prt-forestry
 #' @rdname relinkCPP
@@ -1066,8 +1031,21 @@ setMethod(
       object@forest <- rcpp_reconstructree(
         dataframe = object@dataframe,
         catCols = object@processed_dta$categoricalFeatureCols_cpp,
-        forest_R = object@forest_R
-        )
+        forest_R = object@forest_R,
+        replace = object@replace,
+        sampsize = object@sampsize,
+        splitratio = object@splitratio,
+        mtry = object@mtry,
+        nodesizeSpl = object@nodesizeSpl,
+        nodesizeAvg = object@nodesizeAvg,
+        nodesizeStrictSpl = object@nodesizeStrictSpl,
+        nodesizeStrictAvg = object@nodesizeStrictAvg,
+        seed = sample(.Machine$integer.max, 1),
+        nthread = 0, # will use all threads available.
+        verbose = FALSE,
+        middleSplit = object@middleSplit,
+        maxObs = object@maxObs,
+        doubleTree = object@doubleTree)
 
 
     }, error = function(err) {

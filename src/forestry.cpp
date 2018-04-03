@@ -515,3 +515,16 @@ void forestry::fillinTreeInfo(
   return ;
 };
 
+void forestry::reconstructTrees(
+    std::unique_ptr< std::vector<size_t> > & categoricalFeatureColsRcpp,
+    std::unique_ptr< std::vector< std::vector<int> >  > & var_ids,
+    std::unique_ptr< std::vector< std::vector<double> >  > & split_vals,
+    std::unique_ptr< std::vector< std::vector<size_t> >  > & leaf_idxs){
+
+  std::cout << "reconstructTrees is running";
+
+  return;
+}
+
+
+

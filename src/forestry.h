@@ -43,6 +43,12 @@ public:
       std::unique_ptr< std::vector< tree_info > > const & forest_dta
   );
 
+  void reconstructTrees(
+      std::unique_ptr< std::vector<size_t> > & categoricalFeatureColsRcpp,
+      std::unique_ptr< std::vector< std::vector<int> >  > & var_ids,
+      std::unique_ptr< std::vector< std::vector<double> >  > & split_vals,
+      std::unique_ptr< std::vector< std::vector<size_t> >  > & leaf_idxs);
+
   void calculateOOBError();
 
   float getOOBError() {
