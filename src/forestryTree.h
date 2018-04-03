@@ -52,6 +52,15 @@ public:
       DataFrame* trainingData
   );
 
+  void reconstruct_tree(
+    size_t mtry,
+    size_t minNodeSizeSpt,
+    size_t minNodeSizeAvg,
+    size_t minNodeSizeToSplitSpt,
+    size_t minNodeSizeToSplitAvg,
+    std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
+    std::unique_ptr< std::vector<size_t> > averagingSampleIndex);
+
   void recursivePartition(
     RFNode* rootNode,
     std::vector<size_t>* averagingSampleIndex,
@@ -109,11 +118,11 @@ public:
   }
 
   std::vector<size_t>* getSplittingIndex() {
-    return _averagingSampleIndex.get();
+    return _splittingSampleIndex.get();
   }
 
   std::vector<size_t>* getAveragingIndex() {
-    return _splittingSampleIndex.get();
+    return _averagingSampleIndex.get();
   }
 
   RFNode* getRoot() {

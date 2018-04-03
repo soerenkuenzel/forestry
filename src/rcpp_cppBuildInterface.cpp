@@ -312,12 +312,20 @@ Rcpp::List rcpp_CppToR_translator(
       Rcpp::NumericVector var_id = Rcpp::wrap(((*forest_dta)[i]).var_id);
       Rcpp::NumericVector split_val = Rcpp::wrap(((*forest_dta)[i]).split_val);
       Rcpp::NumericVector leaf_idx = Rcpp::wrap(((*forest_dta)[i]).leaf_idx);
+      Rcpp::NumericVector averagingSampleIndex =
+        Rcpp::wrap(((*forest_dta)[i]).averagingSampleIndex);
+      Rcpp::NumericVector splittingSampleIndex =
+        Rcpp::wrap(((*forest_dta)[i]).splittingSampleIndex);
+
 
 
       Rcpp::List list_i =
-        Rcpp::List::create(Rcpp::Named("var_id") = var_id,
-                           Rcpp::Named("split_val") = split_val,
-                           Rcpp::Named("leaf_idx") = leaf_idx);
+        Rcpp::List::create(
+          Rcpp::Named("var_id") = var_id,
+          Rcpp::Named("split_val") = split_val,
+          Rcpp::Named("leaf_idx") = leaf_idx,
+          Rcpp::Named("averagingSampleIndex") = averagingSampleIndex,
+          Rcpp::Named("splittingSampleIndex") = splittingSampleIndex);
 
       list_to_return.push_back(list_i);
     }

@@ -523,6 +523,33 @@ void forestry::reconstructTrees(
 
   std::cout << "reconstructTrees is running";
 
+////////////////////////////////////////////////////////////////////////////////
+    for (int i=0; i<split_vals->size(); i++) {
+      try{
+        forestryTree *oneTree = new forestryTree();
+
+        // TODO:
+        std::unique_ptr<std::vector<size_t> > splitSampleIndex;
+        std::unique_ptr<std::vector<size_t> > averageSampleIndex;
+
+        oneTree->reconstruct_tree(
+                getMtry(),
+                getMinNodeSizeSpt(),
+                getMinNodeSizeAvg(),
+                getMinNodeSizeToSplitSpt(),
+                getMinNodeSizeToSplitAvg(),
+                std::move(splitSampleIndex),
+                std::move(averageSampleIndex));
+
+        (*getForest()).emplace_back(oneTree);
+        _ntree = _ntree + 1;
+      } catch (std::runtime_error &err) {
+        std::cerr << err.what() << std::endl;
+      }
+
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
   return;
 }
 

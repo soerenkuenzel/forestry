@@ -19,6 +19,10 @@ struct tree_info {
   // contains the split values for regular nodes
   std::vector< size_t > leaf_idx;
   // contains the indices of observations in a leaf.
+  std::vector< size_t > averagingSampleIndex;
+  // contains the indices of the average set.
+  std::vector< size_t > splittingSampleIndex;
+  // contains the indices of the splitting set.
 };
 
 #endif //FORESTRYCPP_UTILS_H

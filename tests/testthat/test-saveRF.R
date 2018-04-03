@@ -17,9 +17,15 @@ test_that("Tests that saving RF and laoding it works", {
 
   forest <- forestry(x,
                      y,
-                     sample.fraction = .5,
+                     sample.fraction = 1,
+                     splitratio = .03,
                      ntree = 3,
                      saveable = TRUE)
+  table(forest@forest_R[[3]]$leaf_idx)
+  table(forest@forest_R[[3]]$averagingSampleIndex)
+  table(forest@forest_R[[3]]$splittingSampleIndex)
+
+
   testthat::expect_equal(forest@processed_dta$y[2], 4.9)
   testthat::expect_length(forest@forest_R[[3]]$var_id[1:5],
                           5)

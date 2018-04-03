@@ -259,6 +259,7 @@ void forestryTree::recursivePartition(
     size_t maxObs
 ){
 
+
   if ((*averagingSampleIndex).size() < getMinNodeSizeAvg() ||
     (*splittingSampleIndex).size() < getMinNodeSizeSpt()) {
     // Create two lists on heap and transfer the owernship to the node
@@ -527,7 +528,7 @@ void findBestSplitValueCategorical(
         ) < splitNodeSize ||
           std::min(
             averagingCategoryCount[*it],
-                                  averageTotalCount - averagingCategoryCount[*it]
+                                averageTotalCount - averagingCategoryCount[*it]
           ) < averageNodeSize
     ) {
       continue;
@@ -1053,6 +1054,33 @@ std::unique_ptr<tree_info> forestryTree::getTreeInfo(
     new tree_info
   );
   (*getRoot()).write_node_info(treeInfo, trainingData);
+
+  for (size_t i = 0; i<_averagingSampleIndex->size(); i++) {
+    treeInfo->averagingSampleIndex.push_back((*_averagingSampleIndex)[i] + 1);
+  }
+  for (size_t i = 0; i<_splittingSampleIndex->size(); i++) {
+    treeInfo->splittingSampleIndex.push_back((*_splittingSampleIndex)[i] + 1);
+  }
+
   return treeInfo;
 }
+
+void forestryTree::reconstruct_tree(
+    size_t mtry,
+    size_t minNodeSizeSpt,
+    size_t minNodeSizeAvg,
+    size_t minNodeSizeToSplitSpt,
+    size_t minNodeSizeToSplitAvg,
+    std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
+    std::unique_ptr< std::vector<size_t> > averagingSampleIndex){
+
+  _averagingSampleIndex = std::move(averagingSampleIndex);
+  _splittingSampleIndex = std::move(splittingSampleIndex);
+
+  std::cout << "We are constructing one tree";
+
+  return ;
+}
+
+
 
