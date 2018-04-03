@@ -104,11 +104,11 @@ public:
   }
 
   std::vector<size_t>* getSplittingIndex() {
-    return _averagingSampleIndex.get();
+    return _splittingSampleIndex.get();
   }
 
   std::vector<size_t>* getAveragingIndex() {
-    return _splittingSampleIndex.get();
+    return _averagingSampleIndex.get();
   }
 
   RFNode* getRoot() {
