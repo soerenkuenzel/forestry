@@ -1076,8 +1076,8 @@ void forestryTree::reconstruct_tree(
     std::vector<double> split_vals,
     std::vector<size_t> leafAveidxs,
     std::vector<size_t> leafSplidxs,
-    std::vector<size_t> splittingSampleIndex,
-    std::vector<size_t> averagingSampleIndex){
+    std::vector<size_t> averagingSampleIndex,
+    std::vector<size_t> splittingSampleIndex){
 
   // Setting all the parameters:
   _mtry = mtry;
@@ -1087,22 +1087,29 @@ void forestryTree::reconstruct_tree(
   _minNodeSizeToSplitAvg = minNodeSizeToSplitAvg;
 
   _averagingSampleIndex = std::unique_ptr< std::vector<size_t> > (
-    &averagingSampleIndex
+    new std::vector<size_t>
   );
+  for(size_t i=0; i<averagingSampleIndex.size(); i++){
+    (*_averagingSampleIndex).push_back(averagingSampleIndex[i]);
+  }
   _splittingSampleIndex = std::unique_ptr< std::vector<size_t> > (
-    &splittingSampleIndex
+    new std::vector<size_t>
   );
+  for(size_t i=0; i<splittingSampleIndex.size(); i++){
+    (*_splittingSampleIndex).push_back(splittingSampleIndex[i]);
+  }
 
-  //////////////////////////////////////////////////////////////////////////////
-  // Setting the _root
-  std::unique_ptr< RFNode > _root;
+  // //////////////////////////////////////////////////////////////////////////////
+  // // Setting the _root
+  std::unique_ptr< RFNode > root ( new RFNode() );
+  this->_root = std::move(root);
 
   recursive_reconstruction(
     _root.get(),
     &var_ids,
     &split_vals,
-    &leafSplidxs,
-    &leafAveidxs
+    &leafAveidxs,
+    &leafSplidxs
   );
 
   //// Set up Leaf node:
@@ -1123,15 +1130,18 @@ void forestryTree::recursive_reconstruction(
   std::vector<size_t> * leafSplidxs
 ) {
   int var_id = (*var_ids)[0];
-  (*var_ids).erase((*var_ids).begin());
-  double split_val = (*split_vals)[0];
-  (*split_vals).erase((*split_vals).begin());
-  if(var_id < 0){
-    // This is a terminal node
-    int nAve = -var_id;
-    int nSpl = -(*var_ids)[0];
     (*var_ids).erase((*var_ids).begin());
+  double  split_val = (*split_vals)[0];
+    (*split_vals).erase((*split_vals).begin());
 
+  std::cout << "\n var_id is " << var_id <<"\n";
+
+  if(var_id < 0){
+    std::cout << "Leaf Node \n";
+    // This is a terminal node
+    int nAve = abs(var_id);
+    int nSpl = abs((*var_ids)[0]);
+    (*var_ids).erase((*var_ids).begin());
 
     std::unique_ptr<std::vector<size_t> > averagingSampleIndex_(
         new std::vector<size_t>
@@ -1140,17 +1150,13 @@ void forestryTree::recursive_reconstruction(
         new std::vector<size_t>
     );
 
-    for(size_t i=0; i<nAve; i++){
-      averagingSampleIndex_->push_back(
-          (*getAveragingIndex())[(*leafAveidxs)[0]]
-      );
+    for(int i=0; i<nAve; i++){
+      averagingSampleIndex_->push_back((*leafAveidxs)[0] - 1);
       (*leafAveidxs).erase((*leafAveidxs).begin());
     }
 
-    for(size_t i=0; i<nSpl; i++){
-      splittingSampleIndex_->push_back(
-          (*getSplittingIndex())[(*leafSplidxs)[0]]
-      );
+    for(int i=0; i<nSpl; i++){
+      splittingSampleIndex_->push_back((*leafSplidxs)[0] -1);
       (*leafSplidxs).erase((*leafSplidxs).begin());
     }
 
@@ -1158,8 +1164,9 @@ void forestryTree::recursive_reconstruction(
         std::move(averagingSampleIndex_),
         std::move(splittingSampleIndex_)
     );
-
+    return;
   } else {
+    std::cout << "Regular Node \n";
     // This is a normal splitting node
     std::unique_ptr< RFNode > leftChild ( new RFNode() );
     std::unique_ptr< RFNode > rightChild ( new RFNode() );
@@ -1168,17 +1175,17 @@ void forestryTree::recursive_reconstruction(
       leftChild.get(),
       var_ids,
       split_vals,
-      leafSplidxs,
-      leafAveidxs
+      leafAveidxs,
+      leafSplidxs
       );
 
     recursive_reconstruction(
       rightChild.get(),
       var_ids,
       split_vals,
-      leafSplidxs,
-      leafAveidxs
-      );
+      leafAveidxs,
+      leafSplidxs
+    );
 
     (*currentNode).setSplitNode(
       (size_t) var_id,
@@ -1186,6 +1193,6 @@ void forestryTree::recursive_reconstruction(
       std::move(leftChild),
       std::move(rightChild)
       );
-
+    return;
   }
 }

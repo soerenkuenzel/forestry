@@ -63,8 +63,8 @@ public:
       std::vector<double> split_vals,
       std::vector<size_t> leafAveidxs,
       std::vector<size_t> leafSplidxs,
-      std::vector<size_t> splittingSampleIndex,
-      std::vector<size_t> averagingSampleIndex);
+      std::vector<size_t> averagingSampleIndex,
+      std::vector<size_t> splittingSampleIndex);
 
   void recursive_reconstruction(
       RFNode* currentNode,
