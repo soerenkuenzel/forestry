@@ -20,7 +20,7 @@ test_that("Tests that saving RF and laoding it works", {
                      sample.fraction = 1,
                      splitratio = .03,
                      ntree = 3,
-                     saveable = TRUE)
+   saveable = TRUE)
 
 
   testthat::expect_equal(forest@processed_dta$y[2], 4.9)
@@ -29,24 +29,20 @@ test_that("Tests that saving RF and laoding it works", {
   # Check that saving the forest works well.
   testthat::expect_length(CppToR_translator(forest@forest)[[3]]$var_id[1:5],
                           5)
-  forest <- forestry(x,
-                     y,
-                     sample.fraction = .5,
-                     splitratio = .5,
-                     ntree = 3,
-                     saveable = TRUE)
 
-  testthat::expect_equal(table(forest@forest_R[[1]]$leafAveidx),
-                         table(forest@forest_R[[1]]$averagingSampleIndex))
-  testthat::expect_equal(table(forest@forest_R[[1]]$leafSplidx),
-                         table(forest@forest_R[[1]]$splittingSampleIndex))
   #-- Translating R to C++ ------------------------------------------------
+
+
   forest <- forestry(x,
                      y,
                      sample.fraction = .5,
-                     splitratio = .5,
                      ntree = 3,
                      saveable = TRUE)
+  s <- forest@forest_R[[1]]$var_id
+  sum(s[s < 0])
+
+  forest@forest_R[[1]]$leaf_idx
+
 
   save(forest, file = "tests/testthat/forest.Rda")
   load("tests/testthat/forest.Rda", verbose = TRUE)

@@ -208,6 +208,7 @@ void RFNode::write_node_info(
   if (is_leaf()) {
     // If it is a leaf: set everything to be 0
     treeInfo->var_id.push_back(-getAveragingIndex()->size());
+    treeInfo->var_id.push_back(-getSplittingIndex()->size());
     treeInfo->split_val.push_back(0);
 
     std::vector<size_t> idx_in_leaf_Ave =

@@ -1095,15 +1095,15 @@ void forestryTree::reconstruct_tree(
 
   //////////////////////////////////////////////////////////////////////////////
   // Setting the _root
-  // std::unique_ptr< RFNode > _root;
-  //
-  // recursive_reconstruction(
-  //   _root,
-  //   var_ids,
-  //   split_vals,
-  //   leafSplidxs,
-  //   leafAveidxs,
-  // );
+  std::unique_ptr< RFNode > _root;
+
+  recursive_reconstruction(
+    _root.get(),
+    &var_ids,
+    &split_vals,
+    &leafSplidxs,
+    &leafAveidxs
+  );
 
   //// Set up Leaf node:
   //////////////////////////////////////////////////////////////////////////////
@@ -1115,54 +1115,77 @@ void forestryTree::reconstruct_tree(
 }
 
 
-// void recursive_reconstruction(
-//   std::unique_ptr< RFNode > _root,
-//   std::vector<int> var_ids,
-//   std::vector<double> split_vals,
-//   std::vector<size_t> leafAveidxs,
-//   std::vector<size_t> leafSplidxs
-// ) {
-//   std::unique_ptr<std::vector<size_t> > averagingSampleIndex_(
-//       new std::vector<size_t>(*averagingSampleIndex)
-//   );
-//   std::unique_ptr<std::vector<size_t> > splittingSampleIndex_(
-//       new std::vector<size_t>(*splittingSampleIndex)
-//   );
-//   (*rootNode).setLeafNode(
-//       std::move(averagingSampleIndex_),
-//       std::move(splittingSampleIndex_)
-//   );
-//   return;
-// }
-// std::unique_ptr< RFNode > leftChild ( new RFNode() );
-// std::unique_ptr< RFNode > rightChild ( new RFNode() );
-//
-// recursivePartition(
-//   leftChild.get(),
-//   &averagingLeftPartitionIndex,
-//   &splittingLeftPartitionIndex,
-//   trainingData,
-//   random_number_generator,
-//   splitMiddle,
-//   maxObs
-// );
-// recursivePartition(
-//   rightChild.get(),
-//   &averagingRightPartitionIndex,
-//   &splittingRightPartitionIndex,
-//   trainingData,
-//   random_number_generator,
-//   splitMiddle,
-//   maxObs
-// );
-//
-// (*currentNode).setSplitNode(
-//     bestSplitFeature,
-//     bestSplitValue,
-//     std::move(leftChild),
-//     std::move(rightChild)
-// );
-// }
+void forestryTree::recursive_reconstruction(
+  RFNode* currentNode,
+  std::vector<int> * var_ids,
+  std::vector<double> * split_vals,
+  std::vector<size_t> * leafAveidxs,
+  std::vector<size_t> * leafSplidxs
+) {
+  int var_id = (*var_ids)[0];
+  (*var_ids).erase((*var_ids).begin());
+  double split_val = (*split_vals)[0];
+  (*split_vals).erase((*split_vals).begin());
+  if(var_id < 0){
+    // This is a terminal node
+    int nAve = var_id;
+    int nSpl = (*var_ids)[0];
+    (*var_ids).erase((*var_ids).begin());
 
 
+    std::unique_ptr<std::vector<size_t> > averagingSampleIndex_(
+        new std::vector<size_t>
+    );
+    std::unique_ptr<std::vector<size_t> > splittingSampleIndex_(
+        new std::vector<size_t>
+    );
 
+    for(size_t i=0; i<nAve; i++){
+      averagingSampleIndex_->push_back(
+          (*getAveragingIndex())[(*leafAveidxs)[0]]
+      );
+      (*leafAveidxs).erase((*leafAveidxs).begin());
+    }
+
+    for(size_t i=0; i<nSpl; i++){
+      splittingSampleIndex_->push_back(
+          (*getSplittingIndex())[(*leafSplidxs)[0]]
+      );
+      (*leafSplidxs).erase((*leafSplidxs).begin());
+    }
+
+    (*currentNode).setLeafNode(
+        std::move(averagingSampleIndex_),
+        std::move(splittingSampleIndex_)
+    );
+
+  } else {
+    // This is a normal splitting node
+    std::unique_ptr< RFNode > leftChild ( new RFNode() );
+    std::unique_ptr< RFNode > rightChild ( new RFNode() );
+
+    recursive_reconstruction(
+      leftChild.get(),
+      var_ids,
+      split_vals,
+      leafSplidxs,
+      leafAveidxs
+      );
+
+    recursive_reconstruction(
+      rightChild.get(),
+      var_ids,
+      split_vals,
+      leafSplidxs,
+      leafAveidxs
+      );
+
+    (*currentNode).setSplitNode(
+      (size_t) var_id,
+      split_val,
+      std::move(leftChild),
+      std::move(rightChild)
+      );
+
+  }
+}
