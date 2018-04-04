@@ -311,7 +311,8 @@ Rcpp::List rcpp_CppToR_translator(
     for(size_t i=0; i!=forest_dta->size(); i++){
       Rcpp::NumericVector var_id = Rcpp::wrap(((*forest_dta)[i]).var_id);
       Rcpp::NumericVector split_val = Rcpp::wrap(((*forest_dta)[i]).split_val);
-      Rcpp::NumericVector leaf_idx = Rcpp::wrap(((*forest_dta)[i]).leaf_idx);
+      Rcpp::NumericVector leafAveidx = Rcpp::wrap(((*forest_dta)[i]).leafAveidx);
+      Rcpp::NumericVector leafSplidx = Rcpp::wrap(((*forest_dta)[i]).leafSplidx);
       Rcpp::NumericVector averagingSampleIndex =
         Rcpp::wrap(((*forest_dta)[i]).averagingSampleIndex);
       Rcpp::NumericVector splittingSampleIndex =
@@ -323,7 +324,8 @@ Rcpp::List rcpp_CppToR_translator(
         Rcpp::List::create(
           Rcpp::Named("var_id") = var_id,
           Rcpp::Named("split_val") = split_val,
-          Rcpp::Named("leaf_idx") = leaf_idx,
+          Rcpp::Named("leafAveidx") = leafAveidx,
+          Rcpp::Named("leafSplidx") = leafSplidx,
           Rcpp::Named("averagingSampleIndex") = averagingSampleIndex,
           Rcpp::Named("splittingSampleIndex") = splittingSampleIndex);
 
@@ -375,7 +377,10 @@ SEXP rcpp_reconstructree(
   std::unique_ptr< std::vector< std::vector<double> > > split_vals(
       new  std::vector< std::vector<double> >
   );
-  std::unique_ptr< std::vector< std::vector<size_t> > > leaf_idxs(
+  std::unique_ptr< std::vector< std::vector<size_t> > > leafAveidxs(
+      new  std::vector< std::vector<size_t> >
+  );
+  std::unique_ptr< std::vector< std::vector<size_t> > > leafSplidxs(
       new  std::vector< std::vector<size_t> >
   );
   std::unique_ptr< std::vector< std::vector<size_t> > > averagingSampleIndex(
@@ -393,14 +398,17 @@ SEXP rcpp_reconstructree(
     split_vals->push_back(
         Rcpp::as< std::vector<double> > ((Rcpp::as<Rcpp::List>(forest_R[i]))[1])
       );
-    leaf_idxs->push_back(
+    leafAveidxs->push_back(
         Rcpp::as< std::vector<size_t> > ((Rcpp::as<Rcpp::List>(forest_R[i]))[2])
       );
-    averagingSampleIndex->push_back(
+    leafSplidxs->push_back(
         Rcpp::as< std::vector<size_t> > ((Rcpp::as<Rcpp::List>(forest_R[i]))[3])
+    );
+    averagingSampleIndex->push_back(
+        Rcpp::as< std::vector<size_t> > ((Rcpp::as<Rcpp::List>(forest_R[i]))[4])
       );
     splittingSampleIndex->push_back(
-        Rcpp::as< std::vector<size_t> > ((Rcpp::as<Rcpp::List>(forest_R[i]))[4])
+        Rcpp::as< std::vector<size_t> > ((Rcpp::as<Rcpp::List>(forest_R[i]))[5])
       );
   }
 
@@ -428,7 +436,8 @@ SEXP rcpp_reconstructree(
   testFullForest->reconstructTrees(categoricalFeatureColsRcpp,
                                    var_ids,
                                    split_vals,
-                                   leaf_idxs,
+                                   leafAveidxs,
+                                   leafSplidxs,
                                    averagingSampleIndex,
                                    splittingSampleIndex);
 

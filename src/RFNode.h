@@ -89,6 +89,10 @@ public:
     return _averagingSampleIndex.get();
   }
 
+  std::vector<size_t>* getSplittingIndex() {
+    return _splittingSampleIndex.get();
+  }
+
 private:
   std::unique_ptr< std::vector<size_t> > _averagingSampleIndex;
   std::unique_ptr< std::vector<size_t> > _splittingSampleIndex;

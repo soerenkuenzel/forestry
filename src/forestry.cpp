@@ -519,7 +519,8 @@ void forestry::reconstructTrees(
     std::unique_ptr< std::vector<size_t> > & categoricalFeatureColsRcpp,
     std::unique_ptr< std::vector< std::vector<int> >  > & var_ids,
     std::unique_ptr< std::vector< std::vector<double> >  > & split_vals,
-    std::unique_ptr< std::vector< std::vector<size_t> >  > & leaf_idxs,
+    std::unique_ptr< std::vector< std::vector<size_t> >  > & leafAveidxs,
+    std::unique_ptr< std::vector< std::vector<size_t> >  > & leafSplidxs,
     std::unique_ptr< std::vector< std::vector<size_t> >  > &
       averagingSampleIndex,
     std::unique_ptr< std::vector< std::vector<size_t> >  > &
@@ -538,6 +539,11 @@ void forestry::reconstructTrees(
                 getMinNodeSizeAvg(),
                 getMinNodeSizeToSplitSpt(),
                 getMinNodeSizeToSplitAvg(),
+                (*categoricalFeatureColsRcpp),
+                (*var_ids)[i],
+                (*split_vals)[i],
+                (*leafAveidxs)[i],
+                (*leafSplidxs)[i],
                 (*averagingSampleIndex)[i],
                 (*splittingSampleIndex)[i]);
 

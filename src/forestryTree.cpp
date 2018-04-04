@@ -1071,11 +1071,21 @@ void forestryTree::reconstruct_tree(
     size_t minNodeSizeAvg,
     size_t minNodeSizeToSplitSpt,
     size_t minNodeSizeToSplitAvg,
+    std::vector<size_t> categoricalFeatureColsRcpp,
+    std::vector<int> var_ids,
+    std::vector<double> split_vals,
+    std::vector<size_t> leafAveidxs,
+    std::vector<size_t> leafSplidxs,
     std::vector<size_t> splittingSampleIndex,
     std::vector<size_t> averagingSampleIndex){
 
-  // Reassigning the _averagingSampleIndex and _splittingSampleIndex for that
-  // tree.
+  // Setting all the parameters:
+  _mtry = mtry;
+  _minNodeSizeSpt = minNodeSizeSpt;
+  _minNodeSizeAvg = minNodeSizeAvg;
+  _minNodeSizeToSplitSpt = minNodeSizeToSplitSpt;
+  _minNodeSizeToSplitAvg = minNodeSizeToSplitAvg;
+
   _averagingSampleIndex = std::unique_ptr< std::vector<size_t> > (
     &averagingSampleIndex
   );
@@ -1083,13 +1093,76 @@ void forestryTree::reconstruct_tree(
     &splittingSampleIndex
   );
 
+  //////////////////////////////////////////////////////////////////////////////
+  // Setting the _root
+  // std::unique_ptr< RFNode > _root;
+  //
+  // recursive_reconstruction(
+  //   _root,
+  //   var_ids,
+  //   split_vals,
+  //   leafSplidxs,
+  //   leafAveidxs,
+  // );
 
+  //// Set up Leaf node:
+  //////////////////////////////////////////////////////////////////////////////
 
 
   std::cout << "We are constructing one tree";
 
   return ;
 }
+
+
+// void recursive_reconstruction(
+//   std::unique_ptr< RFNode > _root,
+//   std::vector<int> var_ids,
+//   std::vector<double> split_vals,
+//   std::vector<size_t> leafAveidxs,
+//   std::vector<size_t> leafSplidxs
+// ) {
+//   std::unique_ptr<std::vector<size_t> > averagingSampleIndex_(
+//       new std::vector<size_t>(*averagingSampleIndex)
+//   );
+//   std::unique_ptr<std::vector<size_t> > splittingSampleIndex_(
+//       new std::vector<size_t>(*splittingSampleIndex)
+//   );
+//   (*rootNode).setLeafNode(
+//       std::move(averagingSampleIndex_),
+//       std::move(splittingSampleIndex_)
+//   );
+//   return;
+// }
+// std::unique_ptr< RFNode > leftChild ( new RFNode() );
+// std::unique_ptr< RFNode > rightChild ( new RFNode() );
+//
+// recursivePartition(
+//   leftChild.get(),
+//   &averagingLeftPartitionIndex,
+//   &splittingLeftPartitionIndex,
+//   trainingData,
+//   random_number_generator,
+//   splitMiddle,
+//   maxObs
+// );
+// recursivePartition(
+//   rightChild.get(),
+//   &averagingRightPartitionIndex,
+//   &splittingRightPartitionIndex,
+//   trainingData,
+//   random_number_generator,
+//   splitMiddle,
+//   maxObs
+// );
+//
+// (*currentNode).setSplitNode(
+//     bestSplitFeature,
+//     bestSplitValue,
+//     std::move(leftChild),
+//     std::move(rightChild)
+// );
+// }
 
 
 
