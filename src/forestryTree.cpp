@@ -1128,8 +1128,8 @@ void forestryTree::recursive_reconstruction(
   (*split_vals).erase((*split_vals).begin());
   if(var_id < 0){
     // This is a terminal node
-    int nAve = var_id;
-    int nSpl = (*var_ids)[0];
+    int nAve = -var_id;
+    int nSpl = -(*var_ids)[0];
     (*var_ids).erase((*var_ids).begin());
 
 
