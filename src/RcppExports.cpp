@@ -111,13 +111,16 @@ BEGIN_RCPP
 END_RCPP
 }
 // rcpp_reconstructree
-SEXP rcpp_reconstructree(SEXP dataframe, Rcpp::NumericVector catCols, Rcpp::List forest_R, bool replace, int sampsize, float splitratio, int mtry, int nodesizeSpl, int nodesizeAvg, int nodesizeStrictSpl, int nodesizeStrictAvg, int seed, int nthread, bool verbose, bool middleSplit, int maxObs, bool doubleTree);
-RcppExport SEXP _forestry_rcpp_reconstructree(SEXP dataframeSEXP, SEXP catColsSEXP, SEXP forest_RSEXP, SEXP replaceSEXP, SEXP sampsizeSEXP, SEXP splitratioSEXP, SEXP mtrySEXP, SEXP nodesizeSplSEXP, SEXP nodesizeAvgSEXP, SEXP nodesizeStrictSplSEXP, SEXP nodesizeStrictAvgSEXP, SEXP seedSEXP, SEXP nthreadSEXP, SEXP verboseSEXP, SEXP middleSplitSEXP, SEXP maxObsSEXP, SEXP doubleTreeSEXP) {
+SEXP rcpp_reconstructree(Rcpp::List x, Rcpp::NumericVector y, Rcpp::NumericVector catCols, int numRows, int numColumns, Rcpp::List forest_R, bool replace, int sampsize, float splitratio, int mtry, int nodesizeSpl, int nodesizeAvg, int nodesizeStrictSpl, int nodesizeStrictAvg, int seed, int nthread, bool verbose, bool middleSplit, int maxObs, bool doubleTree);
+RcppExport SEXP _forestry_rcpp_reconstructree(SEXP xSEXP, SEXP ySEXP, SEXP catColsSEXP, SEXP numRowsSEXP, SEXP numColumnsSEXP, SEXP forest_RSEXP, SEXP replaceSEXP, SEXP sampsizeSEXP, SEXP splitratioSEXP, SEXP mtrySEXP, SEXP nodesizeSplSEXP, SEXP nodesizeAvgSEXP, SEXP nodesizeStrictSplSEXP, SEXP nodesizeStrictAvgSEXP, SEXP seedSEXP, SEXP nthreadSEXP, SEXP verboseSEXP, SEXP middleSplitSEXP, SEXP maxObsSEXP, SEXP doubleTreeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type dataframe(dataframeSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type x(xSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type y(ySEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type catCols(catColsSEXP);
+    Rcpp::traits::input_parameter< int >::type numRows(numRowsSEXP);
+    Rcpp::traits::input_parameter< int >::type numColumns(numColumnsSEXP);
     Rcpp::traits::input_parameter< Rcpp::List >::type forest_R(forest_RSEXP);
     Rcpp::traits::input_parameter< bool >::type replace(replaceSEXP);
     Rcpp::traits::input_parameter< int >::type sampsize(sampsizeSEXP);
@@ -133,7 +136,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type middleSplit(middleSplitSEXP);
     Rcpp::traits::input_parameter< int >::type maxObs(maxObsSEXP);
     Rcpp::traits::input_parameter< bool >::type doubleTree(doubleTreeSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_reconstructree(dataframe, catCols, forest_R, replace, sampsize, splitratio, mtry, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, seed, nthread, verbose, middleSplit, maxObs, doubleTree));
+    rcpp_result_gen = Rcpp::wrap(rcpp_reconstructree(x, y, catCols, numRows, numColumns, forest_R, replace, sampsize, splitratio, mtry, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, seed, nthread, verbose, middleSplit, maxObs, doubleTree));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -146,7 +149,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_forestry_rcpp_getObservationSizeInterface", (DL_FUNC) &_forestry_rcpp_getObservationSizeInterface, 1},
     {"_forestry_rcpp_AddTreeInterface", (DL_FUNC) &_forestry_rcpp_AddTreeInterface, 2},
     {"_forestry_rcpp_CppToR_translator", (DL_FUNC) &_forestry_rcpp_CppToR_translator, 1},
-    {"_forestry_rcpp_reconstructree", (DL_FUNC) &_forestry_rcpp_reconstructree, 17},
+    {"_forestry_rcpp_reconstructree", (DL_FUNC) &_forestry_rcpp_reconstructree, 20},
     {NULL, NULL, 0}
 };
 

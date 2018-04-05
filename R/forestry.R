@@ -1011,26 +1011,29 @@ setMethod(
   definition = function(object) {
 
     # 1.) reconnect the data.frame to a cpp data.frame
-    tryCatch({
-      object@dataframe <-
-        rcpp_cppDataFrameInterface(
-          x = object@processed_dta$processed_x,
-          y = object@processed_dta$y,
-          catCols = object@processed_dta$categoricalFeatureCols_cpp,
-          numRows = length(object@processed_dta$y),
-          numColumns = ncol(object@processed_dta$processed_x)
-        )
-    }, error = function(err) {
-      print('Problem when trying to load the R data frame back into R')
-      print(err)
-      return(NA)
-    })
+    # tryCatch({
+    #   object@dataframe <-
+    #     rcpp_cppDataFrameInterface(
+    #       x = object@processed_dta$processed_x,
+    #       y = object@processed_dta$y,
+    #       catCols = object@processed_dta$categoricalFeatureCols_cpp,
+    #       numRows = length(object@processed_dta$y),
+    #       numColumns = ncol(object@processed_dta$processed_x)
+    #     )
+    # }, error = function(err) {
+    #   print('Problem when trying to load the R data frame back into R')
+    #   print(err)
+    #   return(NA)
+    # })
 
     # 2.) reconnect the forest.
     tryCatch({
       object@forest <- rcpp_reconstructree(
-        dataframe = object@dataframe,
+        x = object@processed_dta$processed_x,
+        y = object@processed_dta$y,
         catCols = object@processed_dta$categoricalFeatureCols_cpp,
+        numRows = length(object@processed_dta$y),
+        numColumns = ncol(object@processed_dta$processed_x),
         forest_R = object@forest_R,
         replace = object@replace,
         sampsize = object@sampsize,

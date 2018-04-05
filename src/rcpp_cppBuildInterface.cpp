@@ -345,8 +345,11 @@ Rcpp::List rcpp_CppToR_translator(
 ////////////////////////////////////////////////////////////////////////////////
 // [[Rcpp::export]]
 SEXP rcpp_reconstructree(
-  SEXP dataframe,
+  Rcpp::List x,
+  Rcpp::NumericVector y,
   Rcpp::NumericVector catCols,
+  int numRows,
+  int numColumns,
   Rcpp::List forest_R,
   bool replace,
   int sampsize,
@@ -363,12 +366,6 @@ SEXP rcpp_reconstructree(
   int maxObs,
   bool doubleTree
 ){
-  // Decode catCols and forest_R
-  std::unique_ptr< std::vector<size_t> > categoricalFeatureColsRcpp (
-      new std::vector<size_t>(
-          Rcpp::as< std::vector<size_t> >(catCols)
-      )
-  ); // contains the col indices of categorical features.
 
   // Decode the forest_R data and create appropriate pointers to pointers:
   std::unique_ptr< std::vector< std::vector<int> > > var_ids(
@@ -414,8 +411,36 @@ SEXP rcpp_reconstructree(
 
   // Setting up an empytforest with all parameters but without any trees as the
   // trees will be constructed from the R data set.
+
+  std::unique_ptr< std::vector< std::vector<float> > > featureDataRcpp (
+      new std::vector< std::vector<float> >(
+          Rcpp::as< std::vector< std::vector<float> > >(x)
+      )
+  );
+
+  std::unique_ptr< std::vector<float> > outcomeDataRcpp (
+      new std::vector<float>(
+          Rcpp::as< std::vector<float> >(y)
+      )
+  );
+
+  std::unique_ptr< std::vector<size_t> > categoricalFeatureColsRcpp (
+      new std::vector<size_t>(
+          Rcpp::as< std::vector<size_t> >(catCols)
+      )
+  );
+
+  DataFrame* trainingData = new DataFrame(
+    std::move(featureDataRcpp),
+    std::move(outcomeDataRcpp),
+    std::move(categoricalFeatureColsRcpp),
+    (size_t) numRows,
+    (size_t) numColumns
+  );
+
+
   forestry* testFullForest = new forestry(
-    (DataFrame*) dataframe,
+    (DataFrame*) trainingData,
     (size_t) 0,
     (bool) replace,
     (size_t) sampsize,
