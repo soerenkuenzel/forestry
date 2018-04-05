@@ -111,7 +111,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // rcpp_reconstructree
-SEXP rcpp_reconstructree(Rcpp::List x, Rcpp::NumericVector y, Rcpp::NumericVector catCols, int numRows, int numColumns, Rcpp::List forest_R, bool replace, int sampsize, float splitratio, int mtry, int nodesizeSpl, int nodesizeAvg, int nodesizeStrictSpl, int nodesizeStrictAvg, int seed, int nthread, bool verbose, bool middleSplit, int maxObs, bool doubleTree);
+Rcpp::List rcpp_reconstructree(Rcpp::List x, Rcpp::NumericVector y, Rcpp::NumericVector catCols, int numRows, int numColumns, Rcpp::List forest_R, bool replace, int sampsize, float splitratio, int mtry, int nodesizeSpl, int nodesizeAvg, int nodesizeStrictSpl, int nodesizeStrictAvg, int seed, int nthread, bool verbose, bool middleSplit, int maxObs, bool doubleTree);
 RcppExport SEXP _forestry_rcpp_reconstructree(SEXP xSEXP, SEXP ySEXP, SEXP catColsSEXP, SEXP numRowsSEXP, SEXP numColumnsSEXP, SEXP forest_RSEXP, SEXP replaceSEXP, SEXP sampsizeSEXP, SEXP splitratioSEXP, SEXP mtrySEXP, SEXP nodesizeSplSEXP, SEXP nodesizeAvgSEXP, SEXP nodesizeStrictSplSEXP, SEXP nodesizeStrictAvgSEXP, SEXP seedSEXP, SEXP nthreadSEXP, SEXP verboseSEXP, SEXP middleSplitSEXP, SEXP maxObsSEXP, SEXP doubleTreeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;

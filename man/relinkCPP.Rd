@@ -29,7 +29,12 @@ set.seed(323652639)
 x <- iris[, -1]
 y <- iris[, 1]
 forest <- forestry(x, y, ntree = 3)
-save(forest, file = "tests/testthat/forest.Rda")
-load("tests/testthat/forest.Rda", verbose = TRUE)
-relinkCPP_prt(forest)
+
+save(forest, file = "forest.Rda")
+rm(forest)
+load("forest.Rda", verbose = FALSE)
+forest <- relinkCPP_prt(forest)
+y_pred_after <- predict(forest, x)
+testthat::expect_equal(y_pred_before, y_pred_after)
+file.remove("forest.Rda")
 }

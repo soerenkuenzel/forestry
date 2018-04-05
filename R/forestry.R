@@ -985,9 +985,14 @@ setMethod(
 #' x <- iris[, -1]
 #' y <- iris[, 1]
 #' forest <- forestry(x, y, ntree = 3)
-#' save(forest, file = "tests/testthat/forest.Rda")
-#' load("tests/testthat/forest.Rda", verbose = TRUE)
-#' relinkCPP_prt(forest)
+#'
+#' save(forest, file = "forest.Rda")
+#' rm(forest)
+#' load("forest.Rda", verbose = FALSE)
+#' forest <- relinkCPP_prt(forest)
+#' y_pred_after <- predict(forest, x)
+#' testthat::expect_equal(y_pred_before, y_pred_after)
+#' file.remove("forest.Rda")
 #' @export relinkCPP_prt
 setGeneric(
   name = "relinkCPP_prt",
@@ -1009,26 +1014,10 @@ setMethod(
   f = "relinkCPP_prt",
   signature = "forestry",
   definition = function(object) {
-
     # 1.) reconnect the data.frame to a cpp data.frame
-    # tryCatch({
-    #   object@dataframe <-
-    #     rcpp_cppDataFrameInterface(
-    #       x = object@processed_dta$processed_x,
-    #       y = object@processed_dta$y,
-    #       catCols = object@processed_dta$categoricalFeatureCols_cpp,
-    #       numRows = length(object@processed_dta$y),
-    #       numColumns = ncol(object@processed_dta$processed_x)
-    #     )
-    # }, error = function(err) {
-    #   print('Problem when trying to load the R data frame back into R')
-    #   print(err)
-    #   return(NA)
-    # })
-
     # 2.) reconnect the forest.
     tryCatch({
-      object@forest <- rcpp_reconstructree(
+      forest_and_df_ptr <- rcpp_reconstructree(
         x = object@processed_dta$processed_x,
         y = object@processed_dta$y,
         catCols = object@processed_dta$categoricalFeatureCols_cpp,
@@ -1050,6 +1039,8 @@ setMethod(
         maxObs = object@maxObs,
         doubleTree = object@doubleTree)
 
+      object@forest <- forest_and_df_ptr$forest_ptr
+      object@dataframe <- forest_and_df_ptr$data_frame_ptr
 
     }, error = function(err) {
       print('Problem when trying to create the forest object in Cpp')

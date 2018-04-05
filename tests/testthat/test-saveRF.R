@@ -3,7 +3,7 @@ test_that("Tests that saving RF and laoding it works", {
   context("Save and Load RF")
 
   set.seed(238943202)
-  x <- iris[, -1]
+  x <- iris[,-1]
   y <- iris[, 1]
 
   #-- Translating C++ to R ------------------------------------------------
@@ -34,7 +34,7 @@ test_that("Tests that saving RF and laoding it works", {
 
   #-- Translating from R to C++ and back ---------------------------------------
   set.seed(238943202)
-  x <- iris[, -1]
+  x <- iris[,-1]
   y <- iris[, 1]
 
   forest <- forestry(
@@ -61,7 +61,13 @@ test_that("Tests that saving RF and laoding it works", {
 
 
   # -- Actual saving and loading -----------------------------------------------
-  # save(forest, file = "tests/testthat/forest.Rda")
-  # load("tests/testthat/forest.Rda", verbose = TRUE)
-  # str(forest)
+  y_pred_before <- predict(forest, x)
+  save(forest, file = "forest.Rda")
+  rm(forest)
+  load("forest.Rda", verbose = FALSE)
+  forest <- relinkCPP_prt(forest)
+  y_pred_after <- predict(forest, x)
+  testthat::expect_equal(y_pred_before, y_pred_after)
+
+  file.remove("forest.Rda")
 })

@@ -344,7 +344,7 @@ Rcpp::List rcpp_CppToR_translator(
 
 ////////////////////////////////////////////////////////////////////////////////
 // [[Rcpp::export]]
-SEXP rcpp_reconstructree(
+Rcpp::List rcpp_reconstructree(
   Rcpp::List x,
   Rcpp::NumericVector y,
   Rcpp::NumericVector catCols,
@@ -409,12 +409,6 @@ SEXP rcpp_reconstructree(
       );
   }
 
-  // Setting up an empytforest with all parameters but without any trees as the
-  // trees will be constructed from the R data set.
-
-  //////////////////////////////////////////////////////////
-  DataFrame* trainingData;
-
   // Decode catCols and forest_R
   std::unique_ptr< std::vector<size_t> > categoricalFeatureColsRcpp (
       new std::vector<size_t>(
@@ -437,35 +431,25 @@ SEXP rcpp_reconstructree(
       )
   ); // contains the col indices of categorical features.
 
+  std::unique_ptr<std::vector< std::vector<float> > > featureDataRcpp (
+      new std::vector< std::vector<float> >(
+          Rcpp::as< std::vector< std::vector<float> > >(x)
+      )
+  );
 
+  std::unique_ptr< std::vector<float> > outcomeDataRcpp (
+      new std::vector<float>(
+          Rcpp::as< std::vector<float> >(y)
+      )
+  );
 
-  try {
-    std::unique_ptr<std::vector< std::vector<float> > > featureDataRcpp (
-        new std::vector< std::vector<float> >(
-            Rcpp::as< std::vector< std::vector<float> > >(x)
-        )
-    );
-
-    std::unique_ptr< std::vector<float> > outcomeDataRcpp (
-        new std::vector<float>(
-            Rcpp::as< std::vector<float> >(y)
-        )
-    );
-
-    trainingData = new DataFrame(
-      std::move(featureDataRcpp),
-      std::move(outcomeDataRcpp),
-      std::move(categoricalFeatureColsRcpp),
-      (size_t) numRows,
-      (size_t) numColumns
-    );
-
-  } catch(std::runtime_error const& err) {
-    forward_exception_to_r(err);
-  } catch(...) {
-    ::Rf_error("c++ exception (unknown reason)");
-  }
-  //////////////////////////////////////////////////////////
+  DataFrame* trainingData = new DataFrame(
+    std::move(featureDataRcpp),
+    std::move(outcomeDataRcpp),
+    std::move(categoricalFeatureColsRcpp),
+    (size_t) numRows,
+    (size_t) numColumns
+  );
 
   forestry* testFullForest = new forestry(
     (DataFrame*) trainingData,
@@ -501,5 +485,7 @@ SEXP rcpp_reconstructree(
     (R_CFinalizer_t) freeforestry,
     (Rboolean) TRUE
   );
-  return ptr;
+  Rcpp::XPtr<DataFrame> df_ptr(trainingData, true) ;
+  return Rcpp::List::create(Rcpp::Named("forest_ptr") = ptr,
+                            Rcpp::Named("data_frame_ptr") = df_ptr);
 }
