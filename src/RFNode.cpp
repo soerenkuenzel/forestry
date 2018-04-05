@@ -61,19 +61,9 @@ void RFNode::predict(
 
   // If the node is a leaf, aggregate all its averaging data samples
   if (is_leaf()) {
-    // std::cout << "\n\nThis is being called\n\n";
     // Calculate the mean of current node
-    for(size_t i = 0; i < getAveragingIndex()->size(); i++){
-      std::cout << (*getAveragingIndex())[i] << "\n";
-    }
-    std::cout << "\n\n Train data: "
-              // << (*(*trainingData).getOutcomeData())[0] <<"\n";
-                 << 0 <<"\n";
-    // for(size_t i = 0; i < trainingData->getNumRows(); i++){
-    //   std::cout << (*(*trainingData).getOutcomeData())[0] << "\n";
-    // }
 
-    float predictedMean = 5.0;//(*trainingData).partitionMean(getAveragingIndex());
+    float predictedMean = (*trainingData).partitionMean(getAveragingIndex());
 
     // Give all updateIndex the mean of the node as prediction values
     for (

@@ -415,31 +415,49 @@ SEXP rcpp_reconstructree(
   //////////////////////////////////////////////////////////
   DataFrame* trainingData;
 
+  // Decode catCols and forest_R
   std::unique_ptr< std::vector<size_t> > categoricalFeatureColsRcpp (
       new std::vector<size_t>(
           Rcpp::as< std::vector<size_t> >(catCols)
       )
+  ); // contains the col indices of categorical features.
+
+
+  std::unique_ptr< std::vector<size_t> > categoricalFeatureColsRcpp_copy(
+      new std::vector<size_t>
   );
 
+  for(size_t i=0; i<(*categoricalFeatureColsRcpp).size(); i++){
+    (*categoricalFeatureColsRcpp_copy).push_back(
+        (*categoricalFeatureColsRcpp)[i]);
+  }
+  (
+      new std::vector<size_t>(
+          Rcpp::as< std::vector<size_t> >(catCols)
+      )
+  ); // contains the col indices of categorical features.
+
+
+
   try {
-    // std::unique_ptr<std::vector< std::vector<float> > > featureDataRcpp (
-    //     new std::vector< std::vector<float> >(
-    //         Rcpp::as< std::vector< std::vector<float> > >(x)
-    //     )
-    // );
-    //
-    // std::unique_ptr< std::vector<float> > outcomeDataRcpp (
-    //     new std::vector<float>(
-    //         Rcpp::as< std::vector<float> >(y)
-    //     )
-    // );
+    std::unique_ptr<std::vector< std::vector<float> > > featureDataRcpp (
+        new std::vector< std::vector<float> >(
+            Rcpp::as< std::vector< std::vector<float> > >(x)
+        )
+    );
+
+    std::unique_ptr< std::vector<float> > outcomeDataRcpp (
+        new std::vector<float>(
+            Rcpp::as< std::vector<float> >(y)
+        )
+    );
 
     trainingData = new DataFrame(
-      // std::move(featureDataRcpp),
-      // std::move(outcomeDataRcpp),
-      // std::move(categoricalFeatureColsRcpp),
-      // (size_t) numRows,
-      // (size_t) numColumns
+      std::move(featureDataRcpp),
+      std::move(outcomeDataRcpp),
+      std::move(categoricalFeatureColsRcpp),
+      (size_t) numRows,
+      (size_t) numColumns
     );
 
   } catch(std::runtime_error const& err) {
@@ -449,54 +467,26 @@ SEXP rcpp_reconstructree(
   }
   //////////////////////////////////////////////////////////
 
-//   std::unique_ptr< std::vector< std::vector<float> > > featureDataRcpp (
-//       new std::vector< std::vector<float> >(
-//           Rcpp::as< std::vector< std::vector<float> > >(x)
-//       )
-//   );
-//
-//   std::unique_ptr< std::vector<float> > outcomeDataRcpp (
-//       new std::vector<float>(
-//           Rcpp::as< std::vector<float> >(y)
-//       )
-//   );
-//
-//   std::unique_ptr< std::vector<size_t> > categoricalFeatureColsRcpp (
-//       new std::vector<size_t>(
-//           Rcpp::as< std::vector<size_t> >(catCols)
-//       )
-//   );
-// ////////////////////////////////////////////////////////////////////////////////
-//   DataFrame* trainingData = new DataFrame(
-//     std::move(featureDataRcpp),
-//     std::move(outcomeDataRcpp),
-//     std::move(categoricalFeatureColsRcpp),
-//     (size_t) numRows,
-//     (size_t) numColumns
-//   );
-////////////////////////////////////////////////////////////////////////////////
+  forestry* testFullForest = new forestry(
+    (DataFrame*) trainingData,
+    (size_t) 0,
+    (bool) replace,
+    (size_t) sampsize,
+    (float) splitratio,
+    (size_t) mtry,
+    (size_t) nodesizeSpl,
+    (size_t) nodesizeAvg,
+    (size_t) nodesizeStrictSpl,
+    (size_t) nodesizeStrictAvg,
+    (unsigned int) seed,
+    (size_t) nthread,
+    (bool) verbose,
+    (bool) middleSplit,
+    (size_t) maxObs,
+    (bool) doubleTree
+  );
 
-  forestry* testFullForest;
-  // = new forestry(
-  //   (DataFrame*) trainingData,
-  //   (size_t) 0,
-  //   (bool) replace,
-  //   (size_t) sampsize,
-  //   (float) splitratio,
-  //   (size_t) mtry,
-  //   (size_t) nodesizeSpl,
-  //   (size_t) nodesizeAvg,
-  //   (size_t) nodesizeStrictSpl,
-  //   (size_t) nodesizeStrictAvg,
-  //   (unsigned int) seed,
-  //   (size_t) nthread,
-  //   (bool) verbose,
-  //   (bool) middleSplit,
-  //   (size_t) maxObs,
-  //   (bool) doubleTree
-  // );
-
-  testFullForest->reconstructTrees(categoricalFeatureColsRcpp,
+  testFullForest->reconstructTrees(categoricalFeatureColsRcpp_copy,
                                    var_ids,
                                    split_vals,
                                    leafAveidxs,
