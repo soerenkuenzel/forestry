@@ -1188,7 +1188,7 @@ void forestryTree::recursive_reconstruction(
     );
 
     (*currentNode).setSplitNode(
-      (size_t) var_id,
+      (size_t) var_id - 1,
       split_val,
       std::move(leftChild),
       std::move(rightChild)

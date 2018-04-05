@@ -441,9 +441,6 @@ SEXP rcpp_reconstructree(
                                    averagingSampleIndex,
                                    splittingSampleIndex);
 
-
-  //////////////////////////////////////////////////////////////////////////////
-
   // delete(testFullForest);
   Rcpp::XPtr<forestry> ptr(testFullForest, true);
   R_RegisterCFinalizerEx(

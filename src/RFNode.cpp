@@ -211,16 +211,14 @@ void RFNode::write_node_info(
     treeInfo->var_id.push_back(-getSplittingIndex()->size());
     treeInfo->split_val.push_back(0);
 
-    std::vector<size_t> idx_in_leaf_Ave =
-      (*trainingData).get_all_row_idx(getAveragingIndex());
+    std::vector<size_t> idx_in_leaf_Ave = *getAveragingIndex();
     for (size_t i = 0; i<idx_in_leaf_Ave.size(); i++) {
-      treeInfo->leafAveidx.push_back(idx_in_leaf_Ave[i]);
+      treeInfo->leafAveidx.push_back(idx_in_leaf_Ave[i] + 1);
     }
 
-    std::vector<size_t> idx_in_leaf_Spl =
-      (*trainingData).get_all_row_idx(getSplittingIndex());
+    std::vector<size_t> idx_in_leaf_Spl = *getSplittingIndex();
     for (size_t i = 0; i<idx_in_leaf_Spl.size(); i++) {
-      treeInfo->leafSplidx.push_back(idx_in_leaf_Spl[i]);
+      treeInfo->leafSplidx.push_back(idx_in_leaf_Spl[i] + 1);
     }
 
 
