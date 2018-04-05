@@ -1090,17 +1090,15 @@ void forestryTree::reconstruct_tree(
     new std::vector<size_t>
   );
   for(size_t i=0; i<averagingSampleIndex.size(); i++){
-    (*_averagingSampleIndex).push_back(averagingSampleIndex[i]);
+    (*_averagingSampleIndex).push_back(averagingSampleIndex[i] - 1);
   }
   _splittingSampleIndex = std::unique_ptr< std::vector<size_t> > (
     new std::vector<size_t>
   );
   for(size_t i=0; i<splittingSampleIndex.size(); i++){
-    (*_splittingSampleIndex).push_back(splittingSampleIndex[i]);
+    (*_splittingSampleIndex).push_back(splittingSampleIndex[i] - 1);
   }
 
-  // //////////////////////////////////////////////////////////////////////////////
-  // // Setting the _root
   std::unique_ptr< RFNode > root ( new RFNode() );
   this->_root = std::move(root);
 
@@ -1111,12 +1109,6 @@ void forestryTree::reconstruct_tree(
     &leafAveidxs,
     &leafSplidxs
   );
-
-  //// Set up Leaf node:
-  //////////////////////////////////////////////////////////////////////////////
-
-
-  std::cout << "We are constructing one tree";
 
   return ;
 }
@@ -1134,10 +1126,7 @@ void forestryTree::recursive_reconstruction(
   double  split_val = (*split_vals)[0];
     (*split_vals).erase((*split_vals).begin());
 
-  std::cout << "\n var_id is " << var_id <<"\n";
-
   if(var_id < 0){
-    std::cout << "Leaf Node \n";
     // This is a terminal node
     int nAve = abs(var_id);
     int nSpl = abs((*var_ids)[0]);
@@ -1156,7 +1145,7 @@ void forestryTree::recursive_reconstruction(
     }
 
     for(int i=0; i<nSpl; i++){
-      splittingSampleIndex_->push_back((*leafSplidxs)[0] -1);
+      splittingSampleIndex_->push_back((*leafSplidxs)[0] - 1);
       (*leafSplidxs).erase((*leafSplidxs).begin());
     }
 
@@ -1166,7 +1155,6 @@ void forestryTree::recursive_reconstruction(
     );
     return;
   } else {
-    std::cout << "Regular Node \n";
     // This is a normal splitting node
     std::unique_ptr< RFNode > leftChild ( new RFNode() );
     std::unique_ptr< RFNode > rightChild ( new RFNode() );

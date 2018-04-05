@@ -526,9 +526,6 @@ void forestry::reconstructTrees(
     std::unique_ptr< std::vector< std::vector<size_t> >  > &
       splittingSampleIndex){
 
-  std::cout << "reconstructTrees is running";
-
-////////////////////////////////////////////////////////////////////////////////
     for (int i=0; i<split_vals->size(); i++) {
       try{
         forestryTree *oneTree = new forestryTree();
@@ -555,7 +552,6 @@ void forestry::reconstructTrees(
 
   }
 
-  //////////////////////////////////////////////////////////////////////////////
   return;
 }
 

@@ -3,7 +3,7 @@ test_that("Tests that saving RF and laoding it works", {
   context("Save and Load RF")
 
   set.seed(238943202)
-  x <- iris[,-1]
+  x <- iris[, -1]
   y <- iris[, 1]
 
   #-- Translating C++ to R ------------------------------------------------
@@ -15,12 +15,14 @@ test_that("Tests that saving RF and laoding it works", {
   testthat::expect_equal(forest@processed_dta, list())
   testthat::expect_equal(forest@forest_R, list())
 
-  forest <- forestry(x,
-                     y,
-                     sample.fraction = 1,
-                     splitratio = .03,
-                     ntree = 3,
-   saveable = TRUE)
+  forest <- forestry(
+    x,
+    y,
+    sample.fraction = 1,
+    splitratio = .03,
+    ntree = 3,
+    saveable = TRUE
+  )
 
 
   testthat::expect_equal(forest@processed_dta$y[2], 4.9)
@@ -30,49 +32,36 @@ test_that("Tests that saving RF and laoding it works", {
   testthat::expect_length(CppToR_translator(forest@forest)[[3]]$var_id[1:5],
                           5)
 
-  #-- Translating R to C++ ------------------------------------------------
+  #-- Translating from R to C++ and back ---------------------------------------
+  set.seed(238943202)
+  x <- iris[, -1]
+  y <- iris[, 1]
 
+  forest <- forestry(
+    x,
+    y,
+    sample.fraction = 1,
+    splitratio = 1,
+    ntree = 3,
+    saveable = TRUE,
+    replace = FALSE
+  )
 
-  forest <- forestry(x,
-                     y,
-                     sample.fraction = .5,
-                     ntree = 3,
-                     saveable = TRUE)
-  s <- forest@forest_R[[1]]$var_id
-  sum(s[s < 0])
+  before <- forest@forest_R[[1]]
+  y_pred_before <- predict(forest, x)
 
-  forest@forest_R[[1]]$leaf_idx
-
-
-  save(forest, file = "tests/testthat/forest.Rda")
-  load("tests/testthat/forest.Rda", verbose = TRUE)
-  str(forest)
-
-  forest@dataframe
-  forest@forest
   forest <- relinkCPP_prt(forest)
-  forest@dataframe
-  forest@forest
+  after <- CppToR_translator(forest@forest)[[1]]
+  # y_pred_after <- predict(forest, x)
 
-  s <- forest@forest_R[[1]]$var_id
-  sum(s[s < 0])
 
-  forest@forest_R[[1]]$leaf_idx
+  for (i in 1:6) {
+    testthat::expect_equal(after[[i]], before[[i]])
+  }
 
-  #
 
-  # translate Ranger and randomForest
-  # rfr <-
-  #   ranger::ranger(
-  #     y ~ .,
-  #     data = x,
-  #     write.forest = TRUE,
-  #     respect.unordered.factors = 'partition'
-  #   )
-  # rfr$forest$child.nodeIDs[[1]]
-  # rfr$forest$split.varIDs[[1]]
-  # rfr$forest$split.values[[1]]
-  #
-  # rfr$forest$is.ordered
-  # rfr$forest$independent.variable.names
+  # -- Actual saving and loading -----------------------------------------------
+  # save(forest, file = "tests/testthat/forest.Rda")
+  # load("tests/testthat/forest.Rda", verbose = TRUE)
+  # str(forest)
 })
