@@ -988,7 +988,7 @@ setGeneric(
 #' @inheritParams relinkCPP_prt
 #' @return A list of lists. Each sublist contains the information to span a
 #'   tree.
-#' @aliases relinkCPP_prt,relinkCPP_prt-method
+#' @aliases relinkCPP_prt,forestry-method
 #' @exportMethod relinkCPP_prt
 setMethod(
   f = "relinkCPP_prt",
@@ -1057,7 +1057,6 @@ setMethod(
 #' y_pred_after <- predict(forest, x)
 #' testthat::expect_equal(y_pred_before, y_pred_after)
 #' file.remove("forest.Rda")
-#' @exportMethod make_savable
 setGeneric(
   name = "make_savable",
   def = function(object) {
@@ -1073,7 +1072,7 @@ setGeneric(
 #' @inheritParams make_savable
 #' @return A list of lists. Each sublist contains the information to span a
 #'   tree.
-#' @aliases make_savable,make_savable-method
+#' @aliases make_savable,forestry-method
 #' @exportMethod make_savable
 setMethod(
   f = "make_savable",

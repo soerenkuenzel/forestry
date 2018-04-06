@@ -3,7 +3,7 @@
 \docType{methods}
 \name{relinkCPP_prt-forestry}
 \alias{relinkCPP_prt-forestry}
-\alias{relinkCPP_prt,relinkCPP_prt-method}
+\alias{relinkCPP_prt,forestry-method}
 \title{relink CPP ptr}
 \usage{
 \S4method{relinkCPP_prt}{forestry}(object)
