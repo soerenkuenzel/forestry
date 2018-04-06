@@ -3,11 +3,9 @@
 \docType{methods}
 \name{relinkCPP_prt-forestry}
 \alias{relinkCPP_prt-forestry}
-\alias{relinkCPP_prt-forestry}
+\alias{relinkCPP_prt,relinkCPP_prt-method}
 \title{relink CPP ptr}
 \usage{
-relinkCPP_prt(object)
-
 \S4method{relinkCPP_prt}{forestry}(object)
 }
 \arguments{
@@ -20,21 +18,4 @@ A list of lists. Each sublist contains the information to span a
 \description{
 When a `foresty` object is saved and then reloaded the Cpp
   pointers for the data set and the Cpp forest have to be reconstructed
-
-When a `foresty` object is saved and then reloaded the Cpp
-  pointers for the data set and the Cpp forest have to be reconstructed
-}
-\examples{
-set.seed(323652639)
-x <- iris[, -1]
-y <- iris[, 1]
-forest <- forestry(x, y, ntree = 3)
-
-save(forest, file = "forest.Rda")
-rm(forest)
-load("forest.Rda", verbose = FALSE)
-forest <- relinkCPP_prt(forest)
-y_pred_after <- predict(forest, x)
-testthat::expect_equal(y_pred_before, y_pred_after)
-file.remove("forest.Rda")
 }

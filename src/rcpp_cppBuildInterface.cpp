@@ -318,8 +318,6 @@ Rcpp::List rcpp_CppToR_translator(
       Rcpp::NumericVector splittingSampleIndex =
         Rcpp::wrap(((*forest_dta)[i]).splittingSampleIndex);
 
-
-
       Rcpp::List list_i =
         Rcpp::List::create(
           Rcpp::Named("var_id") = var_id,
@@ -339,10 +337,9 @@ Rcpp::List rcpp_CppToR_translator(
   } catch(...) {
     ::Rf_error("c++ exception (unknown reason)");
   }
+  return NULL;
 }
 
-
-////////////////////////////////////////////////////////////////////////////////
 // [[Rcpp::export]]
 Rcpp::List rcpp_reconstructree(
   Rcpp::List x,
@@ -350,7 +347,7 @@ Rcpp::List rcpp_reconstructree(
   Rcpp::NumericVector catCols,
   int numRows,
   int numColumns,
-  Rcpp::List forest_R,
+  Rcpp::List R_forest,
   bool replace,
   int sampsize,
   float splitratio,
@@ -367,7 +364,7 @@ Rcpp::List rcpp_reconstructree(
   bool doubleTree
 ){
 
-  // Decode the forest_R data and create appropriate pointers to pointers:
+  // Decode the R_forest data and create appropriate pointers to pointers:
   std::unique_ptr< std::vector< std::vector<int> > > var_ids(
       new std::vector< std::vector<int> >
   );
@@ -388,28 +385,28 @@ Rcpp::List rcpp_reconstructree(
   );
 
 
-  for(size_t i=0; i!=forest_R.size(); i++){
+  for(size_t i=0; i!=R_forest.size(); i++){
     var_ids->push_back(
-        Rcpp::as< std::vector<int> > ((Rcpp::as<Rcpp::List>(forest_R[i]))[0])
+        Rcpp::as< std::vector<int> > ((Rcpp::as<Rcpp::List>(R_forest[i]))[0])
       );
     split_vals->push_back(
-        Rcpp::as< std::vector<double> > ((Rcpp::as<Rcpp::List>(forest_R[i]))[1])
+        Rcpp::as< std::vector<double> > ((Rcpp::as<Rcpp::List>(R_forest[i]))[1])
       );
     leafAveidxs->push_back(
-        Rcpp::as< std::vector<size_t> > ((Rcpp::as<Rcpp::List>(forest_R[i]))[2])
+        Rcpp::as< std::vector<size_t> > ((Rcpp::as<Rcpp::List>(R_forest[i]))[2])
       );
     leafSplidxs->push_back(
-        Rcpp::as< std::vector<size_t> > ((Rcpp::as<Rcpp::List>(forest_R[i]))[3])
+        Rcpp::as< std::vector<size_t> > ((Rcpp::as<Rcpp::List>(R_forest[i]))[3])
     );
     averagingSampleIndex->push_back(
-        Rcpp::as< std::vector<size_t> > ((Rcpp::as<Rcpp::List>(forest_R[i]))[4])
+        Rcpp::as< std::vector<size_t> > ((Rcpp::as<Rcpp::List>(R_forest[i]))[4])
       );
     splittingSampleIndex->push_back(
-        Rcpp::as< std::vector<size_t> > ((Rcpp::as<Rcpp::List>(forest_R[i]))[5])
+        Rcpp::as< std::vector<size_t> > ((Rcpp::as<Rcpp::List>(R_forest[i]))[5])
       );
   }
 
-  // Decode catCols and forest_R
+  // Decode catCols and R_forest
   std::unique_ptr< std::vector<size_t> > categoricalFeatureColsRcpp (
       new std::vector<size_t>(
           Rcpp::as< std::vector<size_t> >(catCols)

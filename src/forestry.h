@@ -40,7 +40,7 @@ public:
   );
 
   void fillinTreeInfo(
-      std::unique_ptr< std::vector< tree_info > > const & forest_dta
+      std::unique_ptr< std::vector< tree_info > > & forest_dta
   );
 
   void reconstructTrees(

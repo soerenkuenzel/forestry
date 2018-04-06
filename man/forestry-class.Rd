@@ -23,7 +23,7 @@ emapty dataframe, if the forest was created with the `saveable = FALSE`
 option. It is only used to reconstruct the forest after saving and loading
 it.}
 
-\item{\code{forest_R}}{This is a list containing for each tree a new list element.
+\item{\code{R_forest}}{This is a list containing for each tree a new list element.
 The list elements are in turn two lists: One containing the slit variable
 and the other one containing the split value. This is only saved, when
 `saveable = FALSE` and it will be used to reconstruct the C++ tree after

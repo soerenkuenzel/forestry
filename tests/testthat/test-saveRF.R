@@ -12,8 +12,8 @@ test_that("Tests that saving RF and laoding it works", {
                      y,
                      ntree = 3,
                      saveable = FALSE)
-  testthat::expect_equal(forest@processed_dta, list())
-  testthat::expect_equal(forest@forest_R, list())
+  # testthat::expect_equal(forest@processed_dta, list())
+  testthat::expect_equal(forest@R_forest, list())
 
   forest <- forestry(
     x,
@@ -26,8 +26,6 @@ test_that("Tests that saving RF and laoding it works", {
 
 
   testthat::expect_equal(forest@processed_dta$y[2], 4.9)
-  testthat::expect_length(forest@forest_R[[3]]$var_id[1:5],
-                          5)
   # Check that saving the forest works well.
   testthat::expect_length(CppToR_translator(forest@forest)[[3]]$var_id[1:5],
                           5)
@@ -47,10 +45,13 @@ test_that("Tests that saving RF and laoding it works", {
     replace = FALSE
   )
 
-  before <- forest@forest_R[[1]]
+  forest <- make_savable(forest)
+  before <- forest@R_forest[[1]]
   y_pred_before <- predict(forest, x)
 
+  forest <- make_savable(forest)
   forest <- relinkCPP_prt(forest)
+
   after <- CppToR_translator(forest@forest)[[1]]
   # y_pred_after <- predict(forest, x)
 
@@ -62,12 +63,13 @@ test_that("Tests that saving RF and laoding it works", {
 
   # -- Actual saving and loading -----------------------------------------------
   y_pred_before <- predict(forest, x)
+  forest <- make_savable(forest)
   save(forest, file = "forest.Rda")
   rm(forest)
   load("forest.Rda", verbose = FALSE)
   forest <- relinkCPP_prt(forest)
   y_pred_after <- predict(forest, x)
-  testthat::expect_equal(y_pred_before, y_pred_after)
+  testthat::expect_equal(y_pred_before, y_pred_after, tolerance = 1e-6)
 
   file.remove("forest.Rda")
 })

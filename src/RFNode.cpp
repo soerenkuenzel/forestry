@@ -167,7 +167,16 @@ void RFNode::predict(
 }
 
 bool RFNode::is_leaf() {
-  return !(getAverageCount() == 0 && getSplitCount() == 0);
+  int ave_ct = getAverageCount();
+  int spl_ct = getSplitCount();
+  if (
+      (ave_ct == 0 && spl_ct != 0) ||(ave_ct != 0 && spl_ct == 0)
+  ) {
+    throw std::runtime_error(
+        "Average count or Split count is 0, while the other is not!"
+        );
+  }
+  return !(ave_ct == 0 && spl_ct == 0);
 }
 
 void RFNode::printSubtree(int indentSpace) {
@@ -202,7 +211,7 @@ void RFNode::printSubtree(int indentSpace) {
 // -----------------------------------------------------------------------------
 
 void RFNode::write_node_info(
-    std::unique_ptr<tree_info> const & treeInfo,
+    std::unique_ptr<tree_info> & treeInfo,
     DataFrame* trainingData
 ){
   if (is_leaf()) {

@@ -29,7 +29,7 @@ rcpp_CppToR_translator <- function(forest) {
     .Call('_forestry_rcpp_CppToR_translator', PACKAGE = 'forestry', forest)
 }
 
-rcpp_reconstructree <- function(x, y, catCols, numRows, numColumns, forest_R, replace, sampsize, splitratio, mtry, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, seed, nthread, verbose, middleSplit, maxObs, doubleTree) {
-    .Call('_forestry_rcpp_reconstructree', PACKAGE = 'forestry', x, y, catCols, numRows, numColumns, forest_R, replace, sampsize, splitratio, mtry, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, seed, nthread, verbose, middleSplit, maxObs, doubleTree)
+rcpp_reconstructree <- function(x, y, catCols, numRows, numColumns, R_forest, replace, sampsize, splitratio, mtry, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, seed, nthread, verbose, middleSplit, maxObs, doubleTree) {
+    .Call('_forestry_rcpp_reconstructree', PACKAGE = 'forestry', x, y, catCols, numRows, numColumns, R_forest, replace, sampsize, splitratio, mtry, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, seed, nthread, verbose, middleSplit, maxObs, doubleTree)
 }
 

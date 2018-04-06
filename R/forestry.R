@@ -182,7 +182,7 @@ testing_data_checker <- function(feature.new) {
 #'   emapty dataframe, if the forest was created with the `saveable = FALSE`
 #'   option. It is only used to reconstruct the forest after saving and loading
 #'   it.
-#' @slot forest_R This is a list containing for each tree a new list element.
+#' @slot R_forest This is a list containing for each tree a new list element.
 #'   The list elements are in turn two lists: One containing the slit variable
 #'   and the other one containing the split value. This is only saved, when
 #'   `saveable = FALSE` and it will be used to reconstruct the C++ tree after
@@ -230,7 +230,7 @@ setClass(
     forest = "externalptr",
     dataframe = "externalptr",
     processed_dta = "list",
-    forest_R = "list",
+    R_forest = "list",
     categoricalFeatureCols = "list",
     categoricalFeatureMapping = "list",
     ntree = "numeric",
@@ -437,22 +437,14 @@ forestry <- function(x,
         TRUE,
         rcppDataFrame
       )
-
-      if (saveable) {
-        # if saveable is set to be true, then we want to save the entire training
-        # data frame.
-        processed_dta <- list(
-          "processed_x" = processed_x,
-          "y" = y,
-          "categoricalFeatureCols_cpp" = categoricalFeatureCols_cpp,
-          "nObservations" = nObservations,
-          "numColumns" = numColumns
-        )
-        forest_R <- CppToR_translator(rcppForest)
-      } else {
-        processed_dta <- list()
-        forest_R <- list()
-      }
+      processed_dta <- list(
+        "processed_x" = processed_x,
+        "y" = y,
+        "categoricalFeatureCols_cpp" = categoricalFeatureCols_cpp,
+        "nObservations" = nObservations,
+        "numColumns" = numColumns
+      )
+      R_forest <- list()
 
       return(
         new(
@@ -460,7 +452,7 @@ forestry <- function(x,
           forest = rcppForest,
           dataframe = rcppDataFrame,
           processed_dta = processed_dta,
-          forest_R = forest_R,
+          R_forest = R_forest,
           categoricalFeatureCols = categoricalFeatureCols,
           categoricalFeatureMapping = categoricalFeatureMapping,
           ntree = ntree * (doubleTree + 1),
@@ -529,7 +521,7 @@ forestry <- function(x,
           forest = rcppForest,
           dataframe = reuseforestry@dataframe,
           processed_dta = reuseforestry@processed_dta,
-          forest_R = reuseforestry@forest_R,
+          R_forest = reuseforestry@R_forest,
           categoricalFeatureCols = reuseforestry@categoricalFeatureCols,
           categoricalFeatureMapping = categoricalFeatureMapping,
           ntree = ntree * (doubleTree + 1),
@@ -622,21 +614,20 @@ setGeneric(
 #' @return The OOB error of the forest.
 #' @exportMethod getOOB
 setMethod(
-  f="getOOB",
-  signature="forestry",
-  definition=function(
-    object,
-    noWarning
-  ){
-
+  f = "getOOB",
+  signature = "forestry",
+  definition = function(object,
+                        noWarning) {
     # TODO (all): find a better threshold for throwing such warning. 25 is
     # currently set up arbitrarily.
     if (!object@replace &&
         object@ntree * (rcpp_getObservationSizeInterface(object@dataframe) -
                         object@sampsize) < 10) {
       if (!noWarning) {
-        warning(paste("Samples are drawn without replacement and sample size",
-                      "is too big!"))
+        warning(paste(
+          "Samples are drawn without replacement and sample size",
+          "is too big!"
+        ))
       }
       return(NA)
     }
@@ -974,26 +965,14 @@ setMethod(
 )
 
 # -- relink forest CPP ptr -----------------------------------------------------
-#' @title relink CPP ptr
-#' @name relinkCPP_prt-forestry
+#' relink CPP ptr
+#' @rdname relink
+#' @name relinkCPP_prt
 #' @rdname relinkCPP
 #' @description When a `foresty` object is saved and then reloaded the Cpp
 #'   pointers for the data set and the Cpp forest have to be reconstructed
 #' @param object an object of class `forestry`
-#' @examples
-#' set.seed(323652639)
-#' x <- iris[, -1]
-#' y <- iris[, 1]
-#' forest <- forestry(x, y, ntree = 3)
-#'
-#' save(forest, file = "forest.Rda")
-#' rm(forest)
-#' load("forest.Rda", verbose = FALSE)
-#' forest <- relinkCPP_prt(forest)
-#' y_pred_after <- predict(forest, x)
-#' testthat::expect_equal(y_pred_before, y_pred_after)
-#' file.remove("forest.Rda")
-#' @export relinkCPP_prt
+#' @exportMethod relinkCPP_prt
 setGeneric(
   name = "relinkCPP_prt",
   def = function(object) {
@@ -1001,14 +980,15 @@ setGeneric(
   }
 )
 
-#' @title relink CPP ptr
+#' relink CPP ptr
 #' @name relinkCPP_prt-forestry
-#' @rdname relinkCPP
+#' @rdname relinkCPP_prt-forestry
 #' @description When a `foresty` object is saved and then reloaded the Cpp
 #'   pointers for the data set and the Cpp forest have to be reconstructed
 #' @inheritParams relinkCPP_prt
 #' @return A list of lists. Each sublist contains the information to span a
 #'   tree.
+#' @aliases relinkCPP_prt,relinkCPP_prt-method
 #' @exportMethod relinkCPP_prt
 setMethod(
   f = "relinkCPP_prt",
@@ -1023,7 +1003,7 @@ setMethod(
         catCols = object@processed_dta$categoricalFeatureCols_cpp,
         numRows = object@processed_dta$nObservations,
         numColumns = object@processed_dta$numColumns,
-        forest_R = object@forest_R,
+        R_forest = object@R_forest,
         replace = object@replace,
         sampsize = object@sampsize,
         splitratio = object@splitratio,
@@ -1051,4 +1031,59 @@ setMethod(
     return(object)
   }
 )
+
+
+
+# -- relink forest CPP ptr -----------------------------------------------------
+#' make_savable
+#' @name make_savable
+#' @rdname make_savable
+#' @description When a `foresty` object is saved and then reloaded the Cpp
+#'   pointers for the data set and the Cpp forest have to be reconstructed
+#' @param object an object of class `forestry`
+#' @examples
+#' set.seed(323652639)
+#' x <- iris[, -1]
+#' y <- iris[, 1]
+#' forest <- forestry(x, y, ntree = 3)
+#' y_pred_before <- predict(forest, x)
+#'
+#' forest <- make_savable(forest)
+#' save(forest, file = "forest.Rda")
+#' rm(forest)
+#' load("forest.Rda", verbose = FALSE)
+#' forest <- relinkCPP_prt(forest)
+#'
+#' y_pred_after <- predict(forest, x)
+#' testthat::expect_equal(y_pred_before, y_pred_after)
+#' file.remove("forest.Rda")
+#' @exportMethod make_savable
+setGeneric(
+  name = "make_savable",
+  def = function(object) {
+    standardGeneric("make_savable")
+  }
+)
+
+#' make_savable
+#' @name make_savable-forestry
+#' @rdname make_savable-forestry
+#' @description When a `foresty` object is saved and then reloaded the Cpp
+#'   pointers for the data set and the Cpp forest have to be reconstructed
+#' @inheritParams make_savable
+#' @return A list of lists. Each sublist contains the information to span a
+#'   tree.
+#' @aliases make_savable,make_savable-method
+#' @exportMethod make_savable
+setMethod(
+  f = "make_savable",
+  signature = "forestry",
+  definition = function(object) {
+    object@R_forest <- CppToR_translator(object@forest)
+
+    return(object)
+  }
+)
+
+
 
