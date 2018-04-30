@@ -3,7 +3,7 @@
 \docType{methods}
 \name{make_savable-forestry}
 \alias{make_savable-forestry}
-\alias{make_savable,forestry-method}
+\alias{make_savable,make_savable-method}
 \title{make_savable}
 \usage{
 \S4method{make_savable}{forestry}(object)
