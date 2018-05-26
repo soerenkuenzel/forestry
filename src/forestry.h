@@ -30,6 +30,8 @@ public:
     bool verbose,
     bool splitMiddle,
     size_t maxObs,
+    bool ridgeRF,
+    float overfitPenalty,
     bool doubleTree
   );
 
@@ -116,6 +118,14 @@ public:
     return maxObs;
   }
 
+  bool getRidgeRF() {
+    return _ridgeRF;
+  }
+
+  float getOverfitPenalty() {
+    return _overfitPenalty;
+  }
+
 private:
   DataFrame* _trainingData;
   size_t _ntree;
@@ -134,6 +144,8 @@ private:
   float _OOBError;
   bool _splitMiddle;
   size_t maxObs;
+  bool _ridgeRF;
+  float _overfitPenalty;
   bool _doubleTree;
 };
 

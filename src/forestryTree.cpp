@@ -31,7 +31,9 @@ forestryTree::forestryTree(
   std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
   std::mt19937_64& random_number_generator,
   bool splitMiddle,
-  size_t maxObs
+  size_t maxObs,
+  bool ridgeRF,
+  float overfitPenalty
 ){
   /**
    * @brief Honest random forest tree constructor
@@ -112,7 +114,9 @@ forestryTree::forestryTree(
     trainingData,
     random_number_generator,
     splitMiddle,
-    maxObs
+    maxObs,
+    ridgeRF,
+    overfitPenalty
   );
 }
 
@@ -256,7 +260,9 @@ void forestryTree::recursivePartition(
     DataFrame* trainingData,
     std::mt19937_64& random_number_generator,
     bool splitMiddle,
-    size_t maxObs
+    size_t maxObs,
+    bool ridgeRF,
+    float overfitPenalty
 ){
 
   if ((*averagingSampleIndex).size() < getMinNodeSizeAvg() ||
@@ -297,7 +303,9 @@ void forestryTree::recursivePartition(
     trainingData,
     random_number_generator,
     splitMiddle,
-    maxObs
+    maxObs,
+    ridgeRF,
+    overfitPenalty
   );
 
   // Create a leaf node if the current bestSplitValue is NA
@@ -352,7 +360,9 @@ void forestryTree::recursivePartition(
       trainingData,
       random_number_generator,
       splitMiddle,
-      maxObs
+      maxObs,
+      ridgeRF,
+      overfitPenalty
     );
     recursivePartition(
       rightChild.get(),
@@ -361,7 +371,9 @@ void forestryTree::recursivePartition(
       trainingData,
       random_number_generator,
       splitMiddle,
-      maxObs
+      maxObs,
+      ridgeRF,
+      overfitPenalty
     );
 
     (*rootNode).setSplitNode(
@@ -554,6 +566,360 @@ void findBestSplitValueCategorical(
       bestSplitTableIndex,
       random_number_generator
     );
+  }
+}
+
+void updateA(
+    Eigen::MatrixXf& a_k,
+    Eigen::MatrixXf new_x,
+    bool leftNode
+){
+  Eigen::MatrixXf temp_x = new_x;
+
+  //Initilize z_K
+  Eigen::MatrixXf z_K = a_k * temp_x;
+
+  //Update A using Sherman–Morrison formula corresponding to right or left side
+  if (leftNode) {
+    Eigen::MatrixXf g_K = (z_K * z_K.transpose()) /
+      (1 + (temp_x.transpose() * z_K)(0,0));
+    a_k -= g_K;
+  } else {
+    Eigen::MatrixXf g_K = (z_K * z_K.transpose()) /
+      (1 - (temp_x.transpose() * z_K)(0,0));
+    a_k += g_K;
+  }
+}
+
+void updateSk(
+    Eigen::MatrixXf& s_k,
+    Eigen::MatrixXf next,
+    float next_y,
+    bool left
+){
+  if (left) {
+    s_k += (next_y * (next));
+  } else {
+    s_k -= (next_y * (next));
+  }
+}
+
+void updateGk(
+    Eigen::MatrixXf& g_k,
+    Eigen::MatrixXf next,
+    bool left
+){
+  if (left) {
+    g_k += (next * next.transpose());
+  } else {
+    g_k -= (next * next.transpose());
+  }
+}
+
+float computeRSS(
+    Eigen::MatrixXf& A_r,
+    Eigen::MatrixXf& A_l,
+    Eigen::MatrixXf& S_r,
+    Eigen::MatrixXf& S_l,
+    Eigen::MatrixXf& G_r,
+    Eigen::MatrixXf& G_l
+){
+  return ((S_l.transpose() * A_l * G_l * A_l * S_l)(0,0) +
+          (S_r.transpose() * A_r * G_r * A_r * S_r)(0,0) -
+          (2.0 * S_l.transpose() * A_l * S_l)(0,0) -
+          (2.0 * S_r.transpose() * A_r * S_r)(0,0));
+}
+
+void findBestSplitRidge(
+  std::vector<size_t>* averagingSampleIndex,
+  std::vector<size_t>* splittingSampleIndex,
+  size_t bestSplitTableIndex,
+  size_t currentFeature,
+  float* bestSplitLossAll,
+  double* bestSplitValueAll,
+  size_t* bestSplitFeatureAll,
+  size_t* bestSplitCountAll,
+  DataFrame* trainingData,
+  size_t splitNodeSize,
+  size_t averageNodeSize,
+  std::mt19937_64& random_number_generator,
+  bool splitMiddle,
+  size_t maxObs,
+  float overfitPenalty
+){
+  //Get indexes of observations
+  std::vector<size_t> splittingIndexes;
+  std::vector<size_t> averagingIndexes;
+
+  for (size_t i = 0; i < (*splittingSampleIndex).size(); i++) {
+    averagingIndexes.push_back((*averagingSampleIndex)[i]);
+    splittingIndexes.push_back((*splittingSampleIndex)[i]);
+  }
+
+
+
+  //Sort indexes of observations ascending by currentFeature
+  std::vector<float>* featureData = trainingData->getFeatureData(currentFeature);
+
+  sort(splittingIndexes.begin(),
+       splittingIndexes.end(),
+       [&](int fi, int si){return (*featureData)[fi] < (*featureData)[si];});
+
+  sort(averagingIndexes.begin(),
+       averagingIndexes.end(),
+       [&](int fi, int si){return (*featureData)[fi] < (*featureData)[si];});
+
+  size_t splitLeftCount = 0;
+  size_t averageLeftCount = 0;
+  size_t splitTotalCount = splittingIndexes.size();
+  size_t averageTotalCount = averagingIndexes.size();
+
+  std::vector<size_t>::iterator splitIter = splittingIndexes.begin();
+  std::vector<size_t>::iterator averageIter = averagingIndexes.begin();
+
+
+  //Now begin splitting
+  size_t currentIndex;
+
+  if (
+    trainingData->getPoint((*averageIter), currentFeature) <
+    trainingData->getPoint((*splitIter), currentFeature)
+  ) {
+    currentIndex = (*averageIter);
+  } else {
+    currentIndex = (*splitIter);
+  }
+
+  float currentValue = trainingData->getPoint(currentIndex, currentFeature);
+
+  size_t newIndex;
+  size_t numLinearFeatures;
+  bool oneDistinctValue = true;
+
+  //Initialize RSS components
+  //TODO: think about completely duplicate observations
+  std::vector<float> firstOb = trainingData->getLinObsData(splittingIndexes[0]);
+  numLinearFeatures = firstOb.size();
+  firstOb.push_back(1.0);
+  Eigen::Map<Eigen::MatrixXf> appendedFOb(firstOb.data(),
+                                          firstOb.size(),
+                                          1);
+
+  std::vector<float> nextOb = trainingData->getLinObsData(splittingIndexes[1]);
+  nextOb.push_back(1.0);
+  Eigen::Map<Eigen::MatrixXf> appendedSOb(nextOb.data(),
+                                          nextOb.size(),
+                                          1);
+
+  //Initialize crossingObs for body of loop
+  Eigen::Map<Eigen::MatrixXf> crossingObservation(firstOb.data(),
+                                                  firstOb.size(),
+                                                  1);
+
+
+  //Initialize sLeft
+  Eigen::MatrixXf sLeft = trainingData->getOutcomePoint(splittingIndexes[0]) *
+                          appendedFOb;
+
+  Eigen::MatrixXf sRight = trainingData->getOutcomePoint(splittingIndexes[1]) *
+                          appendedSOb;
+
+  //Initialize gLeft
+  Eigen::MatrixXf gLeft = appendedFOb * (appendedFOb.transpose());
+
+  Eigen::MatrixXf gRight = appendedSOb * (appendedSOb.transpose());
+
+
+  //Initialize sRight, gRight
+  //?MAPPING PROBLEM
+
+  //Todo: clean this up
+  std::vector<float> temp = trainingData->getLinObsData(splittingIndexes[2]);
+  temp.push_back(1.0);
+  Eigen::Map<Eigen::MatrixXf> appendedTemp(temp.data(),
+                                           temp.size(),
+                                           1);
+
+  sRight += trainingData->getOutcomePoint(2) * appendedTemp;
+  gRight += appendedTemp * appendedTemp.transpose();
+
+  for (size_t d = 3; d < splittingIndexes.size(); d++) {
+    temp = trainingData->getLinObsData(splittingIndexes[d]);
+    temp.push_back(1.0);
+    new (&appendedTemp) Eigen::Map<Eigen::MatrixXf>(temp.data(),
+                                                    temp.size(),
+                                                    1);
+
+    sRight += trainingData->getOutcomePoint(d) * appendedTemp;
+    gRight += appendedTemp * appendedTemp.transpose();
+  }
+
+
+
+  Eigen::MatrixXf identity = Eigen::MatrixXf::Identity(numLinearFeatures + 1,
+                                                       numLinearFeatures + 1);
+
+  identity(numLinearFeatures, numLinearFeatures) = 0.0;
+
+  //Initialize aLeft
+  Eigen::MatrixXf aLeft = (gLeft + overfitPenalty * identity).inverse();
+
+  //Initialize aRight
+  Eigen::MatrixXf aRight = (gRight + overfitPenalty * identity). inverse();
+
+
+
+
+  while (
+    splitIter != splittingIndexes.end() ||
+    averageIter != averagingIndexes.end()
+  ) {
+
+
+    //TODO: HANDLE SINGLE DISTINCT VALUE CASE ////DONE
+    //TODO: MORE ELEGANT HANDLING
+
+
+    //Move iterators forward
+    while (
+            splitIter != splittingIndexes.end() &&
+            trainingData->getPoint((*splitIter), currentFeature) == currentValue
+            ) {
+      splitLeftCount++;
+      //UPDATE MATRIX pieces with current splitIter index
+      //MAPPING PROBLEM
+
+      //Get observation that will cross the partition
+      std::vector<float> newLeftObservation =
+        trainingData->getLinObsData((*splitIter));
+
+      newLeftObservation.push_back(1.0);
+
+      new (&crossingObservation) Eigen::Map<Eigen::MatrixXf>(
+                                               newLeftObservation.data(),
+                                               newLeftObservation.size(),
+                                               1);
+
+      float crossingOutcome = trainingData->getOutcomePoint((*splitIter));
+
+      //Use to update RSS components
+      updateA(aLeft, crossingObservation, true);
+      updateA(aRight, crossingObservation, false);
+
+      updateSk(sLeft, crossingObservation, crossingOutcome, true);
+      updateSk(sRight, crossingObservation, crossingOutcome, false);
+
+      updateGk(gLeft, crossingObservation, true);
+      updateGk(gRight, crossingObservation, false);
+
+      splitIter++;
+    }
+
+    while (
+            averageIter != averagingIndexes.end() &&
+            trainingData->getPoint((*averageIter), currentFeature) ==
+            currentValue
+            ) {
+      averageLeftCount++;
+      averageIter++;
+    }
+
+    //Test if we only have one feature value to be considered
+    if (oneDistinctValue) {
+      oneDistinctValue = false;
+      if (
+        splitIter == splittingIndexes.end() &&
+        averageIter == averagingIndexes.end()
+      ) {
+        break;
+      }
+    }
+
+
+    //Set newIndex to index iterator with the minimum currentFeature value
+    if (
+        splitIter == splittingIndexes.end() &&
+        averageIter == averagingIndexes.end()
+          ) {
+        break;
+    } else if (
+        splitIter == splittingIndexes.end()
+          ) {
+        newIndex = (*averageIter);
+    } else if (
+        averageIter == averagingIndexes.end()
+          ) {
+        newIndex = (*splitIter);
+    } else {
+      if (
+          trainingData->getPoint((*averageIter), currentFeature) <
+            trainingData->getPoint((*splitIter), currentFeature)
+      ) {
+        newIndex = (*averageIter);
+      } else {
+        newIndex = (*splitIter);
+      }
+    }
+
+    //Check if split would create a node too small
+    if (
+        std::min(
+        splitLeftCount,
+        splitTotalCount - splitLeftCount
+        ) < splitNodeSize ||
+        std::min(
+          averageLeftCount,
+          averageTotalCount - averageLeftCount
+        ) < averageNodeSize
+        ) {
+        newIndex = currentIndex;
+        continue;
+    }
+
+    //Sum of RSS's of models fit on left and right partitions
+    float currentRSS = computeRSS(aRight,
+                                  aLeft,
+                                  sRight,
+                                  sLeft,
+                                  gRight,
+                                  gLeft);
+
+    double currentSplitValue = trainingData->getPoint(currentIndex,
+                                                      currentFeature);
+    //
+    // float featureValue = trainingData->getOutcomePoint(currentIndex);
+    // float newFeatureValue = trainingData->getOutcomePoint(newIndex);
+    //
+    // if (splitMiddle) {
+    //   currentSplitValue = (featureValue + newFeatureValue) / 2.0;
+    // } else {
+    //   std::uniform_real_distribution<double> unif_dist;
+    //   double tmp_random = unif_dist(random_number_generator) *
+    //     (newFeatureValue - featureValue);
+    //   double epsilon_lower = std::nextafter(featureValue, newFeatureValue);
+    //   double epsilon_upper = std::nextafter(newFeatureValue, featureValue);
+    //   currentSplitValue = tmp_random + featureValue;
+    //   if (currentSplitValue > epsilon_upper) {
+    //     currentSplitValue = epsilon_upper;
+    //   }
+    //   if (currentSplitValue < epsilon_lower) {
+    //     currentSplitValue = epsilon_lower;
+    //   }
+    // }
+
+    updateBestSplit(
+      bestSplitLossAll,
+      bestSplitValueAll,
+      bestSplitFeatureAll,
+      bestSplitCountAll,
+      currentRSS,
+      currentSplitValue,
+      currentFeature,
+      bestSplitTableIndex,
+      random_number_generator
+    );
+
+    currentIndex = newIndex;
   }
 }
 
@@ -768,9 +1134,6 @@ void findBestSplitValueNonCategorical(
       if (currentSplitValue < epsilon_lower) {
         currentSplitValue = epsilon_lower;
       }
-      // double tmp_random = unif_dist(random_number_generator);
-      // currentSplitValue =
-      //   tmp_random * (newFeatureValue - featureValue) + featureValue;
     }
 
     updateBestSplit(
@@ -854,7 +1217,9 @@ void forestryTree::selectBestFeature(
   DataFrame* trainingData,
   std::mt19937_64& random_number_generator,
   bool splitMiddle,
-  size_t maxObs
+  size_t maxObs,
+  bool ridgeRF,
+  float overfitPenalty
 ){
 
   // Get the number of total features
@@ -897,7 +1262,25 @@ void forestryTree::selectBestFeature(
         getMinNodeSizeToSplitSpt(),
         getMinNodeSizeToSplitAvg(),
         random_number_generator,
-	maxObs
+      	maxObs
+      );
+    } else if (ridgeRF) {
+      findBestSplitRidge(
+        averagingSampleIndex,
+        splittingSampleIndex,
+        i,
+        currentFeature,
+        bestSplitLossAll,
+        bestSplitValueAll,
+        bestSplitFeatureAll,
+        bestSplitCountAll,
+        trainingData,
+        getMinNodeSizeToSplitSpt(),
+        getMinNodeSizeToSplitAvg(),
+        random_number_generator,
+        splitMiddle,
+        maxObs,
+        overfitPenalty
       );
     } else {
       findBestSplitValueNonCategorical(

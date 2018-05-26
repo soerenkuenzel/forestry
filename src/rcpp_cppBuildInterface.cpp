@@ -85,6 +85,8 @@ SEXP rcpp_cppBuildInterface(
   bool verbose,
   bool middleSplit,
   int maxObs,
+  bool ridgeRF,
+  double overfitPenalty,
   bool doubleTree,
   bool existing_dataframe_flag,
   SEXP existing_dataframe
@@ -111,6 +113,8 @@ SEXP rcpp_cppBuildInterface(
         verbose,
         middleSplit,
         (size_t) maxObs,
+        ridgeRF,
+        (float) overfitPenalty,
         doubleTree
       );
 
@@ -173,6 +177,8 @@ SEXP rcpp_cppBuildInterface(
         verbose,
         middleSplit,
         (size_t) maxObs,
+        ridgeRF,
+        (float) overfitPenalty,
         doubleTree
       );
 

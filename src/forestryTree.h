@@ -26,7 +26,9 @@ public:
     std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
     std::mt19937_64& random_number_generator,
     bool splitMiddle,
-    size_t maxObs
+    size_t maxObs,
+    bool ridgeRF,
+    float overfitPenalty
   );
 
   // This tree is only for testing purpose
@@ -54,7 +56,9 @@ public:
     DataFrame* trainingData,
     std::mt19937_64& random_number_generator,
     bool splitMiddle,
-    size_t maxObs
+    size_t maxObs,
+    bool ridgeRF,
+    float overfitPenalty
   );
 
   void selectBestFeature(
@@ -67,7 +71,9 @@ public:
     DataFrame* trainingData,
     std::mt19937_64& random_number_generator,
     bool splitMiddle,
-    size_t maxObs
+    size_t maxObs,
+    bool ridgeRF,
+    float overfitPenalty
   );
 
   void printTree();

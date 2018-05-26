@@ -2,7 +2,8 @@
 
 DataFrame::DataFrame():
   _featureData(nullptr), _outcomeData(nullptr), _rowNumbers(nullptr),
-  _categoricalFeatureCols(nullptr), _numRows(0), _numColumns(0) {}
+  _categoricalFeatureCols(nullptr),
+  _numericalFeatureCols(nullptr), _numRows(0), _numColumns(0) {}
 
 DataFrame::~DataFrame() {
 //  std::cout << "DataFrame() destructor is called." << std::endl;
@@ -29,6 +30,20 @@ DataFrame::DataFrame(
   std::unique_ptr< std::vector<size_t> > rowNumbers (
       new std::vector<size_t>(rowNumberss));
   this->_rowNumbers = std::move(rowNumbers);
+
+  // Add numericalFeatures
+  std::vector<size_t> numericalFeatureColss;
+  std::vector<size_t>* catCols = this->getCatCols();
+
+  for (size_t i = 0; i < numColumns; i++) {
+    if (std::find(catCols->begin(), catCols->end(), i) == catCols->end()) {
+      numericalFeatureColss.push_back(i);
+    }
+  }
+
+  std::unique_ptr< std::vector<size_t> > numericalFeatureCols (
+      new std::vector<size_t>(numericalFeatureColss));
+  this->_numericalFeatureCols = std::move(numericalFeatureCols);
 }
 
 float DataFrame::getPoint(size_t rowIndex, size_t colIndex) {
@@ -56,6 +71,20 @@ std::vector<float>* DataFrame::getFeatureData(
     return &(*getAllFeatureData())[colIndex];
   } else {
     throw std::runtime_error("Invalid colIndex.");
+  }
+}
+
+std::vector<float> DataFrame::getLinObsData(
+  size_t rowIndex
+) {
+  if (rowIndex < getNumRows()) {
+    std::vector<float> feat;
+    for (size_t i = 0; i < getNumCols()->size(); i++) {
+      feat.push_back(getPoint(rowIndex, (*getNumCols())[i]));
+    }
+    return feat;
+  } else {
+    throw std::runtime_error("Invalid rowIndex");
   }
 }
 

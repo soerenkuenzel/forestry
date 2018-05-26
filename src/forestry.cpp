@@ -38,6 +38,8 @@ forestry::forestry(
   bool verbose,
   bool splitMiddle,
   size_t maxObs,
+  bool ridgeRF,
+  float overfitPenalty,
   bool doubleTree
 ){
   this->_trainingData = trainingData;
@@ -55,6 +57,8 @@ forestry::forestry(
   this->_verbose = verbose;
   this->_splitMiddle = splitMiddle;
   this->maxObs = maxObs;
+  this->_ridgeRF = ridgeRF;
+  this->_overfitPenalty = overfitPenalty;
   this->_doubleTree = doubleTree;
 
   if (splitRatio > 1 || splitRatio < 0) {
@@ -74,6 +78,12 @@ forestry::forestry(
     averageSampleSize < minNodeSizeToSplitAvg
   ) {
     throw std::runtime_error("splitRatio too big or too small.");
+  }
+
+  if (
+    overfitPenalty < 0
+  ) {
+    throw std::runtime_error("overfitPenalty cannot be negative");
   }
 
   std::unique_ptr< std::vector< std::unique_ptr< forestryTree > > > forest (
@@ -216,7 +226,9 @@ void forestry::addTrees(size_t ntree) {
                 std::move(averageSampleIndex),
                 random_number_generator,
                 getSplitMiddle(),
-                getMaxObs()
+                getMaxObs(),
+                getRidgeRF(),
+                getOverfitPenalty()
               )
             );
 
@@ -234,7 +246,9 @@ void forestry::addTrees(size_t ntree) {
                     std::move(splitSampleIndex2),
                     random_number_generator,
                     getSplitMiddle(),
-                    getMaxObs()
+                    getMaxObs(),
+                    getRidgeRF(),
+                    getOverfitPenalty()
                  );
             }
 

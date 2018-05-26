@@ -27,6 +27,8 @@ public:
 
   std::vector<float>* getFeatureData(size_t colIndex);
 
+  std::vector<float> getLinObsData(size_t rowIndex);
+
   void getObservationData(std::vector<float> &rowData, size_t rowIndex);
 
   float partitionMean(std::vector<size_t>* sampleIndex);
@@ -51,6 +53,10 @@ public:
     return _categoricalFeatureCols.get();
   }
 
+  std::vector<size_t>* getNumCols() {
+    return _numericalFeatureCols.get();
+  }
+
   std::vector<size_t>* getRowNumbers() {
     return _rowNumbers.get();
   }
@@ -64,6 +70,7 @@ private:
   std::unique_ptr< std::vector<float> > _outcomeData;
   std::unique_ptr< std::vector<size_t> > _rowNumbers;
   std::unique_ptr< std::vector<size_t> > _categoricalFeatureCols;
+  std::unique_ptr< std::vector<size_t> > _numericalFeatureCols;
   std::size_t _numRows;
   std::size_t _numColumns;
 };
