@@ -14,7 +14,8 @@ forestry(x, y, ntree = 500, replace = TRUE, sampsize = if (replace)
   nodesizeStrictSpl = 1, nodesizeStrictAvg = 1, splitratio = 1,
   seed = as.integer(runif(1) * 1000), verbose = FALSE, nthread = 0,
   splitrule = "variance", middleSplit = FALSE, maxObs = length(y),
-  doubleTree = FALSE, reuseforestry = NULL)
+  ridgeRF = FALSE, overfitPenalty = 1, doubleTree = FALSE,
+  reuseforestry = NULL)
 }
 \arguments{
 \item{x}{A data frame of all training predictors.}
@@ -75,6 +76,11 @@ values. If false, it will take a point based on a uniform distribution
 between two feature values. (Default = FALSE)}
 
 \item{maxObs}{The max number of observations to split on}
+
+\item{ridgeRF}{Fit the model with a ridge regression or not}
+
+\item{overfitPenalty}{Value to determine how much to penalize magnitude of
+coefficients in ridge regression}
 
 \item{doubleTree}{if the number of tree is doubled as averaging and splitting
 data can be exchanged to create decorrelated trees. (Default = FALSE)}

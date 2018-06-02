@@ -234,6 +234,8 @@ setClass(
     middleSplit = "logical",
     y = "vector",
     maxObs = "numeric",
+    ridgeRF = "logical",
+    overfitPenalty = "numeric",
     doubleTree = "logical"
   )
 )
@@ -289,6 +291,9 @@ setClass(
 #' dataframe the old object created. It will save some space working on the same
 #' dataset.
 #' @param maxObs The max number of observations to split on
+#' @param ridgeRF Fit the model with a ridge regression or not
+#' @param overfitPenalty Value to determine how much to penalize magnitude of
+#' coefficients in ridge regression
 #' @examples
 #' set.seed(292315)
 #' library(forestry)
@@ -323,6 +328,8 @@ setGeneric(
                  splitrule,
                  middleSplit,
                  maxObs,
+                 ridgeRF,
+                 overfitPenalty,
                  doubleTree,
                  reuseforestry) {
     standardGeneric("forestry")
@@ -356,6 +363,8 @@ forestry <- function(x,
                      splitrule = "variance",
                      middleSplit = FALSE,
                      maxObs = length(y),
+                     ridgeRF = FALSE,
+                     overfitPenalty = 1,
                      doubleTree = FALSE,
                      reuseforestry = NULL) {
   # only if sample.fraction is given, update sampsize
@@ -401,7 +410,7 @@ forestry <- function(x,
         numColumns, ntree, replace, sampsize, mtry,
         splitratio, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl,
 	nodesizeStrictAvg, seed, nthread, verbose, middleSplit,
-	maxObs,
+	maxObs, ridgeRF, overfitPenalty,
 	doubleTree,
 	TRUE,
 	rcppDataFrame
@@ -424,6 +433,8 @@ forestry <- function(x,
           splitratio = splitratio,
           middleSplit = middleSplit,
           maxObs = maxObs,
+          ridgeRF = ridgeRF,
+          overfitPenalty = overfitPenalty,
           doubleTree = doubleTree
         )
       )
@@ -456,7 +467,8 @@ forestry <- function(x,
         numColumns, ntree, replace, sampsize, mtry,
         splitratio, nodesizeSpl, nodesizeAvg,
         nodesizeStrictSpl, nodesizeStrictAvg, seed,
-        nthread, verbose, middleSplit, maxObs, doubleTree,
+        nthread, verbose, middleSplit, maxObs,
+        ridgeRF, overfitPenalty, doubleTree,
         TRUE, reuseforestry@dataframe
       )
 
@@ -478,6 +490,8 @@ forestry <- function(x,
           splitratio = splitratio,
           middleSplit = middleSplit,
           maxObs = maxObs,
+          ridgeRF = ridgeRF,
+          overfitPenalty = overfitPenalty,
           doubleTree = doubleTree
         )
       )
