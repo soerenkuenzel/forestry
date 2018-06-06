@@ -338,7 +338,8 @@ std::unique_ptr< std::vector<float> > forestry::predict(
               currentTreePrediction,
               xNew,
               getTrainingData(),
-              weightMatrix
+              weightMatrix,
+              getRidgeRF()
             );
 
             #if DOPARELLEL

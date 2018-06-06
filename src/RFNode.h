@@ -27,12 +27,22 @@ public:
     std::unique_ptr< RFNode > rightChild
   );
 
+  void ridgePredict(
+      std::vector<float> &outputPrediction,
+      std::vector<size_t>* updateIndex,
+      std::vector< std::vector<float> >* xNew,
+      DataFrame* trainingData,
+      float lambda
+  );
+
   void predict(
     std::vector<float> &outputPrediction,
     std::vector<size_t>* updateIndex,
     std::vector< std::vector<float> >* xNew,
     DataFrame* trainingData,
-    Eigen::MatrixXf* weightMatrix
+    Eigen::MatrixXf* weightMatrix,
+    bool ridgeRF,
+    float lambda
   );
 
   bool is_leaf();

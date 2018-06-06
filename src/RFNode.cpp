@@ -49,28 +49,113 @@ void RFNode::setSplitNode(
   _rightChild = std::move(rightChild);
 }
 
+void RFNode::ridgePredict(
+  std::vector<float> &outputPrediction,
+  std::vector<size_t>* updateIndex,
+  std::vector< std::vector<float> >* xNew,
+  DataFrame* trainingData,
+  float lambda
+) {
+
+
+  //Observations to do regression with
+  std::vector<size_t>* leafObs = getAveragingIndex();
+
+  //Number of linear features in training data
+  size_t dimension = (trainingData->getLinObsData((*leafObs)[0])).size();
+
+  Eigen::MatrixXf x(leafObs->size(),
+                    dimension + 1);
+
+  Eigen::MatrixXf identity = Eigen::MatrixXf::Identity(dimension + 1,
+                                                       dimension + 1);
+
+  //Don't penalize intercept
+  identity(dimension, dimension) = 0.0;
+
+  std::vector<float> outcomePoints;
+  std::vector<float> currentObservation;
+
+  //Contruct X and outcome vector
+  for (size_t i = 0; i < leafObs->size(); i++) {
+    currentObservation = trainingData->getLinObsData((*leafObs)[i]);
+    currentObservation.push_back(1.0);
+
+    x.row(i) = Eigen::VectorXf::Map(currentObservation.data(),
+                                    currentObservation.size());
+
+    outcomePoints.push_back(trainingData->getOutcomePoint((*leafObs)[i]));
+  }
+
+  Eigen::MatrixXf y = Eigen::MatrixXf::Map(outcomePoints.data(),
+                                           outcomePoints.size(),
+                                           1);
+
+  //Compute XtX + lambda * I * Y = C
+  Eigen::MatrixXf coefficients = (x.transpose() * x +
+                              identity * lambda).inverse() * x.transpose() * y;
+
+  //Map xNew into Eigen matrix
+  Eigen::MatrixXf xn(xNew->size(), dimension + 1);
+
+  size_t i = 0;
+  for (std::vector<size_t>::iterator it = updateIndex->begin();
+       it != updateIndex->end();
+       ++it) {
+
+    currentObservation = (*xNew)[*it];
+    currentObservation.push_back(1.0);
+
+    xn.row(i) = Eigen::VectorXf::Map(currentObservation.data(),
+                                     currentObservation.size());
+    i++;
+  }
+
+  //Multiply xNew * coefficients = result
+  Eigen::MatrixXf predictions = xn * coefficients;
+
+  size_t j = 0;
+  for (std::vector<size_t>::iterator it = updateIndex->begin();
+       it != updateIndex->end();
+       ++it) {
+    outputPrediction[*it] = predictions(j, 0);
+  }
+}
 
 void RFNode::predict(
   std::vector<float> &outputPrediction,
   std::vector<size_t>* updateIndex,
   std::vector< std::vector<float> >* xNew,
   DataFrame* trainingData,
-  Eigen::MatrixXf* weightMatrix
+  Eigen::MatrixXf* weightMatrix,
+  bool ridgeRF,
+  float lambda
 ) {
 
   // If the node is a leaf, aggregate all its averaging data samples
   if (is_leaf()) {
 
-    // Calculate the mean of current node
-    float predictedMean = (*trainingData).partitionMean(getAveragingIndex());
+    if (ridgeRF) {
 
-    // Give all updateIndex the mean of the node as prediction values
-    for (
-      std::vector<size_t>::iterator it = (*updateIndex).begin();
-      it != (*updateIndex).end();
-      ++it
-    ) {
-      outputPrediction[*it] = predictedMean;
+      //Use ridgePredict
+      ridgePredict(outputPrediction,
+                   updateIndex,
+                   xNew,
+                   trainingData,
+                   lambda);
+    } else {
+
+      // Calculate the mean of current node
+      float predictedMean = (*trainingData).partitionMean(getAveragingIndex());
+
+      // Give all updateIndex the mean of the node as prediction values
+      for (
+        std::vector<size_t>::iterator it = (*updateIndex).begin();
+        it != (*updateIndex).end();
+        ++it
+      ) {
+        outputPrediction[*it] = predictedMean;
+      }
     }
 
     if(weightMatrix){
@@ -145,7 +230,9 @@ void RFNode::predict(
         leftPartitionIndex,
         xNew,
         trainingData,
-        weightMatrix
+        weightMatrix,
+        ridgeRF,
+        lambda
       );
     }
     if ((*rightPartitionIndex).size() > 0) {
@@ -154,7 +241,9 @@ void RFNode::predict(
         rightPartitionIndex,
         xNew,
         trainingData,
-        weightMatrix
+        weightMatrix,
+        ridgeRF,
+        lambda
       );
     }
 

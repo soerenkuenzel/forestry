@@ -102,6 +102,7 @@ forestryTree::forestryTree(
   this->_minNodeSizeToSplitSpt = minNodeSizeToSplitSpt;
   this->_averagingSampleIndex = std::move(averagingSampleIndex);
   this->_splittingSampleIndex = std::move(splittingSampleIndex);
+  this->_overfitPenalty = overfitPenalty;
   std::unique_ptr< RFNode > root ( new RFNode() );
   this->_root = std::move(root);
 
@@ -127,7 +128,8 @@ void forestryTree::setDummyTree(
   size_t minNodeSizeToSplitSpt,
   size_t minNodeSizeToSplitAvg,
   std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
-  std::unique_ptr< std::vector<size_t> > averagingSampleIndex
+  std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
+  float overfitPenalty
 ){
   this->_mtry = mtry;
   this->_minNodeSizeAvg = minNodeSizeAvg;
@@ -136,13 +138,15 @@ void forestryTree::setDummyTree(
   this->_minNodeSizeToSplitSpt = minNodeSizeToSplitSpt;
   this->_averagingSampleIndex = std::move(averagingSampleIndex);
   this->_splittingSampleIndex = std::move(splittingSampleIndex);
+  this->_overfitPenalty = overfitPenalty;
 }
 
 void forestryTree::predict(
   std::vector<float> &outputPrediction,
   std::vector< std::vector<float> >* xNew,
   DataFrame* trainingData,
-  Eigen::MatrixXf* weightMatrix
+  Eigen::MatrixXf* weightMatrix,
+  bool ridgeRF
 ){
     // If we are estimating the average in each leaf:
     struct rangeGenerator {
@@ -155,7 +159,7 @@ void forestryTree::predict(
     rangeGenerator _rangeGenerator(0);
     std::generate(updateIndex.begin(), updateIndex.end(), _rangeGenerator);
     (*getRoot()).predict(outputPrediction, &updateIndex, xNew, trainingData,
-                         weightMatrix);
+                         weightMatrix, ridgeRF, getOverfitPenalty());
 }
 
 
@@ -794,6 +798,7 @@ void findBestSplitRidge(
   Eigen::MatrixXf identity = Eigen::MatrixXf::Identity(numLinearFeatures + 1,
                                                        numLinearFeatures + 1);
 
+  //Don't penalize intercept
   identity(numLinearFeatures, numLinearFeatures) = 0.0;
 
   //Initialize aLeft

@@ -39,14 +39,16 @@ public:
     size_t minNodeSizeToSplitSpt,
     size_t minNodeSizeToSplitAvg,
     std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
-    std::unique_ptr< std::vector<size_t> > averagingSampleIndex
+    std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
+    float overfitPenalty
   );
 
   void predict(
     std::vector<float> &outputPrediction,
     std::vector< std::vector<float> >* xNew,
     DataFrame* trainingData,
-    Eigen::MatrixXf* weightMatrix = NULL
+    Eigen::MatrixXf* weightMatrix = NULL,
+    bool ridgeRF = false
   );
 
   void recursivePartition(
@@ -121,6 +123,10 @@ public:
     return _root.get();
   }
 
+  float getOverfitPenalty() {
+    return _overfitPenalty;
+  }
+
 private:
   size_t _mtry;
   size_t _minNodeSizeSpt;
@@ -130,6 +136,7 @@ private:
   std::unique_ptr< std::vector<size_t> > _averagingSampleIndex;
   std::unique_ptr< std::vector<size_t> > _splittingSampleIndex;
   std::unique_ptr< RFNode > _root;
+  float _overfitPenalty;
 };
 
 
