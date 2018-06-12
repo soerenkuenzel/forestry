@@ -835,7 +835,7 @@ void findBestSplitRidge(
 
       newLeftObservation.push_back(1.0);
 
-      new (&crossingObservation) Eigen::Map<Eigen::MatrixXf>(
+      //new (&crossingObservation) Eigen::Map<Eigen::MatrixXf>(
                                                newLeftObservation.data(),
                                                newLeftObservation.size(),
                                                1);
