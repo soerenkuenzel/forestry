@@ -836,9 +836,9 @@ void findBestSplitRidge(
       newLeftObservation.push_back(1.0);
 
       //new (&crossingObservation) Eigen::Map<Eigen::MatrixXf>(
-                                               newLeftObservation.data(),
-                                               newLeftObservation.size(),
-                                               1);
+      //                                         newLeftObservation.data(),
+      //                                         newLeftObservation.size(),
+      //                                         1);
 
       float crossingOutcome = trainingData->getOutcomePoint((*splitIter));
 
