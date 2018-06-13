@@ -690,9 +690,12 @@ void findBestSplitRidge(
   std::vector<size_t> splittingIndexes;
   std::vector<size_t> averagingIndexes;
 
-  for (size_t i = 0; i < (*splittingSampleIndex).size(); i++) {
-    averagingIndexes.push_back((*averagingSampleIndex)[i]);
+  for (size_t i = 0; i < splittingSampleIndex->size(); i++) {
     splittingIndexes.push_back((*splittingSampleIndex)[i]);
+  }
+
+  for (size_t j = 0; j < averagingSampleIndex->size(); j++) {
+    averagingIndexes.push_back((*averagingSampleIndex)[j]);
   }
 
 
