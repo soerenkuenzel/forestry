@@ -811,8 +811,8 @@ void findBestSplitRidge(
 
 
   while (
-    splitIter != splittingIndexes.end() ||
-    averageIter != averagingIndexes.end()
+    splitIter < splittingIndexes.end() ||
+    averageIter < averagingIndexes.end()
   ) {
 
 
@@ -822,7 +822,7 @@ void findBestSplitRidge(
 
     //Move iterators forward
     while (
-            splitIter != splittingIndexes.end() &&
+            splitIter < splittingIndexes.end() &&
             trainingData->getPoint((*splitIter), currentFeature) == currentValue
             ) {
       splitLeftCount++;
@@ -835,10 +835,10 @@ void findBestSplitRidge(
 
       newLeftObservation.push_back(1.0);
 
-      //new (&crossingObservation) Eigen::Map<Eigen::MatrixXf>(
-      //                                         newLeftObservation.data(),
-      //                                         newLeftObservation.size(),
-      //                                         1);
+      new (&crossingObservation) Eigen::Map<Eigen::MatrixXf>(
+                                               newLeftObservation.data(),
+                                               newLeftObservation.size(),
+                                               1);
 
       float crossingOutcome = trainingData->getOutcomePoint((*splitIter));
 
@@ -856,7 +856,7 @@ void findBestSplitRidge(
     }
 
     while (
-            averageIter != averagingIndexes.end() &&
+            averageIter < averagingIndexes.end() &&
             trainingData->getPoint((*averageIter), currentFeature) ==
             currentValue
             ) {
@@ -960,6 +960,7 @@ void findBestSplitRidge(
     );
 
     currentIndex = newIndex;
+    currentValue = trainingData->getPoint(currentIndex, currentFeature);
   }
 }
 
