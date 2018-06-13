@@ -819,7 +819,7 @@ void findBestSplitRidge(
     //TODO: HANDLE SINGLE DISTINCT VALUE CASE ////DONE
     //TODO: MORE ELEGANT HANDLING
 
-
+    currentValue = trainingData->getPoint(currentIndex, currentFeature);
     //Move iterators forward
     while (
             splitIter < splittingIndexes.end() &&
@@ -960,7 +960,6 @@ void findBestSplitRidge(
     );
 
     currentIndex = newIndex;
-    currentValue = trainingData->getPoint(currentIndex, currentFeature);
   }
 }
 
