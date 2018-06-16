@@ -309,15 +309,15 @@ void forestryTree::recursivePartition(
 
   // Sample mtry amounts of features
   std::vector<size_t> featureList;
-  if (ridgeRF) {
-    featureList = sampleFeatures(
-      getMtry(),
-      random_number_generator,
-      ((int) (*trainingData).getNumColumns()),
-      true,
-      trainingData->getNumCols()
-    );
-  } else {
+//  if (ridgeRF) {
+//    featureList = sampleFeatures(
+//      getMtry(),
+//      random_number_generator,
+//      ((int) (*trainingData).getNumColumns()),
+//      true,
+//      trainingData->getNumCols()
+//    );
+//  } else {
     featureList = sampleFeatures(
       getMtry(),
       random_number_generator,
@@ -325,7 +325,7 @@ void forestryTree::recursivePartition(
       false,
       trainingData->getNumCols()
     );
-  }
+//  }
 
   // Select best feature
   size_t bestSplitFeature;
@@ -694,6 +694,8 @@ void findBestSplitRidge(
     splittingIndexes.push_back((*splittingSampleIndex)[i]);
   }
 
+
+
   for (size_t j = 0; j < averagingSampleIndex->size(); j++) {
     averagingIndexes.push_back((*averagingSampleIndex)[j]);
   }
@@ -740,14 +742,19 @@ void findBestSplitRidge(
 
   //Initialize RSS components
   //TODO: think about completely duplicate observations
-  std::vector<float> firstOb = trainingData->getLinObsData(splittingIndexes[0]);
+
+  std::vector<float> firstOb(trainingData->getNumColumns());
+  trainingData->getObservationData(firstOb, splittingIndexes[0]);
+
   numLinearFeatures = firstOb.size();
   firstOb.push_back(1.0);
   Eigen::Map<Eigen::MatrixXf> appendedFOb(firstOb.data(),
                                           firstOb.size(),
                                           1);
 
-  std::vector<float> nextOb = trainingData->getLinObsData(splittingIndexes[1]);
+  std::vector<float> nextOb(trainingData->getNumColumns());
+  trainingData->getObservationData(nextOb, splittingIndexes[1]);
+
   nextOb.push_back(1.0);
   Eigen::Map<Eigen::MatrixXf> appendedSOb(nextOb.data(),
                                           nextOb.size(),
@@ -776,7 +783,8 @@ void findBestSplitRidge(
   //?MAPPING PROBLEM
 
   //Todo: clean this up
-  std::vector<float> temp = trainingData->getLinObsData(splittingIndexes[2]);
+  std::vector<float> temp(trainingData->getNumColumns());
+  trainingData->getObservationData(temp, splittingIndexes[2]);
   temp.push_back(1.0);
   Eigen::Map<Eigen::MatrixXf> appendedTemp(temp.data(),
                                            temp.size(),
@@ -786,7 +794,7 @@ void findBestSplitRidge(
   gRight += appendedTemp * appendedTemp.transpose();
 
   for (size_t d = 3; d < splittingIndexes.size(); d++) {
-    temp = trainingData->getLinObsData(splittingIndexes[d]);
+    trainingData->getObservationData(temp, splittingIndexes[d]);
     temp.push_back(1.0);
     new (&appendedTemp) Eigen::Map<Eigen::MatrixXf>(temp.data(),
                                                     temp.size(),
@@ -822,6 +830,7 @@ void findBestSplitRidge(
     //TODO: HANDLE SINGLE DISTINCT VALUE CASE ////DONE
     //TODO: MORE ELEGANT HANDLING
 
+
     currentValue = trainingData->getPoint(currentIndex, currentFeature);
     //Move iterators forward
     while (
@@ -833,8 +842,8 @@ void findBestSplitRidge(
       //MAPPING PROBLEM
 
       //Get observation that will cross the partition
-      std::vector<float> newLeftObservation =
-        trainingData->getLinObsData((*splitIter));
+      std::vector<float> newLeftObservation(trainingData->getNumColumns());
+      trainingData->getObservationData(newLeftObservation, (*splitIter));
 
       newLeftObservation.push_back(1.0);
 
@@ -855,7 +864,7 @@ void findBestSplitRidge(
       updateGk(gLeft, crossingObservation, true);
       updateGk(gRight, crossingObservation, false);
 
-      splitIter++;
+      ++splitIter;
     }
 
     while (
@@ -864,7 +873,7 @@ void findBestSplitRidge(
             currentValue
             ) {
       averageLeftCount++;
-      averageIter++;
+      ++averageIter;
     }
 
     //Test if we only have one feature value to be considered
@@ -915,7 +924,7 @@ void findBestSplitRidge(
           averageTotalCount - averageLeftCount
         ) < averageNodeSize
         ) {
-        newIndex = currentIndex;
+        currentIndex = newIndex;
         continue;
     }
 
@@ -955,7 +964,7 @@ void findBestSplitRidge(
       bestSplitValueAll,
       bestSplitFeatureAll,
       bestSplitCountAll,
-      currentRSS,
+      -currentRSS,
       currentSplitValue,
       currentFeature,
       bestSplitTableIndex,
