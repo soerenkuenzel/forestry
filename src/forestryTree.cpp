@@ -119,6 +119,8 @@ forestryTree::forestryTree(
     ridgeRF,
     overfitPenalty
   );
+
+  printTree();
 }
 
 void forestryTree::setDummyTree(
@@ -936,35 +938,35 @@ void findBestSplitRidge(
                                   gRight,
                                   gLeft);
 
-    double currentSplitValue = trainingData->getPoint(currentIndex,
-                                                      currentFeature);
-    //
-    // float featureValue = trainingData->getOutcomePoint(currentIndex);
-    // float newFeatureValue = trainingData->getOutcomePoint(newIndex);
-    //
-    // if (splitMiddle) {
-    //   currentSplitValue = (featureValue + newFeatureValue) / 2.0;
-    // } else {
-    //   std::uniform_real_distribution<double> unif_dist;
-    //   double tmp_random = unif_dist(random_number_generator) *
-    //     (newFeatureValue - featureValue);
-    //   double epsilon_lower = std::nextafter(featureValue, newFeatureValue);
-    //   double epsilon_upper = std::nextafter(newFeatureValue, featureValue);
-    //   currentSplitValue = tmp_random + featureValue;
-    //   if (currentSplitValue > epsilon_upper) {
-    //     currentSplitValue = epsilon_upper;
-    //   }
-    //   if (currentSplitValue < epsilon_lower) {
-    //     currentSplitValue = epsilon_lower;
-    //   }
-    // }
+    double currentSplitValue;
+
+    float featureValue = trainingData->getPoint(currentIndex,
+                                                currentFeature);
+    float newFeatureValue = trainingData->getPoint(newIndex,
+                                                   currentFeature);
+    if (splitMiddle) {
+      currentSplitValue = (featureValue + newFeatureValue) / 2.0;
+    } else {
+      std::uniform_real_distribution<double> unif_dist;
+      double tmp_random = unif_dist(random_number_generator) *
+        (newFeatureValue - featureValue);
+      double epsilon_lower = std::nextafter(featureValue, newFeatureValue);
+      double epsilon_upper = std::nextafter(newFeatureValue, featureValue);
+      currentSplitValue = tmp_random + featureValue;
+      if (currentSplitValue > epsilon_upper) {
+        currentSplitValue = epsilon_upper;
+      }
+      if (currentSplitValue < epsilon_lower) {
+        currentSplitValue = epsilon_lower;
+      }
+    }
 
     updateBestSplit(
       bestSplitLossAll,
       bestSplitValueAll,
       bestSplitFeatureAll,
       bestSplitCountAll,
-      -currentRSS,
+      currentRSS,
       currentSplitValue,
       currentFeature,
       bestSplitTableIndex,

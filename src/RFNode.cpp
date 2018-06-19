@@ -96,30 +96,42 @@ void RFNode::ridgePredict(
                               identity * lambda).inverse() * x.transpose() * y;
 
   //Map xNew into Eigen matrix
-  Eigen::MatrixXf xn(xNew->size(), dimension + 1);
+  Eigen::MatrixXf xn(xNew->size(),
+                     dimension + 1);
 
-  size_t i = 0;
+  size_t index = 0;
   for (std::vector<size_t>::iterator it = updateIndex->begin();
        it != updateIndex->end();
        ++it) {
 
-    currentObservation = (*xNew)[*it];
-    currentObservation.push_back(1.0);
+    std::vector<float> newObservation;
+    for (size_t i = 0; i < dimension; i++) {
+      newObservation.push_back((*xNew)[i][*it]);
+    }
+    newObservation.push_back(1.0);
 
-    xn.row(i) = Eigen::VectorXf::Map(currentObservation.data(),
-                                     currentObservation.size());
-    i++;
+    xn.row(index) = Eigen::VectorXf::Map(newObservation.data(),
+                                     newObservation.size());
+    index++;
   }
 
   //Multiply xNew * coefficients = result
   Eigen::MatrixXf predictions = xn * coefficients;
 
-  size_t j = 0;
-  for (std::vector<size_t>::iterator it = updateIndex->begin();
-       it != updateIndex->end();
-       ++it) {
-    outputPrediction[*it] = predictions(j, 0);
+  //size_t j = 0;
+  //for (std::vector<size_t>::iterator it = updateIndex->begin();
+  //     it != updateIndex->end();
+  //     ++it) {
+  //  outputPrediction[*it] = predictions(j, 0);
+  //  j++;
+  //}
+
+  Rcpp::Rcout << predictions;
+  Rcpp::Rcout << "UpdateSize: " << updateIndex->size();
+  for (size_t i = 0; i < updateIndex->size(); i++) {
+    outputPrediction[(*updateIndex)[i]] = predictions(i, 0);
   }
+
 }
 
 void RFNode::predict(
@@ -135,7 +147,7 @@ void RFNode::predict(
   // If the node is a leaf, aggregate all its averaging data samples
   if (is_leaf()) {
 
-    if (ridgeRF) {
+      if (ridgeRF) {
 
       //Use ridgePredict
       ridgePredict(outputPrediction,
@@ -143,7 +155,7 @@ void RFNode::predict(
                    xNew,
                    trainingData,
                    lambda);
-    } else {
+      } else {
 
       // Calculate the mean of current node
       float predictedMean = (*trainingData).partitionMean(getAveragingIndex());
