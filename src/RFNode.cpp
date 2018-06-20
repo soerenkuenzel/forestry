@@ -96,7 +96,7 @@ void RFNode::ridgePredict(
                               identity * lambda).inverse() * x.transpose() * y;
 
   //Map xNew into Eigen matrix
-  Eigen::MatrixXf xn(xNew->size(),
+  Eigen::MatrixXf xn(updateIndex->size(),
                      dimension + 1);
 
   size_t index = 0;
@@ -118,16 +118,6 @@ void RFNode::ridgePredict(
   //Multiply xNew * coefficients = result
   Eigen::MatrixXf predictions = xn * coefficients;
 
-  //size_t j = 0;
-  //for (std::vector<size_t>::iterator it = updateIndex->begin();
-  //     it != updateIndex->end();
-  //     ++it) {
-  //  outputPrediction[*it] = predictions(j, 0);
-  //  j++;
-  //}
-
-  Rcpp::Rcout << predictions;
-  Rcpp::Rcout << "UpdateSize: " << updateIndex->size();
   for (size_t i = 0; i < updateIndex->size(); i++) {
     outputPrediction[(*updateIndex)[i]] = predictions(i, 0);
   }
