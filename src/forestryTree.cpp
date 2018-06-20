@@ -311,15 +311,15 @@ void forestryTree::recursivePartition(
 
   // Sample mtry amounts of features
   std::vector<size_t> featureList;
-//  if (ridgeRF) {
-//    featureList = sampleFeatures(
-//      getMtry(),
-//      random_number_generator,
-//      ((int) (*trainingData).getNumColumns()),
-//      true,
-//      trainingData->getNumCols()
-//    );
-//  } else {
+  if (ridgeRF) {
+    featureList = sampleFeatures(
+      getMtry(),
+      random_number_generator,
+      ((int) (*trainingData).getNumColumns()),
+      true,
+      trainingData->getNumCols()
+    );
+  } else {
     featureList = sampleFeatures(
       getMtry(),
       random_number_generator,
@@ -327,7 +327,7 @@ void forestryTree::recursivePartition(
       false,
       trainingData->getNumCols()
     );
-//  }
+  }
 
   // Select best feature
   size_t bestSplitFeature;
