@@ -1,4 +1,3 @@
-#devtools::install_github("soerenkuenzel/forestry", ref = "RidgeRF")
 library(forestry)
 
 x <- iris[, c(1,2,3)]
@@ -34,10 +33,7 @@ y_pred <- predict(forest, x)
 # Mean Square Error
 sum((y_pred - y) ^ 2)
 
-y_pred
-
-y
-#expect_equal(sum((y_pred - y) ^ 2), 9.68, tolerance = 1e-2)
+expect_equal(sum((y_pred - y) ^ 2), 5.1317, tolerance = 1e-2)
 
 for (seed in 270:275) {
   set.seed(seed)
@@ -65,7 +61,4 @@ y_pred <- predict(forest, x)
 # Mean Square Error
 sum((y_pred - y) ^ 2)
 
-y_pred
-
-y
-
+expect_equal(sum((y_pred - y) ^ 2), 9.153, tolerance = 1e-2)
