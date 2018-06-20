@@ -119,8 +119,6 @@ forestryTree::forestryTree(
     ridgeRF,
     overfitPenalty
   );
-
-  printTree();
 }
 
 void forestryTree::setDummyTree(
