@@ -745,8 +745,7 @@ void findBestSplitRidge(
   //Initialize RSS components
   //TODO: think about completely duplicate observations
 
-  std::vector<float> firstOb(trainingData->getNumColumns());
-  trainingData->getObservationData(firstOb, splittingIndexes[0]);
+  std::vector<float> firstOb = trainingData->getLinObsData(splittingIndexes[0]);
 
   numLinearFeatures = firstOb.size();
   firstOb.push_back(1.0);
@@ -754,8 +753,7 @@ void findBestSplitRidge(
                                           firstOb.size(),
                                           1);
 
-  std::vector<float> nextOb(trainingData->getNumColumns());
-  trainingData->getObservationData(nextOb, splittingIndexes[1]);
+  std::vector<float> nextOb = trainingData->getLinObsData(splittingIndexes[1]);
 
   nextOb.push_back(1.0);
   Eigen::Map<Eigen::MatrixXf> appendedSOb(nextOb.data(),
@@ -785,8 +783,7 @@ void findBestSplitRidge(
   //?MAPPING PROBLEM
 
   //Todo: clean this up
-  std::vector<float> temp(trainingData->getNumColumns());
-  trainingData->getObservationData(temp, splittingIndexes[2]);
+  std::vector<float> temp = trainingData->getLinObsData(splittingIndexes[2]);
   temp.push_back(1.0);
   Eigen::Map<Eigen::MatrixXf> appendedTemp(temp.data(),
                                            temp.size(),
@@ -796,7 +793,7 @@ void findBestSplitRidge(
   gRight += appendedTemp * appendedTemp.transpose();
 
   for (size_t d = 3; d < splittingIndexes.size(); d++) {
-    trainingData->getObservationData(temp, splittingIndexes[d]);
+    temp = trainingData->getLinObsData(splittingIndexes[d]);
     temp.push_back(1.0);
     new (&appendedTemp) Eigen::Map<Eigen::MatrixXf>(temp.data(),
                                                     temp.size(),
@@ -844,8 +841,7 @@ void findBestSplitRidge(
       //MAPPING PROBLEM
 
       //Get observation that will cross the partition
-      std::vector<float> newLeftObservation(trainingData->getNumColumns());
-      trainingData->getObservationData(newLeftObservation, (*splitIter));
+      std::vector<float> newLeftObservation = trainingData->getLinObsData((*splitIter));
 
       newLeftObservation.push_back(1.0);
 
