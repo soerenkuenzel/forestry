@@ -5,6 +5,7 @@
 #include <map>
 #include <random>
 #include <sstream>
+#include <chrono>
 #include "utils.h"
 // [[Rcpp::plugins(cpp11)]]
 
@@ -119,6 +120,8 @@ forestryTree::forestryTree(
     ridgeRF,
     overfitPenalty
   );
+
+  //this->_root->printSubtree();
 }
 
 void forestryTree::setDummyTree(
@@ -649,9 +652,9 @@ void updateGk(
     bool left
 ){
   if (left) {
-    g_k += (next * next.transpose());
+    g_k.noalias() += (next * next.transpose());
   } else {
-    g_k -= (next * next.transpose());
+    g_k.noalias() -= (next * next.transpose());
   }
 }
 
@@ -663,6 +666,7 @@ float computeRSS(
     Eigen::MatrixXf& G_r,
     Eigen::MatrixXf& G_l
 ){
+  //return A_r(0,0);
   return ((S_l.transpose() * A_l * G_l * A_l * S_l)(0,0) +
           (S_r.transpose() * A_r * G_r * A_r * S_r)(0,0) -
           (2.0 * S_l.transpose() * A_l * S_l)(0,0) -
@@ -686,6 +690,7 @@ void findBestSplitRidge(
   size_t maxObs,
   float overfitPenalty
 ){
+
   //Get indexes of observations
   std::vector<size_t> splittingIndexes;
   std::vector<size_t> averagingIndexes;
@@ -713,6 +718,7 @@ void findBestSplitRidge(
        averagingIndexes.end(),
        [&](int fi, int si){return (*featureData)[fi] < (*featureData)[si];});
 
+
   size_t splitLeftCount = 0;
   size_t averageLeftCount = 0;
   size_t splitTotalCount = splittingIndexes.size();
@@ -721,7 +727,13 @@ void findBestSplitRidge(
   std::vector<size_t>::iterator splitIter = splittingIndexes.begin();
   std::vector<size_t>::iterator averageIter = averagingIndexes.begin();
 
+  std::vector<double> benchmark;
+  benchmark.push_back(0);
+  benchmark.push_back(0);
+  benchmark.push_back(0);
 
+
+  auto startInit = std::chrono::high_resolution_clock::now();
   //Now begin splitting
   size_t currentIndex;
 
@@ -790,6 +802,7 @@ void findBestSplitRidge(
   sRight += trainingData->getOutcomePoint(2) * appendedTemp;
   gRight += appendedTemp * appendedTemp.transpose();
 
+  auto startSG = std::chrono::high_resolution_clock::now();
   for (size_t d = 3; d < splittingIndexes.size(); d++) {
     temp = trainingData->getLinObsData(splittingIndexes[d]);
     temp.push_back(1.0);
@@ -800,7 +813,9 @@ void findBestSplitRidge(
     sRight += trainingData->getOutcomePoint(d) * appendedTemp;
     gRight += appendedTemp * appendedTemp.transpose();
   }
-
+  auto endSG = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> elapsedSG = endSG - startSG;
+  benchmark[1] += elapsedSG.count();
 
 
   Eigen::MatrixXf identity = Eigen::MatrixXf::Identity(numLinearFeatures + 1,
@@ -809,12 +824,21 @@ void findBestSplitRidge(
   //Don't penalize intercept
   identity(numLinearFeatures, numLinearFeatures) = 0.0;
 
+  auto startIn = std::chrono::high_resolution_clock::now();
+
   //Initialize aLeft
   Eigen::MatrixXf aLeft = (gLeft + overfitPenalty * identity).inverse();
 
   //Initialize aRight
   Eigen::MatrixXf aRight = (gRight + overfitPenalty * identity). inverse();
 
+  auto endIn = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> elapsedIn = endIn - startIn;
+  benchmark[2] += elapsedIn.count();
+
+  auto endInit = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> elapsed = endInit - startInit;
+  benchmark[0] += elapsed.count();
 
 
 
@@ -849,6 +873,7 @@ void findBestSplitRidge(
                                                1);
 
       float crossingOutcome = trainingData->getOutcomePoint((*splitIter));
+
 
       //Use to update RSS components
       updateA(aLeft, crossingObservation, true);
@@ -969,6 +994,14 @@ void findBestSplitRidge(
 
     currentIndex = newIndex;
   }
+
+
+  //Rcpp::Rcout << "Initialization took: " << benchmark[0] << " seconds total \n";
+  //Rcpp::Rcout << "Inverting the two A's took " << benchmark[2] << " seconds \n";
+  //Rcpp::Rcout << "G_R and S_R initilization took: " << benchmark[1] << " seconds \n";
+  //Rcpp::Rcout << "Everything else took " << benchmark[0] - benchmark[1] - benchmark[2] << " seconds \n";
+//
+  //Rcpp::Rcout << "Splitting on: " << *bestSplitValueAll << " in feature " << currentFeature << "\n \n";
 }
 
 
