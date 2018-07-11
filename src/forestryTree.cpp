@@ -1,3 +1,4 @@
+#include <RcppArmadillo.h>
 #include "forestryTree.h"
 #include <RcppEigen.h>
 #include <math.h>
@@ -611,6 +612,68 @@ void findBestSplitValueCategorical(
   }
 }
 
+void updateAArmadillo(
+    arma::Mat<float>& a_k,
+    arma::Mat<float> new_x,
+    bool leftNode
+){
+  arma::Mat<float> temp_x = new_x;
+
+  //Initilize z_K
+  arma::Mat<float> z_K = a_k * temp_x;
+
+  //Update A using Sherman–Morrison formula corresponding to right or left side
+  if (leftNode) {
+    float denom = (1 + as_scalar(temp_x.t() * z_K));
+    arma::Mat<float> g_K = (z_K * z_K.t()) /
+      denom;
+    a_k = a_k - g_K;
+  } else {
+    float denom = (1 - as_scalar(temp_x.t() * z_K));
+    arma::Mat<float> g_K = (z_K * z_K.t()) /
+      denom;
+    a_k = a_k + g_K;
+  }
+}
+
+void updateSkArmadillo(
+    arma::Mat<float>& s_k,
+    arma::Mat<float> next,
+    float next_y,
+    bool left
+){
+  if (left) {
+    s_k = s_k + (next_y * (next));
+  } else {
+    s_k = s_k - (next_y * (next));
+  }
+}
+
+void updateGkArmadillo(
+    arma::Mat<float>& g_k,
+    arma::Mat<float> next,
+    bool left
+){
+  if (left) {
+    g_k = g_k + (next * next.t());
+  } else {
+    g_k = g_k - (next * next.t());
+  }
+}
+
+float computeRSSArmadillo(
+    arma::Mat<float>& A_r,
+    arma::Mat<float>& A_l,
+    arma::Mat<float>& S_r,
+    arma::Mat<float>& S_l,
+    arma::Mat<float>& G_r,
+    arma::Mat<float>& G_l
+){
+  return (as_scalar(S_l.t() * A_l * G_l * A_l * S_l) +
+          as_scalar(S_r.t() * A_r * G_r * A_r * S_r) -
+          as_scalar(2.0 * S_l.t() * A_l * S_l) -
+          as_scalar(2.0 * S_r.t() * A_r * S_r));
+}
 void updateA(
     Eigen::MatrixXf& a_k,
     Eigen::MatrixXf new_x,
@@ -759,34 +822,34 @@ void findBestSplitRidge(
 
   numLinearFeatures = firstOb.size();
   firstOb.push_back(1.0);
-  Eigen::Map<Eigen::MatrixXf> appendedFOb(firstOb.data(),
-                                          firstOb.size(),
-                                          1);
+  arma::Mat<float> appendedFOb(firstOb.size(),
+                               1);
+  appendedFOb.col(0) = arma::conv_to<arma::Col<float> >::from(firstOb);
 
   std::vector<float> nextOb = trainingData->getLinObsData(splittingIndexes[1]);
 
   nextOb.push_back(1.0);
-  Eigen::Map<Eigen::MatrixXf> appendedSOb(nextOb.data(),
-                                          nextOb.size(),
-                                          1);
+  arma::Mat<float> appendedSOb(nextOb.size(),
+                               1);
+  appendedSOb.col(0) = arma::conv_to<arma::Col<float> >::from(nextOb);
 
   //Initialize crossingObs for body of loop
-  Eigen::Map<Eigen::MatrixXf> crossingObservation(firstOb.data(),
-                                                  firstOb.size(),
-                                                  1);
+  arma::Mat<float> crossingObservation(firstOb.size(),
+                                       1);
+  crossingObservation.col(0) = arma::conv_to<arma::Col<float> >::from(firstOb);
 
 
   //Initialize sLeft
-  Eigen::MatrixXf sLeft = trainingData->getOutcomePoint(splittingIndexes[0]) *
+  arma::Mat<float> sLeft = trainingData->getOutcomePoint(splittingIndexes[0]) *
                           appendedFOb;
 
-  Eigen::MatrixXf sRight = trainingData->getOutcomePoint(splittingIndexes[1]) *
+  arma::Mat<float> sRight = trainingData->getOutcomePoint(splittingIndexes[1]) *
                           appendedSOb;
 
   //Initialize gLeft
-  Eigen::MatrixXf gLeft = appendedFOb * (appendedFOb.transpose());
+  arma::Mat<float> gLeft = appendedFOb * (appendedFOb.t());
 
-  Eigen::MatrixXf gRight = appendedSOb * (appendedSOb.transpose());
+  arma::Mat<float> gRight = appendedSOb * (appendedSOb.t());
 
 
   //Initialize sRight, gRight
@@ -795,31 +858,30 @@ void findBestSplitRidge(
   //Todo: clean this up
   std::vector<float> temp = trainingData->getLinObsData(splittingIndexes[2]);
   temp.push_back(1.0);
-  Eigen::Map<Eigen::MatrixXf> appendedTemp(temp.data(),
-                                           temp.size(),
-                                           1);
+  arma::Mat<float> appendedTemp(temp.size(),
+                                1);
+  appendedTemp.col(0) = arma::conv_to<arma::Col<float> >::from(temp);
 
-  sRight += trainingData->getOutcomePoint(2) * appendedTemp;
-  gRight += appendedTemp * appendedTemp.transpose();
+  sRight = sRight + trainingData->getOutcomePoint(splittingIndexes[2]) * appendedTemp;
+  gRight = gRight + appendedTemp * appendedTemp.t();
 
   auto startSG = std::chrono::high_resolution_clock::now();
   for (size_t d = 3; d < splittingIndexes.size(); d++) {
     temp = trainingData->getLinObsData(splittingIndexes[d]);
     temp.push_back(1.0);
-    new (&appendedTemp) Eigen::Map<Eigen::MatrixXf>(temp.data(),
-                                                    temp.size(),
-                                                    1);
+    appendedTemp.col(0) = arma::conv_to<arma::Col<float> >::from(temp);
 
-    sRight += trainingData->getOutcomePoint(d) * appendedTemp;
-    gRight += appendedTemp * appendedTemp.transpose();
+    sRight = sRight + trainingData->getOutcomePoint(splittingIndexes[d]) * appendedTemp;
+    gRight = gRight + appendedTemp * appendedTemp.t();
   }
   auto endSG = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsedSG = endSG - startSG;
   benchmark[1] += elapsedSG.count();
 
 
-  Eigen::MatrixXf identity = Eigen::MatrixXf::Identity(numLinearFeatures + 1,
-                                                       numLinearFeatures + 1);
+  arma::Mat<float> identity(numLinearFeatures + 1,
+                            numLinearFeatures + 1);
+  identity.eye();
 
   //Don't penalize intercept
   identity(numLinearFeatures, numLinearFeatures) = 0.0;
@@ -827,10 +889,10 @@ void findBestSplitRidge(
   auto startIn = std::chrono::high_resolution_clock::now();
 
   //Initialize aLeft
-  Eigen::MatrixXf aLeft = (gLeft + overfitPenalty * identity).inverse();
+  arma::Mat<float> aLeft = (gLeft + overfitPenalty * identity).i();
 
   //Initialize aRight
-  Eigen::MatrixXf aRight = (gRight + overfitPenalty * identity). inverse();
+  arma::Mat<float> aRight = (gRight + overfitPenalty * identity). i();
 
   auto endIn = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsedIn = endIn - startIn;
@@ -867,23 +929,20 @@ void findBestSplitRidge(
 
       newLeftObservation.push_back(1.0);
 
-      new (&crossingObservation) Eigen::Map<Eigen::MatrixXf>(
-                                               newLeftObservation.data(),
-                                               newLeftObservation.size(),
-                                               1);
+      crossingObservation.col(0) = arma::conv_to<arma::Col<float> >::from(newLeftObservation);
 
       float crossingOutcome = trainingData->getOutcomePoint((*splitIter));
 
 
       //Use to update RSS components
-      updateA(aLeft, crossingObservation, true);
-      updateA(aRight, crossingObservation, false);
+      updateAArmadillo(aLeft, crossingObservation, true);
+      updateAArmadillo(aRight, crossingObservation, false);
 
-      updateSk(sLeft, crossingObservation, crossingOutcome, true);
-      updateSk(sRight, crossingObservation, crossingOutcome, false);
+      updateSkArmadillo(sLeft, crossingObservation, crossingOutcome, true);
+      updateSkArmadillo(sRight, crossingObservation, crossingOutcome, false);
 
-      updateGk(gLeft, crossingObservation, true);
-      updateGk(gRight, crossingObservation, false);
+      updateGkArmadillo(gLeft, crossingObservation, true);
+      updateGkArmadillo(gRight, crossingObservation, false);
 
       ++splitIter;
     }
@@ -950,12 +1009,12 @@ void findBestSplitRidge(
     }
 
     //Sum of RSS's of models fit on left and right partitions
-    float currentRSS = computeRSS(aRight,
-                                  aLeft,
-                                  sRight,
-                                  sLeft,
-                                  gRight,
-                                  gLeft);
+    float currentRSS = computeRSSArmadillo(aRight,
+                                           aLeft,
+                                           sRight,
+                                           sLeft,
+                                           gRight,
+                                           gLeft);
 
     double currentSplitValue;
 
@@ -996,12 +1055,12 @@ void findBestSplitRidge(
   }
 
 
-  //Rcpp::Rcout << "Initialization took: " << benchmark[0] << " seconds total \n";
-  //Rcpp::Rcout << "Inverting the two A's took " << benchmark[2] << " seconds \n";
-  //Rcpp::Rcout << "G_R and S_R initilization took: " << benchmark[1] << " seconds \n";
-  //Rcpp::Rcout << "Everything else took " << benchmark[0] - benchmark[1] - benchmark[2] << " seconds \n";
-//
-  //Rcpp::Rcout << "Splitting on: " << *bestSplitValueAll << " in feature " << currentFeature << "\n \n";
+Rcpp::Rcout << "Initialization took: " << benchmark[0] << " seconds total \n";
+Rcpp::Rcout << "Inverting the two A's took " << benchmark[2] << " seconds \n";
+Rcpp::Rcout << "G_R and S_R initilization took: " << benchmark[1] << " seconds \n";
+Rcpp::Rcout << "Everything else took " << benchmark[0] - benchmark[1] - benchmark[2] << " seconds \n";
+
+Rcpp::Rcout << "Armadillo Splitting on: " << *bestSplitValueAll << " in feature " << currentFeature << "\n \n";
 }
 
 
