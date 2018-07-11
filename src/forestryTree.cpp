@@ -674,67 +674,6 @@ float computeRSSArmadillo(
           as_scalar(2.0 * S_l.t() * A_l * S_l) -
           as_scalar(2.0 * S_r.t() * A_r * S_r));
 }
-void updateA(
-    Eigen::MatrixXf& a_k,
-    Eigen::MatrixXf new_x,
-    bool leftNode
-){
-  Eigen::MatrixXf temp_x = new_x;
-
-  //Initilize z_K
-  Eigen::MatrixXf z_K = a_k * temp_x;
-
-  //Update A using Sherman–Morrison formula corresponding to right or left side
-  if (leftNode) {
-    Eigen::MatrixXf g_K = (z_K * z_K.transpose()) /
-      (1 + (temp_x.transpose() * z_K)(0,0));
-    a_k -= g_K;
-  } else {
-    Eigen::MatrixXf g_K = (z_K * z_K.transpose()) /
-      (1 - (temp_x.transpose() * z_K)(0,0));
-    a_k += g_K;
-  }
-}
-
-void updateSk(
-    Eigen::MatrixXf& s_k,
-    Eigen::MatrixXf next,
-    float next_y,
-    bool left
-){
-  if (left) {
-    s_k += (next_y * (next));
-  } else {
-    s_k -= (next_y * (next));
-  }
-}
-
-void updateGk(
-    Eigen::MatrixXf& g_k,
-    Eigen::MatrixXf next,
-    bool left
-){
-  if (left) {
-    g_k.noalias() += (next * next.transpose());
-  } else {
-    g_k.noalias() -= (next * next.transpose());
-  }
-}
-
-float computeRSS(
-    Eigen::MatrixXf& A_r,
-    Eigen::MatrixXf& A_l,
-    Eigen::MatrixXf& S_r,
-    Eigen::MatrixXf& S_l,
-    Eigen::MatrixXf& G_r,
-    Eigen::MatrixXf& G_l
-){
-  //return A_r(0,0);
-  return ((S_l.transpose() * A_l * G_l * A_l * S_l)(0,0) +
-          (S_r.transpose() * A_r * G_r * A_r * S_r)(0,0) -
-          (2.0 * S_l.transpose() * A_l * S_l)(0,0) -
-          (2.0 * S_r.transpose() * A_r * S_r)(0,0));
-}
 
 void findBestSplitRidge(
   std::vector<size_t>* averagingSampleIndex,
