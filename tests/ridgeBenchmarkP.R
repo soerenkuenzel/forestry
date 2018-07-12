@@ -8,7 +8,7 @@ set.seed(49)
 
 #Construct Simulated Data
 n <- 100
-p <- 150
+p <- 200
 
 f <- rnorm(n)
 x <- data.frame(f)
@@ -21,7 +21,7 @@ y <- rnorm(n)
 
 results <- data.frame(matrix(ncol = 3, nrow = 0))
 
-testps <- c(3, 5, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 148)
+testps <- c(5, 20, 30, 40, 50, 70, 80, 90, 120, 150)
 
 for (num in testps) {
 
@@ -87,7 +87,7 @@ resultsm <- melt(results, id.var = "p")
 ggplot(data=resultsm, aes(p, value ,colour=variable))+
   geom_point(alpha = 0.9)+
   #geom_smooth(method = "lm", se = FALSE)+
-  scale_colour_manual("Performance on n = 100", values = c("red","blue"))+
+  scale_colour_manual("n = 100 Splitting on 10 random features", values = c("red","blue"))+
   labs(x="p", y="Time (s)")#+
 #annotate("text", x = 150, y = .5, label = textlab, color="black", size = 3, parse=FALSE)+
 #annotate("text", x = 150, y = 5, label = textlab2, color="black", size = 3, parse=FALSE)

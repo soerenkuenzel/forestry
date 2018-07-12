@@ -7,7 +7,7 @@ library(microbenchmark)
 set.seed(45)
 
 #Construct Simulated Data
-n <- 1500
+n <- 12000
 p <- 5
 
 f <- rnorm(n)
@@ -21,7 +21,7 @@ y <- rnorm(n)
 
 results <- data.frame(matrix(ncol = 3, nrow = 0))
 
-testns <- c(50, 500, 700, 800, 1000, 1200, 1400)
+testns <- c(200)#, 600, 700, 800, 1000)
 
 for (num in testns) {
 
@@ -63,7 +63,7 @@ for (num in testns) {
         ridgeRF = TRUE,
         overfitPenalty = 3
       )
-    ), times = 2
+    ), times = 3
   )
   sm <- summary(m, unit = "s")
   results <- rbind(results, c(num, sm$mean[1], sm$mean[2]))
@@ -86,8 +86,9 @@ resultsm <- melt(results, id.var = "n")
 
 ggplot(data=resultsm, aes(n, value ,colour=variable))+
   geom_point(alpha = 0.9)+
+  theme(legend.position = "bottom")+
   #geom_smooth(method = "lm", se = FALSE)+
-  scale_colour_manual("Performance on p = 5", values = c("red","blue"))+
+  scale_colour_manual("Armadillo Performance on p = 5", values = c("red","blue"))+
   labs(x="n", y="Time (s)")#+
   #annotate("text", x = 150, y = .5, label = textlab, color="black", size = 3, parse=FALSE)+
   #annotate("text", x = 150, y = 5, label = textlab2, color="black", size = 3, parse=FALSE)
