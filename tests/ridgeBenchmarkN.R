@@ -21,7 +21,7 @@ y <- rnorm(n)
 
 results <- data.frame(matrix(ncol = 3, nrow = 0))
 
-testns <- c(200)#, 600, 700, 800, 1000)
+testns <- c(500, 600, 700, 800, 1000, 1500, 2000, 3000, 4000, 5000, 6000)
 
 for (num in testns) {
 
@@ -63,7 +63,7 @@ for (num in testns) {
         ridgeRF = TRUE,
         overfitPenalty = 3
       )
-    ), times = 3
+    ), times = 2
   )
   sm <- summary(m, unit = "s")
   results <- rbind(results, c(num, sm$mean[1], sm$mean[2]))
@@ -88,7 +88,7 @@ ggplot(data=resultsm, aes(n, value ,colour=variable))+
   geom_point(alpha = 0.9)+
   theme(legend.position = "bottom")+
   #geom_smooth(method = "lm", se = FALSE)+
-  scale_colour_manual("Armadillo Performance on p = 5", values = c("red","blue"))+
+  scale_colour_manual("Eigen Performance on p = 5", values = c("red","blue"))+
   labs(x="n", y="Time (s)")#+
   #annotate("text", x = 150, y = .5, label = textlab, color="black", size = 3, parse=FALSE)+
   #annotate("text", x = 150, y = 5, label = textlab2, color="black", size = 3, parse=FALSE)

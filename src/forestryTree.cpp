@@ -38,20 +38,20 @@ forestryTree::forestryTree(
   float overfitPenalty
 ){
   /**
-   * @brief Honest random forest tree constructor
-   * @param trainingData    A DataFrame object
-   * @param mtry    The total number of features to use for each split
-   * @param minNodeSizeSpt    Minimum splitting size of leaf node
-   * @param minNodeSizeAvg    Minimum averaging size of leaf node
-   * @param minNodeSizeToSplitSpt    Minimum splitting size of a splitting node
-   * @param minNodeSizeToSplitAvg    Minimum averaging size of a splitting node
-   * @param splittingSampleIndex    A vector with index of splitting samples
-   * @param averagingSampleIndex    A vector with index of averaging samples
-   * @param random_number_generator    A mt19937 random generator
-   * @param splitMiddle    Boolean to indicate if new feature value is
-   *    determined at a random position between two feature values
-   * @param maxObs    Max number of observations to split on
-   */
+  * @brief Honest random forest tree constructor
+  * @param trainingData    A DataFrame object
+  * @param mtry    The total number of features to use for each split
+  * @param minNodeSizeSpt    Minimum splitting size of leaf node
+  * @param minNodeSizeAvg    Minimum averaging size of leaf node
+  * @param minNodeSizeToSplitSpt    Minimum splitting size of a splitting node
+  * @param minNodeSizeToSplitAvg    Minimum averaging size of a splitting node
+  * @param splittingSampleIndex    A vector with index of splitting samples
+  * @param averagingSampleIndex    A vector with index of averaging samples
+  * @param random_number_generator    A mt19937 random generator
+  * @param splitMiddle    Boolean to indicate if new feature value is
+  *    determined at a random position between two feature values
+  * @param maxObs    Max number of observations to split on
+  */
 
   /* Sanity Check */
   if (minNodeSizeAvg == 0) {
@@ -69,14 +69,14 @@ forestryTree::forestryTree(
   if (minNodeSizeToSplitAvg > (*averagingSampleIndex).size()) {
     std::ostringstream ostr;
     ostr << "minNodeSizeToSplitAvg cannot exceed total elements in the "
-      "averaging samples: minNodeSizeToSplitAvg=" << minNodeSizeToSplitAvg <<
+    "averaging samples: minNodeSizeToSplitAvg=" << minNodeSizeToSplitAvg <<
       ", averagingSampleSize=" << (*averagingSampleIndex).size() << ".";
     throw std::runtime_error(ostr.str());
   }
   if (minNodeSizeToSplitSpt > (*splittingSampleIndex).size()) {
     std::ostringstream ostr;
     ostr << "minNodeSizeToSplitSpt cannot exceed total elements in the "
-      "splitting samples: minNodeSizeToSplitSpt=" << minNodeSizeToSplitSpt <<
+    "splitting samples: minNodeSizeToSplitSpt=" << minNodeSizeToSplitSpt <<
       ", splittingSampleSize=" << (*splittingSampleIndex).size() << ".";
     throw std::runtime_error(ostr.str());
   }
@@ -126,14 +126,14 @@ forestryTree::forestryTree(
 }
 
 void forestryTree::setDummyTree(
-  size_t mtry,
-  size_t minNodeSizeSpt,
-  size_t minNodeSizeAvg,
-  size_t minNodeSizeToSplitSpt,
-  size_t minNodeSizeToSplitAvg,
-  std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
-  std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
-  float overfitPenalty
+    size_t mtry,
+    size_t minNodeSizeSpt,
+    size_t minNodeSizeAvg,
+    size_t minNodeSizeToSplitSpt,
+    size_t minNodeSizeToSplitAvg,
+    std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
+    std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
+    float overfitPenalty
 ){
   this->_mtry = mtry;
   this->_minNodeSizeAvg = minNodeSizeAvg;
@@ -146,24 +146,24 @@ void forestryTree::setDummyTree(
 }
 
 void forestryTree::predict(
-  std::vector<float> &outputPrediction,
-  std::vector< std::vector<float> >* xNew,
-  DataFrame* trainingData,
-  Eigen::MatrixXf* weightMatrix,
-  bool ridgeRF
+    std::vector<float> &outputPrediction,
+    std::vector< std::vector<float> >* xNew,
+    DataFrame* trainingData,
+    Eigen::MatrixXf* weightMatrix,
+    bool ridgeRF
 ){
-    // If we are estimating the average in each leaf:
-    struct rangeGenerator {
-      size_t currentNumber;
-      rangeGenerator(size_t startNumber): currentNumber(startNumber) {};
-      size_t operator()() {return currentNumber++; }
-    };
+  // If we are estimating the average in each leaf:
+  struct rangeGenerator {
+    size_t currentNumber;
+    rangeGenerator(size_t startNumber): currentNumber(startNumber) {};
+    size_t operator()() {return currentNumber++; }
+  };
 
-    std::vector<size_t> updateIndex(outputPrediction.size());
-    rangeGenerator _rangeGenerator(0);
-    std::generate(updateIndex.begin(), updateIndex.end(), _rangeGenerator);
-    (*getRoot()).predict(outputPrediction, &updateIndex, xNew, trainingData,
-                         weightMatrix, ridgeRF, getOverfitPenalty());
+  std::vector<size_t> updateIndex(outputPrediction.size());
+  rangeGenerator _rangeGenerator(0);
+  std::generate(updateIndex.begin(), updateIndex.end(), _rangeGenerator);
+  (*getRoot()).predict(outputPrediction, &updateIndex, xNew, trainingData,
+   weightMatrix, ridgeRF, getOverfitPenalty());
 }
 
 
@@ -201,7 +201,7 @@ std::vector<size_t> sampleFeatures(
       );
       size_t randomIndex = unif_dist(random_number_generator);
       if (
-         featureList.size() == 0 ||
+          featureList.size() == 0 ||
             std::find(
               featureList.begin(),
               featureList.end(),
@@ -217,13 +217,13 @@ std::vector<size_t> sampleFeatures(
 
 
 void splitDataIntoTwoParts(
-  DataFrame* trainingData,
-  std::vector<size_t>* sampleIndex,
-  size_t splitFeature,
-  float splitValue,
-  std::vector<size_t>* leftPartitionIndex,
-  std::vector<size_t>* rightPartitionIndex,
-  bool categoical
+    DataFrame* trainingData,
+    std::vector<size_t>* sampleIndex,
+    size_t splitFeature,
+    float splitValue,
+    std::vector<size_t>* leftPartitionIndex,
+    std::vector<size_t>* rightPartitionIndex,
+    bool categoical
 ){
   for (
       std::vector<size_t>::iterator it = (*sampleIndex).begin();
@@ -249,16 +249,16 @@ void splitDataIntoTwoParts(
 }
 
 void splitData(
-  DataFrame* trainingData,
-  std::vector<size_t>* averagingSampleIndex,
-  std::vector<size_t>* splittingSampleIndex,
-  size_t splitFeature,
-  float splitValue,
-  std::vector<size_t>* averagingLeftPartitionIndex,
-  std::vector<size_t>* averagingRightPartitionIndex,
-  std::vector<size_t>* splittingLeftPartitionIndex,
-  std::vector<size_t>* splittingRightPartitionIndex,
-  bool categoical
+    DataFrame* trainingData,
+    std::vector<size_t>* averagingSampleIndex,
+    std::vector<size_t>* splittingSampleIndex,
+    size_t splitFeature,
+    float splitValue,
+    std::vector<size_t>* averagingLeftPartitionIndex,
+    std::vector<size_t>* averagingRightPartitionIndex,
+    std::vector<size_t>* splittingLeftPartitionIndex,
+    std::vector<size_t>* splittingRightPartitionIndex,
+    bool categoical
 ){
   // averaging data
   splitDataIntoTwoParts(
@@ -296,17 +296,17 @@ void forestryTree::recursivePartition(
 ){
 
   if ((*averagingSampleIndex).size() < getMinNodeSizeAvg() ||
-    (*splittingSampleIndex).size() < getMinNodeSizeSpt()) {
+      (*splittingSampleIndex).size() < getMinNodeSizeSpt()) {
     // Create two lists on heap and transfer the owernship to the node
     std::unique_ptr<std::vector<size_t> > averagingSampleIndex_(
-      new std::vector<size_t>(*averagingSampleIndex)
+        new std::vector<size_t>(*averagingSampleIndex)
     );
     std::unique_ptr<std::vector<size_t> > splittingSampleIndex_(
-      new std::vector<size_t>(*splittingSampleIndex)
+        new std::vector<size_t>(*splittingSampleIndex)
     );
     (*rootNode).setLeafNode(
-      std::move(averagingSampleIndex_),
-      std::move(splittingSampleIndex_)
+        std::move(averagingSampleIndex_),
+        std::move(splittingSampleIndex_)
     );
     return;
   }
@@ -429,15 +429,15 @@ void forestryTree::recursivePartition(
 }
 
 void updateBestSplit(
-  float* bestSplitLossAll,
-  double* bestSplitValueAll,
-  size_t* bestSplitFeatureAll,
-  size_t* bestSplitCountAll,
-  float currentSplitLoss,
-  double currentSplitValue,
-  size_t currentFeature,
-  size_t bestSplitTableIndex,
-  std::mt19937_64& random_number_generator
+    float* bestSplitLossAll,
+    double* bestSplitValueAll,
+    size_t* bestSplitFeatureAll,
+    size_t* bestSplitCountAll,
+    float currentSplitLoss,
+    double currentSplitValue,
+    size_t currentFeature,
+    size_t bestSplitTableIndex,
+    std::mt19937_64& random_number_generator
 ) {
 
   // Update the value if a higher value has been seen
@@ -466,19 +466,19 @@ void updateBestSplit(
 }
 
 void findBestSplitValueCategorical(
-  std::vector<size_t>* averagingSampleIndex,
-  std::vector<size_t>* splittingSampleIndex,
-  size_t bestSplitTableIndex,
-  size_t currentFeature,
-  float* bestSplitLossAll,
-  double* bestSplitValueAll,
-  size_t* bestSplitFeatureAll,
-  size_t* bestSplitCountAll,
-  DataFrame* trainingData,
-  size_t splitNodeSize,
-  size_t averageNodeSize,
-  std::mt19937_64& random_number_generator,
-  size_t maxObs
+    std::vector<size_t>* averagingSampleIndex,
+    std::vector<size_t>* splittingSampleIndex,
+    size_t bestSplitTableIndex,
+    size_t currentFeature,
+    float* bestSplitLossAll,
+    double* bestSplitValueAll,
+    size_t* bestSplitFeatureAll,
+    size_t* bestSplitCountAll,
+    DataFrame* trainingData,
+    size_t splitNodeSize,
+    size_t averageNodeSize,
+    std::mt19937_64& random_number_generator,
+    size_t maxObs
 ){
 
   // Count total number of observations for different categories
@@ -544,10 +544,10 @@ void findBestSplitValueCategorical(
   std::map<float, float> splittingCategoryYSum;
 
   for (
-    std::set<float>::iterator it=all_categories.begin();
-    it != all_categories.end();
-    ++it
-    ) {
+      std::set<float>::iterator it=all_categories.begin();
+      it != all_categories.end();
+      ++it
+  ) {
     splittingCategoryCount[*it] = 0;
     averagingCategoryCount[*it] = 0;
     splittingCategoryYSum[*it] = 0;
@@ -555,25 +555,25 @@ void findBestSplitValueCategorical(
 
   for (size_t j=0; j<(*splittingSampleIndex).size(); j++) {
     float currentXValue = (*trainingData).
-      getPoint((*splittingSampleIndex)[j], currentFeature);
+    getPoint((*splittingSampleIndex)[j], currentFeature);
     float currentYValue = (*trainingData).
-      getOutcomePoint((*splittingSampleIndex)[j]);
+    getOutcomePoint((*splittingSampleIndex)[j]);
     splittingCategoryCount[currentXValue] += 1;
     splittingCategoryYSum[currentXValue] += currentYValue;
   }
 
   for (size_t j=0; j<(*averagingSampleIndex).size(); j++) {
     float currentXValue = (*trainingData).
-      getPoint((*averagingSampleIndex)[j], currentFeature);
+    getPoint((*averagingSampleIndex)[j], currentFeature);
     averagingCategoryCount[currentXValue] += 1;
   }
 
   // Go through the sums and determine the best partition
   for (
-    std::set<float>::iterator it=all_categories.begin();
-    it != all_categories.end();
-    ++it
-    ) {
+      std::set<float>::iterator it=all_categories.begin();
+      it != all_categories.end();
+      ++it
+  ) {
     // Check leaf size at least nodesize
     if (
         std::min(
@@ -589,14 +589,14 @@ void findBestSplitValueCategorical(
     }
 
     float leftPartitionMean = splittingCategoryYSum[*it] /
-                               splittingCategoryCount[*it];
+      splittingCategoryCount[*it];
     float rightPartitionMean = (splitTotalSum -
-                                 splittingCategoryYSum[*it]) /
-                                (splitTotalCount - splittingCategoryCount[*it]);
+                                splittingCategoryYSum[*it]) /
+                                  (splitTotalCount - splittingCategoryCount[*it]);
     float currentSplitLoss = splittingCategoryCount[*it] *
-                              leftPartitionMean * leftPartitionMean +
-                              (splitTotalCount - splittingCategoryCount[*it]) *
-                              rightPartitionMean * rightPartitionMean;
+      leftPartitionMean * leftPartitionMean +
+      (splitTotalCount - splittingCategoryCount[*it]) *
+      rightPartitionMean * rightPartitionMean;
 
     updateBestSplit(
       bestSplitLossAll,
@@ -831,8 +831,8 @@ void findBestSplitRidge(
 
 
   while (
-    splitIter < splittingIndexes.end() ||
-    averageIter < averagingIndexes.end()
+      splitIter < splittingIndexes.end() ||
+        averageIter < averagingIndexes.end()
   ) {
 
 
@@ -843,9 +843,9 @@ void findBestSplitRidge(
     currentValue = trainingData->getPoint(currentIndex, currentFeature);
     //Move iterators forward
     while (
-            splitIter < splittingIndexes.end() &&
-            trainingData->getPoint((*splitIter), currentFeature) == currentValue
-            ) {
+        splitIter < splittingIndexes.end() &&
+          trainingData->getPoint((*splitIter), currentFeature) == currentValue
+    ) {
       splitLeftCount++;
       //UPDATE MATRIX pieces with current splitIter index
       //MAPPING PROBLEM
@@ -903,8 +903,8 @@ void findBestSplitRidge(
     if (oneDistinctValue) {
       oneDistinctValue = false;
       if (
-        splitIter == splittingIndexes.end() &&
-        averageIter == averagingIndexes.end()
+          splitIter == splittingIndexes.end() &&
+            averageIter == averagingIndexes.end()
       ) {
         break;
       }
@@ -914,17 +914,17 @@ void findBestSplitRidge(
     //Set newIndex to index iterator with the minimum currentFeature value
     if (
         splitIter == splittingIndexes.end() &&
-        averageIter == averagingIndexes.end()
-          ) {
-        break;
+          averageIter == averagingIndexes.end()
+    ) {
+      break;
     } else if (
         splitIter == splittingIndexes.end()
-          ) {
-        newIndex = (*averageIter);
+    ) {
+      newIndex = (*averageIter);
     } else if (
         averageIter == averagingIndexes.end()
-          ) {
-        newIndex = (*splitIter);
+    ) {
+      newIndex = (*splitIter);
     } else {
       if (
           trainingData->getPoint((*averageIter), currentFeature) <
@@ -1038,9 +1038,9 @@ void findBestSplitValueNonCategorical(
   for (size_t j=0; j<(*splittingSampleIndex).size(); j++){
     // Retrieve the current feature value
     float tmpFeatureValue = (*trainingData).
-      getPoint((*splittingSampleIndex)[j], currentFeature);
+    getPoint((*splittingSampleIndex)[j], currentFeature);
     float tmpOutcomeValue = (*trainingData).
-      getOutcomePoint((*splittingSampleIndex)[j]);
+    getOutcomePoint((*splittingSampleIndex)[j]);
     splitTotalSum += tmpOutcomeValue;
 
     // Adding data to the internal data vector (Note: R index)
@@ -1055,9 +1055,9 @@ void findBestSplitValueNonCategorical(
   for (size_t j=0; j<(*averagingSampleIndex).size(); j++){
     // Retrieve the current feature value
     float tmpFeatureValue = (*trainingData).
-      getPoint((*averagingSampleIndex)[j], currentFeature);
+    getPoint((*averagingSampleIndex)[j], currentFeature);
     float tmpOutcomeValue = (*trainingData).
-      getOutcomePoint((*averagingSampleIndex)[j]);
+    getOutcomePoint((*averagingSampleIndex)[j]);
 
     // Adding data to the internal data vector (Note: R index)
     averagingData.push_back(
@@ -1203,8 +1203,8 @@ void findBestSplitValueNonCategorical(
 
     // Calculate the variance of the splitting
     float muBarSquareSum =
-      splitLeftPartitionCount * leftPartitionMean * leftPartitionMean +
-      (splitTotalCount - splitLeftPartitionCount) * rightPartitionMean
+    splitLeftPartitionCount * leftPartitionMean * leftPartitionMean +
+    (splitTotalCount - splitLeftPartitionCount) * rightPartitionMean
       * rightPartitionMean;
 
     double currentSplitValue;
@@ -1243,15 +1243,15 @@ void findBestSplitValueNonCategorical(
 }
 
 void determineBestSplit(
-  size_t &bestSplitFeature,
-  double &bestSplitValue,
-  float &bestSplitLoss,
-  size_t mtry,
-  float* bestSplitLossAll,
-  double* bestSplitValueAll,
-  size_t* bestSplitFeatureAll,
-  size_t* bestSplitCountAll,
-  std::mt19937_64& random_number_generator
+    size_t &bestSplitFeature,
+    double &bestSplitValue,
+    float &bestSplitLoss,
+    size_t mtry,
+    float* bestSplitLossAll,
+    double* bestSplitValueAll,
+    size_t* bestSplitFeatureAll,
+    size_t* bestSplitCountAll,
+    std::mt19937_64& random_number_generator
 ){
 
   // Get the best split values among all features
@@ -1297,18 +1297,18 @@ void determineBestSplit(
 
 
 void forestryTree::selectBestFeature(
-  size_t &bestSplitFeature,
-  double &bestSplitValue,
-  float &bestSplitLoss,
-  std::vector<size_t>* featureList,
-  std::vector<size_t>* averagingSampleIndex,
-  std::vector<size_t>* splittingSampleIndex,
-  DataFrame* trainingData,
-  std::mt19937_64& random_number_generator,
-  bool splitMiddle,
-  size_t maxObs,
-  bool ridgeRF,
-  float overfitPenalty
+    size_t &bestSplitFeature,
+    double &bestSplitValue,
+    float &bestSplitLoss,
+    std::vector<size_t>* featureList,
+    std::vector<size_t>* averagingSampleIndex,
+    std::vector<size_t>* splittingSampleIndex,
+    DataFrame* trainingData,
+    std::mt19937_64& random_number_generator,
+    bool splitMiddle,
+    size_t maxObs,
+    bool ridgeRF,
+    float overfitPenalty
 ){
 
   // Get the number of total features
@@ -1351,7 +1351,7 @@ void forestryTree::selectBestFeature(
         getMinNodeSizeToSplitSpt(),
         getMinNodeSizeToSplitAvg(),
         random_number_generator,
-      	maxObs
+        maxObs
       );
     } else if (ridgeRF) {
       findBestSplitRidge(
@@ -1476,9 +1476,9 @@ void forestryTree::getOOBindex(
 }
 
 void forestryTree::getOOBPrediction(
-  std::vector<float> &outputOOBPrediction,
-  std::vector<size_t> &outputOOBCount,
-  DataFrame* trainingData
+    std::vector<float> &outputOOBPrediction,
+    std::vector<size_t> &outputOOBCount,
+    DataFrame* trainingData
 ){
 
   std::vector<size_t> OOBIndex;
