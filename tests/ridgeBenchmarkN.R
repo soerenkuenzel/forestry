@@ -88,7 +88,7 @@ ggplot(data=resultsm, aes(n, value ,colour=variable))+
   geom_point(alpha = 0.9)+
   theme(legend.position = "bottom")+
   #geom_smooth(method = "lm", se = FALSE)+
-  scale_colour_manual("Eigen Performance on p = 5", values = c("red","blue"))+
+  scale_colour_manual("Armadillo Performance on p = 5", values = c("red","blue"))+
   labs(x="n", y="Time (s)")#+
   #annotate("text", x = 150, y = .5, label = textlab, color="black", size = 3, parse=FALSE)+
   #annotate("text", x = 150, y = 5, label = textlab2, color="black", size = 3, parse=FALSE)
