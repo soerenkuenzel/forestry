@@ -612,33 +612,29 @@ void findBestSplitValueCategorical(
   }
 }
 
-arma::Mat<float> updateAArmadillo(
+void updateAArmadillo(
     arma::Mat<float>& a_k,
-    arma::Mat<float> new_x,
+    arma::Mat<float>& new_x,
     bool leftNode
 ){
-  arma::Mat<float> temp_x = new_x;
+
 
   //Initilize z_K
-  arma::Mat<float> z_K = a_k * temp_x;
+  arma::Mat<float> z_K = a_k * new_x;
 
   //Update A using Sherman–Morrison formula corresponding to right or left side
   if (leftNode) {
-    float denom = (1 + as_scalar(temp_x.t() * z_K));
-    arma::Mat<float> g_K = (z_K * z_K.t()) /
-      denom;
-    return a_k - g_K;
+    a_k = a_k - ((z_K) * (z_K).t()) /
+      (1 + as_scalar(new_x.t() * z_K));
   } else {
-    float denom = (1 - as_scalar(temp_x.t() * z_K));
-    arma::Mat<float> g_K = (z_K * z_K.t()) /
-      denom;
-    return a_k + g_K;
+    a_k = a_k + ((z_K) * (z_K).t()) /
+      (1 - as_scalar(new_x.t() * z_K));
   }
 }
 
 void updateSkArmadillo(
     arma::Mat<float>& s_k,
-    arma::Mat<float> next,
+    arma::Mat<float>& next,
     float next_y,
     bool left
 ){
@@ -651,7 +647,7 @@ void updateSkArmadillo(
 
 void updateGkArmadillo(
     arma::Mat<float>& g_k,
-    arma::Mat<float> next,
+    arma::Mat<float>& next,
     bool left
 ){
   if (left) {
@@ -868,8 +864,8 @@ void findBestSplitRidge(
 
       //Use to update RSS components
       auto startUA = std::chrono::high_resolution_clock::now();
-      aLeft = updateAArmadillo(aLeft, crossingObservation, true);
-      aRight = updateAArmadillo(aRight, crossingObservation, false);
+      updateAArmadillo(aLeft, crossingObservation, true);
+      updateAArmadillo(aRight, crossingObservation, false);
 
       auto endUA = std::chrono::high_resolution_clock::now();
       std::chrono::duration<double> elapsedUA = endUA - startUA;
