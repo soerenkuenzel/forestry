@@ -64,7 +64,7 @@ for (num in testns) {
         ridgeRF = TRUE,
         overfitPenalty = 3
       )
-    ), times = 3
+    ), times = 8
   )
   sm <- summary(m, unit = "s")
   results <- rbind(results, c(num, sm$mean[1], sm$mean[2]))

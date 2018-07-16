@@ -107,6 +107,10 @@ forestryTree::forestryTree(
   this->_overfitPenalty = overfitPenalty;
   std::unique_ptr< RFNode > root ( new RFNode() );
   this->_root = std::move(root);
+  this->_benchmark = new std::vector<double>;
+  for (size_t i = 0; i < 8; i++) {
+    _benchmark->push_back(0);
+  }
 
 
   /* Recursively grow the tree */
@@ -119,10 +123,12 @@ forestryTree::forestryTree(
     splitMiddle,
     maxObs,
     ridgeRF,
-    overfitPenalty
+    overfitPenalty,
+    getBenchmark()
   );
 
   //this->_root->printSubtree();
+  this->trainTiming();
 }
 
 void forestryTree::setDummyTree(
@@ -292,7 +298,8 @@ void forestryTree::recursivePartition(
     bool splitMiddle,
     size_t maxObs,
     bool ridgeRF,
-    float overfitPenalty
+    float overfitPenalty,
+    std::vector<double>* benchmark
 ){
 
   if ((*averagingSampleIndex).size() < getMinNodeSizeAvg() ||
@@ -348,7 +355,8 @@ void forestryTree::recursivePartition(
     splitMiddle,
     maxObs,
     ridgeRF,
-    overfitPenalty
+    overfitPenalty,
+    benchmark
   );
 
   // Create a leaf node if the current bestSplitValue is NA
@@ -405,7 +413,8 @@ void forestryTree::recursivePartition(
       splitMiddle,
       maxObs,
       ridgeRF,
-      overfitPenalty
+      overfitPenalty,
+      benchmark
     );
     recursivePartition(
       rightChild.get(),
@@ -416,7 +425,8 @@ void forestryTree::recursivePartition(
       splitMiddle,
       maxObs,
       ridgeRF,
-      overfitPenalty
+      overfitPenalty,
+      benchmark
     );
 
     (*rootNode).setSplitNode(
@@ -665,10 +675,10 @@ float computeRSSArmadillo(
     arma::Mat<float>& G_r,
     arma::Mat<float>& G_l
 ){
-  return (as_scalar(S_l.t() * A_l * G_l * A_l * S_l) +
-          as_scalar(S_r.t() * A_r * G_r * A_r * S_r) -
-          as_scalar(2.0 * S_l.t() * A_l * S_l) -
-          as_scalar(2.0 * S_r.t() * A_r * S_r));
+  return (as_scalar((S_l.t() * A_l) * (G_l * (A_l * S_l))) +
+          as_scalar((S_r.t() * A_r) * (G_r * (A_r * S_r))) -
+          as_scalar(2.0 * S_l.t() * (A_l * S_l)) -
+          as_scalar(2.0 * S_r.t() * (A_r * S_r)));
 }
 
 void findBestSplitRidge(
@@ -686,12 +696,17 @@ void findBestSplitRidge(
   std::mt19937_64& random_number_generator,
   bool splitMiddle,
   size_t maxObs,
-  float overfitPenalty
+  float overfitPenalty,
+  std::vector<double>* benchmark
 ){
+
+  auto startTotal = std::chrono::high_resolution_clock::now();
 
   //Get indexes of observations
   std::vector<size_t> splittingIndexes;
   std::vector<size_t> averagingIndexes;
+
+
 
   for (size_t i = 0; i < splittingSampleIndex->size(); i++) {
     splittingIndexes.push_back((*splittingSampleIndex)[i]);
@@ -708,6 +723,8 @@ void findBestSplitRidge(
   //Sort indexes of observations ascending by currentFeature
   std::vector<float>* featureData = trainingData->getFeatureData(currentFeature);
 
+  auto startSort = std::chrono::high_resolution_clock::now();
+
   sort(splittingIndexes.begin(),
        splittingIndexes.end(),
        [&](int fi, int si){return (*featureData)[fi] < (*featureData)[si];});
@@ -715,6 +732,10 @@ void findBestSplitRidge(
   sort(averagingIndexes.begin(),
        averagingIndexes.end(),
        [&](int fi, int si){return (*featureData)[fi] < (*featureData)[si];});
+
+  auto endSort = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> elapsedSort = endSort - startSort;
+  (*benchmark)[0] += elapsedSort.count();
 
 
   size_t splitLeftCount = 0;
@@ -725,11 +746,7 @@ void findBestSplitRidge(
   std::vector<size_t>::iterator splitIter = splittingIndexes.begin();
   std::vector<size_t>::iterator averageIter = averagingIndexes.begin();
 
-  std::vector<double> benchmark = {0,0,0,0,0,0};;
 
-  auto startTotal = std::chrono::high_resolution_clock::now();
-
-  auto startInit = std::chrono::high_resolution_clock::now();
   //Now begin splitting
   size_t currentIndex;
 
@@ -780,6 +797,8 @@ void findBestSplitRidge(
                           appendedSOb;
 
   //Initialize gLeft
+
+  auto startSG = std::chrono::high_resolution_clock::now();
   arma::Mat<float> gLeft = appendedFOb * (appendedFOb.t());
 
   arma::Mat<float> gRight = appendedSOb * (appendedSOb.t());
@@ -807,6 +826,10 @@ void findBestSplitRidge(
     gRight = gRight + appendedTemp * appendedTemp.t();
   }
 
+  auto endSG = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> elapsedSG = endSG - startSG;
+  (*benchmark)[1] += elapsedSG.count();
+
   arma::Mat<float> identity(numLinearFeatures + 1,
                             numLinearFeatures + 1);
   identity.eye();
@@ -815,15 +838,19 @@ void findBestSplitRidge(
   identity(numLinearFeatures, numLinearFeatures) = 0.0;
 
   //Initialize aLeft
+  auto startIA = std::chrono::high_resolution_clock::now();
   arma::Mat<float> aLeft = (gLeft + overfitPenalty * identity).i();
 
   //Initialize aRight
   arma::Mat<float> aRight = (gRight + overfitPenalty * identity). i();
 
-  auto endInit = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> elapsed = endInit - startInit;
-  benchmark[0] += elapsed.count();
+  auto endIA = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> elapsedIA = endIA - startIA;
+  (*benchmark)[2] += elapsedIA.count();
 
+
+  arma::Mat<float> obOuter(numLinearFeatures+1,
+                          numLinearFeatures+1);
 
 
   while (
@@ -851,37 +878,44 @@ void findBestSplitRidge(
 
       newLeftObservation.push_back(1.0);
 
-      auto startG = std::chrono::high_resolution_clock::now();
-
       crossingObservation.col(0) = arma::conv_to<arma::Col<float> >::from(newLeftObservation);
 
-      auto endG = std::chrono::high_resolution_clock::now();
-      std::chrono::duration<double> elapsedG = endG - startG;
-      benchmark[4] += elapsedG.count();
+
 
       float crossingOutcome = trainingData->getOutcomePoint((*splitIter));
 
 
       //Use to update RSS components
+
       auto startUA = std::chrono::high_resolution_clock::now();
+
       updateAArmadillo(aLeft, crossingObservation, true);
       updateAArmadillo(aRight, crossingObservation, false);
 
       auto endUA = std::chrono::high_resolution_clock::now();
       std::chrono::duration<double> elapsedUA = endUA - startUA;
-      benchmark[1] += elapsedUA.count();
+      (*benchmark)[3] += elapsedUA.count();
+
+      auto startUS = std::chrono::high_resolution_clock::now();
 
       updateSkArmadillo(sLeft, crossingObservation, crossingOutcome, true);
       updateSkArmadillo(sRight, crossingObservation, crossingOutcome, false);
 
-      auto startSG = std::chrono::high_resolution_clock::now();
+      auto endUS = std::chrono::high_resolution_clock::now();
+      std::chrono::duration<double> elapsedUS = endUS - startUS;
+      (*benchmark)[5] += elapsedUS.count();
 
-      updateGkArmadillo(gLeft, crossingObservation, true);
-      updateGkArmadillo(gRight, crossingObservation, false);
+      auto startUG = std::chrono::high_resolution_clock::now();
 
-      auto endSG = std::chrono::high_resolution_clock::now();
-      std::chrono::duration<double> elapsedSG = endSG - startSG;
-      benchmark[3] += elapsedSG.count();
+      obOuter = crossingObservation * crossingObservation.t();
+      gLeft = gLeft - obOuter;
+      gRight = gRight + obOuter;
+
+      auto endUG = std::chrono::high_resolution_clock::now();
+      std::chrono::duration<double> elapsedUG = endUG - startUG;
+      (*benchmark)[4] += elapsedUG.count();
+
+
 
       ++splitIter;
     }
@@ -959,7 +993,7 @@ void findBestSplitRidge(
 
     auto endRss = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsedRss = endRss - startRss;
-    benchmark[5] += elapsedRss.count();
+    (*benchmark)[6] += elapsedRss.count();
 
     double currentSplitValue;
 
@@ -1000,11 +1034,11 @@ void findBestSplitRidge(
   }
 
   auto endTotal = std::chrono::high_resolution_clock::now();
-
   std::chrono::duration<double> elapsedTotal = endTotal - startTotal;
-  benchmark[2] += elapsedTotal.count();
+  (*benchmark)[7] += elapsedTotal.count();
 
-Rcpp::Rcout << "Initialization " << benchmark[0] << " A steps took: " << benchmark[1] << " UpdateGK: " << benchmark[3] << " RSS: " << benchmark[5]<< " getFeat: " << benchmark[4] << " Total time took: " << benchmark[2] << "seconds \n";
+
+//Rcpp::Rcout << "Initialization " << benchmark[0] << " A inversion took: " << benchmark[1] << " InitGk: " << benchmark[3] << " other init took " <<benchmark[0] - benchmark[1] - benchmark[3] << " seconds Total time took: " << benchmark[2] << "seconds \n";
 //Rcpp::Rcout << "Armadillo Splitting on: " << *bestSplitValueAll << " in feature " << currentFeature << "\n \n";
 }
 
@@ -1304,7 +1338,8 @@ void forestryTree::selectBestFeature(
     bool splitMiddle,
     size_t maxObs,
     bool ridgeRF,
-    float overfitPenalty
+    float overfitPenalty,
+    std::vector<double>* benchmark
 ){
 
   // Get the number of total features
@@ -1365,7 +1400,8 @@ void forestryTree::selectBestFeature(
         random_number_generator,
         splitMiddle,
         maxObs,
-        overfitPenalty
+        overfitPenalty,
+        benchmark
       );
     } else {
       findBestSplitValueNonCategorical(
@@ -1408,6 +1444,20 @@ void forestryTree::selectBestFeature(
 
 void forestryTree::printTree(){
   (*getRoot()).printSubtree();
+}
+
+void forestryTree::trainTiming(){
+  double total = (*getBenchmark())[7];
+
+  Rcpp::Rcout << " Sorting: " << 100*((*getBenchmark())[0] / total) << " % "
+              << " InitG/S: " << 100*((*getBenchmark())[1] / total) << " % "
+              << " InvertA: " << 100*((*getBenchmark())[2] / total) << " % "
+              << " UpdateA: " << 100*((*getBenchmark())[3] / total) << " % "
+              << " UpdateG: " << 100*((*getBenchmark())[4] / total) << " % "
+              << " UpdateS: " << 100*((*getBenchmark())[5] / total) << " % "
+              << " getRSS: " << 100*((*getBenchmark())[6] / total) << " %";
+
+  Rcpp::Rcout << "\n";
 }
 
 void forestryTree::getOOBindex(

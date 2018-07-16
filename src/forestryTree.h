@@ -61,7 +61,8 @@ public:
     bool splitMiddle,
     size_t maxObs,
     bool ridgeRF,
-    float overfitPenalty
+    float overfitPenalty,
+    std::vector<double>* benchmark
   );
 
   void selectBestFeature(
@@ -76,10 +77,13 @@ public:
     bool splitMiddle,
     size_t maxObs,
     bool ridgeRF,
-    float overfitPenalty
+    float overfitPenalty,
+    std::vector<double>* benchmark
   );
 
   void printTree();
+
+  void trainTiming();
 
   void getOOBindex(
     std::vector<size_t> &outputOOBIndex,
@@ -128,6 +132,10 @@ public:
     return _overfitPenalty;
   }
 
+  std::vector<double>* getBenchmark() {
+    return _benchmark;
+  }
+
 private:
   size_t _mtry;
   size_t _minNodeSizeSpt;
@@ -138,6 +146,7 @@ private:
   std::unique_ptr< std::vector<size_t> > _splittingSampleIndex;
   std::unique_ptr< RFNode > _root;
   float _overfitPenalty;
+  std::vector<double>* _benchmark;
 };
 
 
