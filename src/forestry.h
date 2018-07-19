@@ -1,12 +1,13 @@
 #ifndef HTECPP_RF_H
 #define HTECPP_RF_H
 
+#include "forestryTree.h"
 #include <RcppEigen.h>
 #include <iostream>
 #include <vector>
 #include <string>
 #include "DataFrame.h"
-#include "forestryTree.h"
+
 
 class forestry {
 

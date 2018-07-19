@@ -1,6 +1,7 @@
 #ifndef HTECPP_RFTREE_H
 #define HTECPP_RFTREE_H
 
+#include <RcppArmadillo.h>
 #include <RcppEigen.h>
 #include <iostream>
 #include <vector>
@@ -62,13 +63,19 @@ public:
     size_t maxObs,
     bool ridgeRF,
     float overfitPenalty,
-    std::vector<double>* benchmark
+    std::vector<double>* benchmark,
+    arma::Mat<float> gTotal,
+    arma::Mat<float> sTotal
   );
 
   void selectBestFeature(
     size_t& bestSplitFeature,
     double& bestSplitValue,
     float& bestSplitLoss,
+    arma::Mat<float> &bestSplitGL,
+    arma::Mat<float> &bestSplitGR,
+    arma::Mat<float> &bestSplitSL,
+    arma::Mat<float> &bestSplitSR,
     std::vector<size_t>* featureList,
     std::vector<size_t>* averagingSampleIndex,
     std::vector<size_t>* splittingSampleIndex,
@@ -78,7 +85,9 @@ public:
     size_t maxObs,
     bool ridgeRF,
     float overfitPenalty,
-    std::vector<double>* benchmark
+    std::vector<double>* benchmark,
+    arma::Mat<float>& gTotal,
+    arma::Mat<float>& sTotal
   );
 
   void printTree();

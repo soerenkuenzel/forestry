@@ -1,5 +1,5 @@
 // [[Rcpp::plugins(cpp11)]]
-#include <Rcpp.h>
+#include <RcppArmadillo.h>
 #include <RcppEigen.h>
 #include "DataFrame.h"
 #include "forestryTree.h"
