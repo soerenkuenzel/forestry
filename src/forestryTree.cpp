@@ -113,6 +113,35 @@ forestryTree::forestryTree(
   }
 
 
+  /* If ridge splitting, initialize components to pass down */
+
+  std::vector<size_t>* splitIndexes = getSplittingIndex();
+  size_t numLinearFeatures;
+  std::vector<float> firstOb = trainingData->getLinObsData((*splitIndexes)[0]);
+  numLinearFeatures = firstOb.size();
+  firstOb.push_back(1.0);
+  arma::Mat<float> sTotal(firstOb.size(),
+                               1);
+  sTotal.col(0) = arma::conv_to<arma::Col<float> >::from(firstOb);
+  arma::Mat<float> gTotal(numLinearFeatures + 1,
+                          numLinearFeatures + 1);
+  if (ridgeRF) {
+    gTotal = sTotal * (sTotal.t());
+    sTotal = trainingData->getOutcomePoint((*splitIndexes)[0]) * sTotal;
+    /* Sum up sTotal and gTotal once */
+    std::vector<float> temp(numLinearFeatures + 1);
+    arma::Mat<float> tempOb(firstOb.size(),
+                            1);
+    for (size_t i = 1; i < splitIndexes->size(); i++) {
+      temp = trainingData->getLinObsData((*splitIndexes)[i]);
+      temp.push_back(1.0);
+      tempOb.col(0) = arma::conv_to<arma::Col<float> >::from(temp);
+      gTotal = gTotal + (tempOb * (tempOb.t()));
+      sTotal = sTotal + trainingData->getOutcomePoint((*splitIndexes)[i]) * tempOb;
+    }
+  }
+
+
   /* Recursively grow the tree */
   recursivePartition(
     getRoot(),
@@ -124,7 +153,9 @@ forestryTree::forestryTree(
     maxObs,
     ridgeRF,
     overfitPenalty,
-    getBenchmark()
+    getBenchmark(),
+    gTotal,
+    sTotal
   );
 
   //this->_root->printSubtree();
@@ -299,7 +330,9 @@ void forestryTree::recursivePartition(
     size_t maxObs,
     bool ridgeRF,
     float overfitPenalty,
-    std::vector<double>* benchmark
+    std::vector<double>* benchmark,
+    arma::Mat<float> gTotal,
+    arma::Mat<float> sTotal
 ){
 
   if ((*averagingSampleIndex).size() < getMinNodeSizeAvg() ||
@@ -342,11 +375,22 @@ void forestryTree::recursivePartition(
   size_t bestSplitFeature;
   double bestSplitValue;
   float bestSplitLoss;
+  arma::Mat<float> bestSplitGL(size(gTotal));
+  arma::Mat<float> bestSplitGR(size(gTotal));
+  arma::Mat<float> bestSplitSL(size(sTotal));
+  arma::Mat<float> bestSplitSR(size(sTotal));
+
+
+
 
   selectBestFeature(
     bestSplitFeature,
     bestSplitValue,
     bestSplitLoss,
+    bestSplitGL,
+    bestSplitGR,
+    bestSplitSL,
+    bestSplitSR,
     &featureList,
     averagingSampleIndex,
     splittingSampleIndex,
@@ -356,7 +400,9 @@ void forestryTree::recursivePartition(
     maxObs,
     ridgeRF,
     overfitPenalty,
-    benchmark
+    benchmark,
+    gTotal,
+    sTotal
   );
 
   // Create a leaf node if the current bestSplitValue is NA
@@ -414,7 +460,9 @@ void forestryTree::recursivePartition(
       maxObs,
       ridgeRF,
       overfitPenalty,
-      benchmark
+      benchmark,
+      bestSplitGL,
+      bestSplitSL
     );
     recursivePartition(
       rightChild.get(),
@@ -426,7 +474,9 @@ void forestryTree::recursivePartition(
       maxObs,
       ridgeRF,
       overfitPenalty,
-      benchmark
+      benchmark,
+      bestSplitGR,
+      bestSplitSR
     );
 
     (*rootNode).setSplitNode(
@@ -470,6 +520,59 @@ void updateBestSplit(
         bestSplitLossAll[bestSplitTableIndex] = currentSplitLoss;
         bestSplitFeatureAll[bestSplitTableIndex] = currentFeature;
         bestSplitValueAll[bestSplitTableIndex] = currentSplitValue;
+      }
+    }
+  }
+}
+
+void updateBestSplitRidge(
+    float* bestSplitLossAll,
+    double* bestSplitValueAll,
+    size_t* bestSplitFeatureAll,
+    size_t* bestSplitCountAll,
+    arma::Mat<float>* bestSplitGLAll,
+    arma::Mat<float>* bestSplitGRAll,
+    arma::Mat<float>* bestSplitSLAll,
+    arma::Mat<float>* bestSplitSRAll,
+    float currentSplitLoss,
+    double currentSplitValue,
+    size_t currentFeature,
+    arma::Mat<float> currentGL,
+    arma::Mat<float> currentGR,
+    arma::Mat<float> currentSL,
+    arma::Mat<float> currentSR,
+    size_t bestSplitTableIndex,
+    std::mt19937_64& random_number_generator
+) {
+
+  // Update the value if a higher value has been seen
+  if (currentSplitLoss > bestSplitLossAll[bestSplitTableIndex]) {
+    bestSplitLossAll[bestSplitTableIndex] = currentSplitLoss;
+    bestSplitFeatureAll[bestSplitTableIndex] = currentFeature;
+    bestSplitValueAll[bestSplitTableIndex] = currentSplitValue;
+    bestSplitCountAll[bestSplitTableIndex] = 1;
+    bestSplitGLAll[bestSplitTableIndex] = currentGL;
+    bestSplitGRAll[bestSplitTableIndex] = currentGR;
+    bestSplitSLAll[bestSplitTableIndex] = currentSL;
+    bestSplitSRAll[bestSplitTableIndex] = currentSR;
+  } else {
+
+    //If we are as good as the best split
+    if (currentSplitLoss == bestSplitLossAll[bestSplitTableIndex]) {
+      bestSplitCountAll[bestSplitTableIndex] =
+        bestSplitCountAll[bestSplitTableIndex] + 1;
+
+      // Only update with probability 1/nseen
+      std::uniform_real_distribution<float> unif_dist;
+      float tmp_random = unif_dist(random_number_generator);
+      if (tmp_random * bestSplitCountAll[bestSplitTableIndex] <= 1) {
+        bestSplitLossAll[bestSplitTableIndex] = currentSplitLoss;
+        bestSplitFeatureAll[bestSplitTableIndex] = currentFeature;
+        bestSplitValueAll[bestSplitTableIndex] = currentSplitValue;
+        bestSplitGLAll[bestSplitTableIndex] = currentGL;
+        bestSplitGRAll[bestSplitTableIndex] = currentGR;
+        bestSplitSLAll[bestSplitTableIndex] = currentSL;
+        bestSplitSRAll[bestSplitTableIndex] = currentSR;
       }
     }
   }
@@ -690,6 +793,10 @@ void findBestSplitRidge(
   double* bestSplitValueAll,
   size_t* bestSplitFeatureAll,
   size_t* bestSplitCountAll,
+  arma::Mat<float>* bestSplitGLAll,
+  arma::Mat<float>* bestSplitGRAll,
+  arma::Mat<float>* bestSplitSLAll,
+  arma::Mat<float>* bestSplitSRAll,
   DataFrame* trainingData,
   size_t splitNodeSize,
   size_t averageNodeSize,
@@ -697,7 +804,9 @@ void findBestSplitRidge(
   bool splitMiddle,
   size_t maxObs,
   float overfitPenalty,
-  std::vector<double>* benchmark
+  std::vector<double>* benchmark,
+  arma::Mat<float>& gTotal,
+  arma::Mat<float>& sTotal
 ){
 
   auto startTotal = std::chrono::high_resolution_clock::now();
@@ -737,17 +846,41 @@ void findBestSplitRidge(
 
   std::vector<size_t>::iterator splitIter = splittingIndexes.begin();
   std::vector<size_t>::iterator averageIter = averagingIndexes.begin();
+  /* Increment splitIter because we have initialized RSS components with
+   * observation from splitIter.begin(), so we need to avoid duplicate 1st obs
+   */
+  ++splitIter;
+
+  /* Initialization todo
+   *
+   * Sort
+   * Get first in Split Iter
+   *    SplitIter++
+   *    SplitLeft count++
+   *    Initialize RSS Components
+   *    put all <= values in avgIndexes into left node
+   *    AvgeLeftCount++
+   *
+   *  Think about right leaf size
+   *  think about splitting on Avg indexes
+   */
 
   //Now begin splitting
   size_t currentIndex;
 
-  if (
-    trainingData->getPoint((*averageIter), currentFeature) <
-    trainingData->getPoint((*splitIter), currentFeature)
+  /* Need at least one splitOb to evaluate RSS */
+  currentIndex = (*splitIter);
+  ++splitIter;
+  splitLeftCount++;
+
+  /* Move appropriate averagingObs to left */
+
+  while (
+    trainingData->getPoint((*averageIter), currentFeature) <=
+    trainingData->getPoint(currentIndex, currentFeature)
   ) {
-    currentIndex = (*averageIter);
-  } else {
-    currentIndex = (*splitIter);
+    ++averageIter;
+    averageLeftCount++;
   }
 
   float currentValue = trainingData->getPoint(currentIndex, currentFeature);
@@ -759,20 +892,10 @@ void findBestSplitRidge(
   //Initialize RSS components
   //TODO: think about completely duplicate observations
 
-  std::vector<float> firstOb = trainingData->getLinObsData(splittingIndexes[0]);
+  std::vector<float> firstOb = trainingData->getLinObsData(currentIndex);
 
   numLinearFeatures = firstOb.size();
   firstOb.push_back(1.0);
-  arma::Mat<float> appendedFOb(firstOb.size(),
-                               1);
-  appendedFOb.col(0) = arma::conv_to<arma::Col<float> >::from(firstOb);
-
-  std::vector<float> nextOb = trainingData->getLinObsData(splittingIndexes[1]);
-
-  nextOb.push_back(1.0);
-  arma::Mat<float> appendedSOb(nextOb.size(),
-                               1);
-  appendedSOb.col(0) = arma::conv_to<arma::Col<float> >::from(nextOb);
 
   //Initialize crossingObs for body of loop
   arma::Mat<float> crossingObservation(firstOb.size(),
@@ -781,38 +904,16 @@ void findBestSplitRidge(
 
   auto startSG = std::chrono::high_resolution_clock::now();
   //Initialize sLeft
-  arma::Mat<float> sLeft = trainingData->getOutcomePoint(splittingIndexes[0]) *
-                          appendedFOb;
+  arma::Mat<float> sLeft = trainingData->getOutcomePoint(currentIndex) *
+                            crossingObservation;
 
-  arma::Mat<float> sRight = trainingData->getOutcomePoint(splittingIndexes[1]) *
-                          appendedSOb;//MAYBE HERE
+  arma::Mat<float> sRight = sTotal - sLeft;
 
   //Initialize gLeft
-  arma::Mat<float> gLeft = appendedFOb * (appendedFOb.t());
+  arma::Mat<float> gLeft = crossingObservation * (crossingObservation.t());
 
-  arma::Mat<float> gRight = appendedSOb * (appendedSOb.t());
-
-
+  arma::Mat<float> gRight = gTotal - gLeft;
   //Initialize sRight, gRight
-
-  //Todo: clean this up
-  std::vector<float> temp = trainingData->getLinObsData(splittingIndexes[2]);
-  temp.push_back(1.0);
-  arma::Mat<float> appendedTemp(temp.size(),
-                                1);
-  appendedTemp.col(0) = arma::conv_to<arma::Col<float> >::from(temp);
-
-  sRight = sRight + trainingData->getOutcomePoint(splittingIndexes[2]) * appendedTemp;
-  gRight = gRight + appendedTemp * appendedTemp.t();
-
-  for (size_t d = 3; d < splittingIndexes.size(); d++) {
-    temp = trainingData->getLinObsData(splittingIndexes[d]);
-    temp.push_back(1.0);
-    appendedTemp.col(0) = arma::conv_to<arma::Col<float> >::from(temp);
-
-    sRight = sRight + trainingData->getOutcomePoint(splittingIndexes[d]) * appendedTemp;
-    gRight = gRight + appendedTemp * appendedTemp.t();
-  }
 
   auto endSG = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsedSG = endSG - startSG;
@@ -831,7 +932,7 @@ void findBestSplitRidge(
   arma::Mat<float> aLeft = (gLeft + identity).i();
 
   //Initialize aRight
-  arma::Mat<float> aRight = (gRight + identity). i();
+  arma::Mat<float> aRight = (gRight + identity).i();
 
   auto endIA = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsedIA = endIA - startIA;
@@ -854,8 +955,6 @@ void findBestSplitRidge(
         splitIter < splittingIndexes.end() &&
           trainingData->getPoint((*splitIter), currentFeature) == currentValue
     ) {
-
-      splitLeftCount++;
       //UPDATE MATRIX pieces with current splitIter index
       //MAPPING PROBLEM
 
@@ -898,7 +997,7 @@ void findBestSplitRidge(
       std::chrono::duration<double> elapsedUA = endUA - startUA;
       (*benchmark)[3] += elapsedUA.count();
 
-
+      splitLeftCount++;
       ++splitIter;
     }
 
@@ -931,7 +1030,8 @@ void findBestSplitRidge(
     } else if (
         splitIter == splittingIndexes.end()
     ) {
-      newIndex = (*averageIter);
+      /* Can't pass down matrix if we split past last splitting index */
+      break;
     } else if (
         averageIter == averagingIndexes.end()
     ) {
@@ -999,14 +1099,22 @@ void findBestSplitRidge(
       }
     }
 
-    updateBestSplit(
+    updateBestSplitRidge(
       bestSplitLossAll,
       bestSplitValueAll,
       bestSplitFeatureAll,
       bestSplitCountAll,
+      bestSplitGLAll,
+      bestSplitGRAll,
+      bestSplitSLAll,
+      bestSplitSRAll,
       currentRSS,
       currentSplitValue,
       currentFeature,
+      gLeft,
+      gRight,
+      sLeft,
+      sRight,
       bestSplitTableIndex,
       random_number_generator
     );
@@ -1249,6 +1357,71 @@ void findBestSplitValueNonCategorical(
   }
 }
 
+void determineBestSplitRidge(
+    size_t &bestSplitFeature,
+    double &bestSplitValue,
+    float &bestSplitLoss,
+    arma::Mat<float> &bestSplitGL,
+    arma::Mat<float> &bestSplitGR,
+    arma::Mat<float> &bestSplitSL,
+    arma::Mat<float> &bestSplitSR,
+    size_t mtry,
+    float* bestSplitLossAll,
+    double* bestSplitValueAll,
+    size_t* bestSplitFeatureAll,
+    size_t* bestSplitCountAll,
+    arma::Mat<float>* bestSplitGLAll,
+    arma::Mat<float>* bestSplitGRAll,
+    arma::Mat<float>* bestSplitSLAll,
+    arma::Mat<float>* bestSplitSRAll,
+    std::mt19937_64& random_number_generator
+){
+
+  // Get the best split values among all features
+  float bestSplitLoss_ = -std::numeric_limits<float>::infinity();
+  std::vector<size_t> bestFeatures;
+
+  for (size_t i=0; i<mtry; i++) {
+    if (bestSplitLossAll[i] > bestSplitLoss_) {
+      bestSplitLoss_ = bestSplitLossAll[i];
+    }
+  }
+
+  for (size_t i=0; i<mtry; i++) {
+    if (bestSplitLossAll[i] == bestSplitLoss_) {
+      for (size_t j=0; j<bestSplitCountAll[i]; j++) {
+        bestFeatures.push_back(i);
+      }
+    }
+  }
+
+  // If we found a feasible splitting point
+  if (bestFeatures.size() > 0) {
+
+    // If there are multiple best features, sample one according to their
+    // frequency of occurence
+    std::uniform_int_distribution<size_t> unif_dist(
+        0, bestFeatures.size() - 1
+    );
+    size_t tmp_random = unif_dist(random_number_generator);
+    size_t bestFeatureIndex = bestFeatures.at(tmp_random);
+    // Return the best splitFeature and splitValue
+    bestSplitFeature = bestSplitFeatureAll[bestFeatureIndex];
+    bestSplitValue = bestSplitValueAll[bestFeatureIndex];
+    bestSplitLoss = bestSplitLoss_;
+    bestSplitGL = bestSplitGLAll[bestFeatureIndex];
+    bestSplitGR = bestSplitGRAll[bestFeatureIndex];
+    bestSplitSL = bestSplitSLAll[bestFeatureIndex];
+    bestSplitSR = bestSplitSRAll[bestFeatureIndex];
+  } else {
+    // If none of the features are possible, return NA
+    bestSplitFeature = std::numeric_limits<size_t>::quiet_NaN();
+    bestSplitValue = std::numeric_limits<double>::quiet_NaN();
+    bestSplitLoss = std::numeric_limits<float>::quiet_NaN();
+  }
+
+}
+
 void determineBestSplit(
     size_t &bestSplitFeature,
     double &bestSplitValue,
@@ -1307,6 +1480,10 @@ void forestryTree::selectBestFeature(
     size_t &bestSplitFeature,
     double &bestSplitValue,
     float &bestSplitLoss,
+    arma::Mat<float> &bestSplitGL,
+    arma::Mat<float> &bestSplitGR,
+    arma::Mat<float> &bestSplitSL,
+    arma::Mat<float> &bestSplitSR,
     std::vector<size_t>* featureList,
     std::vector<size_t>* averagingSampleIndex,
     std::vector<size_t>* splittingSampleIndex,
@@ -1316,7 +1493,9 @@ void forestryTree::selectBestFeature(
     size_t maxObs,
     bool ridgeRF,
     float overfitPenalty,
-    std::vector<double>* benchmark
+    std::vector<double>* benchmark,
+    arma::Mat<float> &gTotal,
+    arma::Mat<float> &sTotal
 ){
 
   // Get the number of total features
@@ -1327,6 +1506,14 @@ void forestryTree::selectBestFeature(
   double* bestSplitValueAll = new double[mtry];
   size_t* bestSplitFeatureAll = new size_t[mtry];
   size_t* bestSplitCountAll = new size_t[mtry];
+
+
+  arma::Mat<float>* bestSplitGLAll = new arma::Mat<float>[mtry];
+  arma::Mat<float>* bestSplitGRAll = new arma::Mat<float>[mtry];
+  arma::Mat<float>* bestSplitSLAll = new arma::Mat<float>[mtry];
+  arma::Mat<float>* bestSplitSRAll = new arma::Mat<float>[mtry];
+
+
   for (size_t i=0; i<mtry; i++) {
     bestSplitLossAll[i] = -std::numeric_limits<float>::infinity();
     bestSplitValueAll[i] = std::numeric_limits<double>::quiet_NaN();
@@ -1371,6 +1558,10 @@ void forestryTree::selectBestFeature(
         bestSplitValueAll,
         bestSplitFeatureAll,
         bestSplitCountAll,
+        bestSplitGLAll,
+        bestSplitGRAll,
+        bestSplitSLAll,
+        bestSplitSRAll,
         trainingData,
         getMinNodeSizeToSplitSpt(),
         getMinNodeSizeToSplitAvg(),
@@ -1378,7 +1569,9 @@ void forestryTree::selectBestFeature(
         splitMiddle,
         maxObs,
         overfitPenalty,
-        benchmark
+        benchmark,
+        gTotal,
+        sTotal
       );
     } else {
       findBestSplitValueNonCategorical(
@@ -1400,22 +1593,49 @@ void forestryTree::selectBestFeature(
     }
   }
 
-  determineBestSplit(
-    bestSplitFeature,
-    bestSplitValue,
-    bestSplitLoss,
-    mtry,
-    bestSplitLossAll,
-    bestSplitValueAll,
-    bestSplitFeatureAll,
-    bestSplitCountAll,
-    random_number_generator
-  );
+  if (ridgeRF) {
+    determineBestSplitRidge(
+      bestSplitFeature,
+      bestSplitValue,
+      bestSplitLoss,
+      bestSplitGL,
+      bestSplitGR,
+      bestSplitSL,
+      bestSplitSR,
+      mtry,
+      bestSplitLossAll,
+      bestSplitValueAll,
+      bestSplitFeatureAll,
+      bestSplitCountAll,
+      bestSplitGLAll,
+      bestSplitGRAll,
+      bestSplitSLAll,
+      bestSplitSRAll,
+      random_number_generator
+    );
+  } else {
+    determineBestSplit(
+      bestSplitFeature,
+      bestSplitValue,
+      bestSplitLoss,
+      mtry,
+      bestSplitLossAll,
+      bestSplitValueAll,
+      bestSplitFeatureAll,
+      bestSplitCountAll,
+      random_number_generator
+    );
+  }
 
   delete[](bestSplitLossAll);
   delete[](bestSplitValueAll);
   delete[](bestSplitFeatureAll);
   delete[](bestSplitCountAll);
+  delete[](bestSplitGLAll);
+  delete[](bestSplitGRAll);
+  delete[](bestSplitSLAll);
+  delete[](bestSplitSRAll);
+
 
 }
 
