@@ -1,6 +1,7 @@
 #ifndef FORESTRYCPP_RFNODE_H
 #define FORESTRYCPP_RFNODE_H
 
+#include <RcppArmadillo.h>
 #include <RcppEigen.h>
 #include <iostream>
 #include <vector>

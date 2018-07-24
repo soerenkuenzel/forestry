@@ -1,3 +1,4 @@
+#include <RcppArmadillo.h>
 #include "RFNode.h"
 #include <RcppEigen.h>
 #include <mutex>
@@ -64,11 +65,12 @@ void RFNode::ridgePredict(
   //Number of linear features in training data
   size_t dimension = (trainingData->getLinObsData((*leafObs)[0])).size();
 
-  Eigen::MatrixXf x(leafObs->size(),
-                    dimension + 1);
+  arma::Mat<float> x(leafObs->size(),
+                     dimension + 1);
 
-  Eigen::MatrixXf identity = Eigen::MatrixXf::Identity(dimension + 1,
-                                                       dimension + 1);
+  arma::Mat<float> identity(dimension + 1,
+                            dimension + 1);
+  identity.eye();
 
   //Don't penalize intercept
   identity(dimension, dimension) = 0.0;
@@ -81,23 +83,22 @@ void RFNode::ridgePredict(
     currentObservation = trainingData->getLinObsData((*leafObs)[i]);
     currentObservation.push_back(1.0);
 
-    x.row(i) = Eigen::VectorXf::Map(currentObservation.data(),
-                                    currentObservation.size());
+    x.row(i) = arma::conv_to<arma::Row<float> >::from(currentObservation);
 
     outcomePoints.push_back(trainingData->getOutcomePoint((*leafObs)[i]));
   }
 
-  Eigen::MatrixXf y = Eigen::MatrixXf::Map(outcomePoints.data(),
-                                           outcomePoints.size(),
-                                           1);
+  arma::Mat<float> y(outcomePoints.size(),
+                     1);
+  y.col(0) = arma::conv_to<arma::Col<float> >::from(outcomePoints);
 
   //Compute XtX + lambda * I * Y = C
-  Eigen::MatrixXf coefficients = (x.transpose() * x +
-                              identity * lambda).inverse() * x.transpose() * y;
+  arma::Mat<float> coefficients = (x.t() * x +
+                                  identity * lambda).i() * x.t() * y;
 
   //Map xNew into Eigen matrix
-  Eigen::MatrixXf xn(updateIndex->size(),
-                     dimension + 1);
+  arma::Mat<float> xn(updateIndex->size(),
+                      dimension + 1);
 
   size_t index = 0;
   for (std::vector<size_t>::iterator it = updateIndex->begin();
@@ -110,18 +111,16 @@ void RFNode::ridgePredict(
     }
     newObservation.push_back(1.0);
 
-    xn.row(index) = Eigen::VectorXf::Map(newObservation.data(),
-                                     newObservation.size());
+    xn.row(index) = arma::conv_to<arma::Row<float> >::from(newObservation);
     index++;
   }
 
   //Multiply xNew * coefficients = result
-  Eigen::MatrixXf predictions = xn * coefficients;
+  arma::Mat<float> predictions = xn * coefficients;
 
   for (size_t i = 0; i < updateIndex->size(); i++) {
     outputPrediction[(*updateIndex)[i]] = predictions(i, 0);
   }
-
 }
 
 void RFNode::predict(
@@ -139,7 +138,7 @@ void RFNode::predict(
 
       if (ridgeRF) {
 
-      //Use ridgePredict
+      //Use ridgePredict (fit linear model on leaf avging obs + evaluate it)
       ridgePredict(outputPrediction,
                    updateIndex,
                    xNew,
