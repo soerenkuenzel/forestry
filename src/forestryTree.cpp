@@ -108,9 +108,9 @@ forestryTree::forestryTree(
   std::unique_ptr< RFNode > root ( new RFNode() );
   this->_root = std::move(root);
   this->_benchmark = new std::vector<double>;
-  for (size_t i = 0; i < 8; i++) {
-    _benchmark->push_back(0);
-  }
+  //for (size_t i = 0; i < 8; i++) {
+  //  _benchmark->push_back(0);
+  //}
 
 
   /* If ridge splitting, initialize RSS components to pass to leaves*/
@@ -797,7 +797,7 @@ void findBestSplitRidge(
   arma::Mat<float>& sTotal
 ){
 
-  auto startTotal = std::chrono::high_resolution_clock::now();
+
   //Get indexes of observations
   std::vector<size_t> splittingIndexes;
   std::vector<size_t> averagingIndexes;
@@ -813,7 +813,7 @@ void findBestSplitRidge(
   //Sort indexes of observations ascending by currentFeature
   std::vector<float>* featureData = trainingData->getFeatureData(currentFeature);
 
-  auto startSort = std::chrono::high_resolution_clock::now();
+
 
   sort(splittingIndexes.begin(),
        splittingIndexes.end(),
@@ -822,10 +822,6 @@ void findBestSplitRidge(
   sort(averagingIndexes.begin(),
        averagingIndexes.end(),
        [&](int fi, int si){return (*featureData)[fi] < (*featureData)[si];});
-
-  auto endSort = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> elapsedSort = endSort - startSort;
-  (*benchmark)[0] += elapsedSort.count();
 
   size_t splitLeftCount = 0;
   size_t averageLeftCount = 0;
@@ -876,7 +872,7 @@ void findBestSplitRidge(
                                        1);
   crossingObservation.col(0) = arma::conv_to<arma::Col<float> >::from(firstOb);
 
-  auto startSG = std::chrono::high_resolution_clock::now();
+
   //Initialize sLeft
   arma::Mat<float> sLeft = trainingData->getOutcomePoint(currentIndex) *
                             crossingObservation;
@@ -889,10 +885,6 @@ void findBestSplitRidge(
   arma::Mat<float> gRight = gTotal - gLeft;
   //Initialize sRight, gRight
 
-  auto endSG = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> elapsedSG = endSG - startSG;
-  (*benchmark)[1] += elapsedSG.count();
-
   arma::Mat<float> identity(numLinearFeatures + 1,
                             numLinearFeatures + 1);
   identity.eye();
@@ -902,16 +894,10 @@ void findBestSplitRidge(
   identity = overfitPenalty * identity;
 
   //Initialize aLeft
-  auto startIA = std::chrono::high_resolution_clock::now();
   arma::Mat<float> aLeft = (gLeft + identity).i();
 
   //Initialize aRight
   arma::Mat<float> aRight = (gRight + identity).i();
-
-  auto endIA = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> elapsedIA = endIA - startIA;
-  (*benchmark)[2] += elapsedIA.count();
-
 
   arma::Mat<float> obOuter(numLinearFeatures+1,
                            numLinearFeatures+1);
@@ -941,35 +927,16 @@ void findBestSplitRidge(
 
       float crossingOutcome = trainingData->getOutcomePoint((*splitIter));
 
-
       //Use to update RSS components
-      auto startUS = std::chrono::high_resolution_clock::now();
-
       updateSkArmadillo(sLeft, crossingObservation, crossingOutcome, true);
       updateSkArmadillo(sRight, crossingObservation, crossingOutcome, false);
-
-      auto endUS = std::chrono::high_resolution_clock::now();
-      std::chrono::duration<double> elapsedUS = endUS - startUS;
-      (*benchmark)[5] += elapsedUS.count();
-
-      auto startUG = std::chrono::high_resolution_clock::now();
 
       obOuter = crossingObservation * crossingObservation.t();
       gLeft = gLeft + obOuter;
       gRight = gRight - obOuter;
 
-      auto endUG = std::chrono::high_resolution_clock::now();
-      std::chrono::duration<double> elapsedUG = endUG - startUG;
-      (*benchmark)[4] += elapsedUG.count();
-
-      auto startUA = std::chrono::high_resolution_clock::now();
-
       updateAArmadillo(aLeft, crossingObservation, true);
       updateAArmadillo(aRight, crossingObservation, false);
-
-      auto endUA = std::chrono::high_resolution_clock::now();
-      std::chrono::duration<double> elapsedUA = endUA - startUA;
-      (*benchmark)[3] += elapsedUA.count();
 
       splitLeftCount++;
       ++splitIter;
@@ -1036,8 +1003,6 @@ void findBestSplitRidge(
         continue;
     }
 
-
-    auto startRss = std::chrono::high_resolution_clock::now();
     //Sum of RSS's of models fit on left and right partitions
     float currentRSS = computeRSSArmadillo(aRight,
                                            aLeft,
@@ -1045,10 +1010,6 @@ void findBestSplitRidge(
                                            sLeft,
                                            gRight,
                                            gLeft);
-
-    auto endRss = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsedRss = endRss - startRss;
-    (*benchmark)[6] += elapsedRss.count();
 
     double currentSplitValue;
 
@@ -1095,10 +1056,6 @@ void findBestSplitRidge(
 
     currentIndex = newIndex;
   }
-
-  auto endTotal = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> elapsedTotal = endTotal - startTotal;
-  (*benchmark)[7] += elapsedTotal.count();
 }
 
 
