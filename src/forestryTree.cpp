@@ -113,7 +113,7 @@ forestryTree::forestryTree(
   }
 
 
-  /* If ridge splitting, initialize components to pass down */
+  /* If ridge splitting, initialize RSS components to pass to leaves*/
 
   std::vector<size_t>* splitIndexes = getSplittingIndex();
   size_t numLinearFeatures;
@@ -128,16 +128,18 @@ forestryTree::forestryTree(
   if (ridgeRF) {
     gTotal = sTotal * (sTotal.t());
     sTotal = trainingData->getOutcomePoint((*splitIndexes)[0]) * sTotal;
-    /* Sum up sTotal and gTotal once */
+
     std::vector<float> temp(numLinearFeatures + 1);
     arma::Mat<float> tempOb(firstOb.size(),
                             1);
+    /* Sum up sTotal and gTotal once on every observation in splitting set*/
     for (size_t i = 1; i < splitIndexes->size(); i++) {
       temp = trainingData->getLinObsData((*splitIndexes)[i]);
       temp.push_back(1.0);
       tempOb.col(0) = arma::conv_to<arma::Col<float> >::from(temp);
       gTotal = gTotal + (tempOb * (tempOb.t()));
-      sTotal = sTotal + trainingData->getOutcomePoint((*splitIndexes)[i]) * tempOb;
+      sTotal = sTotal + trainingData->getOutcomePoint((*splitIndexes)[i])
+               * tempOb;
     }
   }
 
@@ -158,7 +160,7 @@ forestryTree::forestryTree(
     sTotal
   );
 
-  //this->_root->printSubtree();
+  this->_root->printSubtree();
   this->trainTiming();
 }
 
@@ -380,9 +382,6 @@ void forestryTree::recursivePartition(
   arma::Mat<float> bestSplitSL(size(sTotal));
   arma::Mat<float> bestSplitSR(size(sTotal));
 
-
-
-
   selectBestFeature(
     bestSplitFeature,
     bestSplitValue,
@@ -546,6 +545,7 @@ void updateBestSplitRidge(
 ) {
 
   // Update the value if a higher value has been seen
+  /* Also update best RSS components corresponding to split */
   if (currentSplitLoss > bestSplitLossAll[bestSplitTableIndex]) {
     bestSplitLossAll[bestSplitTableIndex] = currentSplitLoss;
     bestSplitFeatureAll[bestSplitTableIndex] = currentFeature;
@@ -758,18 +758,6 @@ void updateSkArmadillo(
   }
 }
 
-void updateGkArmadillo(
-    arma::Mat<float>& g_k,
-    arma::Mat<float>& next,
-    bool left
-){
-  if (left) {
-    g_k = g_k + (next * next.t());
-  } else {
-    g_k = g_k - (next * next.t());
-  }
-}
-
 float computeRSSArmadillo(
     arma::Mat<float>& A_r,
     arma::Mat<float>& A_l,
@@ -849,21 +837,7 @@ void findBestSplitRidge(
   /* Increment splitIter because we have initialized RSS components with
    * observation from splitIter.begin(), so we need to avoid duplicate 1st obs
    */
-  ++splitIter;
 
-  /* Initialization todo
-   *
-   * Sort
-   * Get first in Split Iter
-   *    SplitIter++
-   *    SplitLeft count++
-   *    Initialize RSS Components
-   *    put all <= values in avgIndexes into left node
-   *    AvgeLeftCount++
-   *
-   *  Think about right leaf size
-   *  think about splitting on Avg indexes
-   */
 
   //Now begin splitting
   size_t currentIndex;
@@ -946,8 +920,6 @@ void findBestSplitRidge(
       splitIter < splittingIndexes.end() ||
         averageIter < averagingIndexes.end()
   ) {
-    //TODO: MORE ELEGANT HANDLING
-
 
     currentValue = trainingData->getPoint(currentIndex, currentFeature);
     //Move iterators forward
@@ -959,11 +931,13 @@ void findBestSplitRidge(
       //MAPPING PROBLEM
 
       //Get observation that will cross the partition
-      std::vector<float> newLeftObservation = trainingData->getLinObsData((*splitIter));
+      std::vector<float> newLeftObservation =
+        trainingData->getLinObsData((*splitIter));
 
       newLeftObservation.push_back(1.0);
 
-      crossingObservation.col(0) = arma::conv_to<arma::Col<float> >::from(newLeftObservation);
+      crossingObservation.col(0) =
+        arma::conv_to<arma::Col<float> >::from(newLeftObservation);
 
       float crossingOutcome = trainingData->getOutcomePoint((*splitIter));
 
@@ -1593,6 +1567,7 @@ void forestryTree::selectBestFeature(
     }
   }
 
+  /* Record RSS components if Ridge */
   if (ridgeRF) {
     determineBestSplitRidge(
       bestSplitFeature,
@@ -1635,8 +1610,6 @@ void forestryTree::selectBestFeature(
   delete[](bestSplitGRAll);
   delete[](bestSplitSLAll);
   delete[](bestSplitSRAll);
-
-
 }
 
 void forestryTree::printTree(){
@@ -1644,6 +1617,8 @@ void forestryTree::printTree(){
 }
 
 void forestryTree::trainTiming(){
+
+  /* Record timing for tree construction */
   double total = (*getBenchmark())[7];
   double splittime = 0;
   for (size_t i = 0; i < 7; i++) {
