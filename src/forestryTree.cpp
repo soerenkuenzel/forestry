@@ -160,8 +160,8 @@ forestryTree::forestryTree(
     sTotal
   );
 
-  this->_root->printSubtree();
-  this->trainTiming();
+  //this->_root->printSubtree();
+  //this->trainTiming();
 }
 
 void forestryTree::setDummyTree(
