@@ -20,9 +20,9 @@ Imports:
     rBayesianOptimization,
     methods,
 LinkingTo: 
+    RcppArmadillo,
     Rcpp,
-    RcppEigen,
-    RcppArmadillo
+    RcppEigen
 RoxygenNote: 6.0.1
 SystemRequirements: C++11
 Suggests:
