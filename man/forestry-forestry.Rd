@@ -109,6 +109,7 @@ weights = predict(rf, x_test, aggregation = "weightMatrix")$weightMatrix
 weights \%*\% y_train
 predict(rf, x_test)
 
+/* RidgeRF Example */
 set.seed(49)
 library(forestry)
 
