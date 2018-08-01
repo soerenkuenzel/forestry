@@ -846,7 +846,7 @@ void findBestSplitRidge(
   /* Move appropriate averagingObs to left */
 
   while (
-    trainingData->getPoint((*averageIter), currentFeature) <=
+    trainingData->getPoint((*averageIter), currentFeature) <
     trainingData->getPoint(currentIndex, currentFeature)
   ) {
     ++averageIter;
