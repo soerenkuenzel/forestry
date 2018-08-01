@@ -108,5 +108,29 @@ weights = predict(rf, x_test, aggregation = "weightMatrix")$weightMatrix
 
 weights \%*\% y_train
 predict(rf, x_test)
+
+set.seed(49)
+library(forestry)
+
+n <- c(100)
+
+a <- rnorm(n)
+b <- rnorm(n)
+c <- rnorm(n)
+
+y <- 4*a + 5.5*b - .78*c
+x <- data.frame(a,b,c)
+
+forest <- forestry(
+          x,
+          y,
+          ntree = 10,
+          replace = TRUE,
+          nodesizeStrictSpl = 5,
+          nodesizeStrictAvg = 5,
+          ridgeRF = TRUE
+          )
+
+predict(forest, x)
 }
 \keyword{datasets}
