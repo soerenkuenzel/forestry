@@ -126,21 +126,11 @@ forestryTree::forestryTree(
   arma::Mat<float> gTotal(numLinearFeatures + 1,
                           numLinearFeatures + 1);
   if (ridgeRF) {
-    gTotal = sTotal * (sTotal.t());
-    sTotal = trainingData->getOutcomePoint((*splitIndexes)[0]) * sTotal;
-
-    std::vector<float> temp(numLinearFeatures + 1);
-    arma::Mat<float> tempOb(firstOb.size(),
-                            1);
-    /* Sum up sTotal and gTotal once on every observation in splitting set*/
-    for (size_t i = 1; i < splitIndexes->size(); i++) {
-      temp = trainingData->getLinObsData((*splitIndexes)[i]);
-      temp.push_back(1.0);
-      tempOb.col(0) = arma::conv_to<arma::Col<float> >::from(temp);
-      gTotal = gTotal + (tempOb * (tempOb.t()));
-      sTotal = sTotal + trainingData->getOutcomePoint((*splitIndexes)[i])
-               * tempOb;
-    }
+    this->initializeRSSComponents(trainingData,
+                                  gTotal,
+                                  sTotal,
+                                  numLinearFeatures,
+                                  getSplittingIndex());
   }
 
 
@@ -487,6 +477,29 @@ void forestryTree::recursivePartition(
   }
 }
 
+void forestryTree::initializeRSSComponents(
+    DataFrame* trainingData,
+    arma::Mat<float>& gTotal,
+    arma::Mat<float>& sTotal,
+    size_t numLinearFeatures,
+    std::vector<size_t>* splitIndexes
+) {
+  gTotal = sTotal * (sTotal.t());
+  sTotal = trainingData->getOutcomePoint((*splitIndexes)[0]) * sTotal;
+
+  std::vector<float> temp(numLinearFeatures + 1);
+  arma::Mat<float> tempOb(numLinearFeatures + 1, 1);
+  /* Sum up sTotal and gTotal once on every observation in splitting set*/
+  for (size_t i = 1; i < splitIndexes->size(); i++) {
+    temp = trainingData->getLinObsData((*splitIndexes)[i]);
+    temp.push_back(1.0);
+    tempOb.col(0) = arma::conv_to<arma::Col<float> >::from(temp);
+    gTotal = gTotal + (tempOb * (tempOb.t()));
+    sTotal = sTotal + trainingData->getOutcomePoint((*splitIndexes)[i])
+      * tempOb;
+  }
+}
+
 void updateBestSplit(
     float* bestSplitLossAll,
     double* bestSplitValueAll,
@@ -772,6 +785,41 @@ float computeRSSArmadillo(
           as_scalar(2.0 * S_r.t() * (A_r * S_r)));
 }
 
+void updateRSSComponents(
+  DataFrame* trainingData,
+  size_t nextIndex,
+  arma::Mat<float>& aLeft,
+  arma::Mat<float>& aRight,
+  arma::Mat<float>& sLeft,
+  arma::Mat<float>& sRight,
+  arma::Mat<float>& gLeft,
+  arma::Mat<float>& gRight,
+  arma::Mat<float>& crossingObservation,
+  arma::Mat<float>& obOuter
+) {
+  //Get observation that will cross the partition
+  std::vector<float> newLeftObservation =
+    trainingData->getLinObsData(nextIndex);
+
+  newLeftObservation.push_back(1.0);
+
+  crossingObservation.col(0) =
+    arma::conv_to<arma::Col<float> >::from(newLeftObservation);
+
+  float crossingOutcome = trainingData->getOutcomePoint(nextIndex);
+
+  //Use to update RSS components
+  updateSkArmadillo(sLeft, crossingObservation, crossingOutcome, true);
+  updateSkArmadillo(sRight, crossingObservation, crossingOutcome, false);
+
+  obOuter = crossingObservation * crossingObservation.t();
+  gLeft = gLeft + obOuter;
+  gRight = gRight - obOuter;
+
+  updateAArmadillo(aLeft, crossingObservation, true);
+  updateAArmadillo(aRight, crossingObservation, false);
+}
+
 void findBestSplitRidge(
   std::vector<size_t>* averagingSampleIndex,
   std::vector<size_t>* splittingSampleIndex,
@@ -913,30 +961,19 @@ void findBestSplitRidge(
         splitIter < splittingIndexes.end() &&
           trainingData->getPoint((*splitIter), currentFeature) == currentValue
     ) {
-      //UPDATE MATRIX pieces with current splitIter index
-      //MAPPING PROBLEM
-
-      //Get observation that will cross the partition
-      std::vector<float> newLeftObservation =
-        trainingData->getLinObsData((*splitIter));
-
-      newLeftObservation.push_back(1.0);
-
-      crossingObservation.col(0) =
-        arma::conv_to<arma::Col<float> >::from(newLeftObservation);
-
-      float crossingOutcome = trainingData->getOutcomePoint((*splitIter));
-
-      //Use to update RSS components
-      updateSkArmadillo(sLeft, crossingObservation, crossingOutcome, true);
-      updateSkArmadillo(sRight, crossingObservation, crossingOutcome, false);
-
-      obOuter = crossingObservation * crossingObservation.t();
-      gLeft = gLeft + obOuter;
-      gRight = gRight - obOuter;
-
-      updateAArmadillo(aLeft, crossingObservation, true);
-      updateAArmadillo(aRight, crossingObservation, false);
+      //UPDATE RSS pieces with current splitIter index
+      updateRSSComponents(
+        trainingData,
+        (*splitIter),
+        aLeft,
+        aRight,
+        sLeft,
+        sRight,
+        gLeft,
+        gRight,
+        crossingObservation,
+        obOuter
+      );
 
       splitLeftCount++;
       ++splitIter;

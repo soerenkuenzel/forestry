@@ -90,6 +90,14 @@ public:
     arma::Mat<float>& sTotal
   );
 
+  void initializeRSSComponents(
+      DataFrame* trainingData,
+      arma::Mat<float>& gTotal,
+      arma::Mat<float>& sTotal,
+      size_t numLinearFeatures,
+      std::vector<size_t>* splitIndexes
+  );
+
   void printTree();
 
   void trainTiming();
