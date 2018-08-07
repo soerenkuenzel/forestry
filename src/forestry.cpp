@@ -1,5 +1,5 @@
 #include "forestry.h"
-#include <RcppEigen.h>
+#include <RcppArmadillo.h>
 #include <random>
 #include <thread>
 #include <mutex>
@@ -295,7 +295,7 @@ void forestry::addTrees(size_t ntree) {
 
 std::unique_ptr< std::vector<float> > forestry::predict(
   std::vector< std::vector<float> >* xNew,
-  Eigen::MatrixXf* weightMatrix
+  arma::Mat<float>* weightMatrix
 ){
   std::vector<float> prediction;
   size_t numObservations = (*xNew)[0].size();
@@ -389,7 +389,7 @@ std::unique_ptr< std::vector<float> > forestry::predict(
     size_t ncol = getNtrain(); // number of train data
     for ( size_t i = 0; i < nrow; i++){
       for (size_t j = 0; j < ncol; j++){
-        (*weightMatrix)(i,j) /= _ntree;
+        (*weightMatrix)(i,j) = (*weightMatrix)(i,j) / _ntree;
       }
     }
   }

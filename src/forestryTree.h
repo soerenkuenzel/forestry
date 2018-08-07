@@ -2,7 +2,6 @@
 #define HTECPP_RFTREE_H
 
 #include <RcppArmadillo.h>
-#include <RcppEigen.h>
 #include <iostream>
 #include <vector>
 #include <string>
@@ -49,7 +48,7 @@ public:
     std::vector<float> &outputPrediction,
     std::vector< std::vector<float> >* xNew,
     DataFrame* trainingData,
-    Eigen::MatrixXf* weightMatrix = NULL,
+    arma::Mat<float>* weightMatrix = NULL,
     bool ridgeRF = false
   );
 

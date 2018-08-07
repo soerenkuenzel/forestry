@@ -1,6 +1,5 @@
 // [[Rcpp::plugins(cpp11)]]
 #include <RcppArmadillo.h>
-#include <RcppEigen.h>
 #include "DataFrame.h"
 #include "forestryTree.h"
 #include "RFNode.h"
@@ -141,7 +140,7 @@ SEXP rcpp_cppBuildInterface(
           )
       );
 
-      std::unique_ptr<std::vector<float>> outcomeDataRcpp (
+      std::unique_ptr<std::vector<float> > outcomeDataRcpp (
           new std::vector<float>(
               Rcpp::as< std::vector<float> >(y)
           )
@@ -216,12 +215,12 @@ Rcpp::List rcpp_cppPredictInterface(
     std::unique_ptr< std::vector<float> > testForestPrediction;
     // We always initialize the weightMatrix. If the aggregation is weightMatrix
     // then we inialize the empty weight matrix
-    Eigen::MatrixXf weightMatrix;
+    arma::Mat<float> weightMatrix;
     if(aggregation == "weightMatrix") {
       size_t nrow = featureData[0].size(); // number of features to be predicted
       size_t ncol = (*testFullForest).getNtrain(); // number of train data
       weightMatrix.resize(nrow, ncol); // initialize the space for the matrix
-      weightMatrix = Eigen::MatrixXf::Zero(nrow, ncol); // set it all to 0
+      weightMatrix.zeros(nrow, ncol);// set it all to 0
 
       // The idea is that, if the weightMatrix is point to NULL it won't be
       // be updated, but otherwise it will be updated:

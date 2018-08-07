@@ -2,7 +2,7 @@
 #define HTECPP_RF_H
 
 #include "forestryTree.h"
-#include <RcppEigen.h>
+#include <RcppArmadillo.h>
 #include <iostream>
 #include <vector>
 #include <string>
@@ -38,7 +38,7 @@ public:
 
   std::unique_ptr< std::vector<float> > predict(
     std::vector< std::vector<float> >* xNew,
-    Eigen::MatrixXf* weightMatrix
+    arma::Mat<float>* weightMatrix
   );
 
   void calculateOOBError();

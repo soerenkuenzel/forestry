@@ -1,6 +1,5 @@
 #include <RcppArmadillo.h>
 #include "RFNode.h"
-#include <RcppEigen.h>
 #include <mutex>
 #include <thread>
 
@@ -128,7 +127,7 @@ void RFNode::predict(
   std::vector<size_t>* updateIndex,
   std::vector< std::vector<float> >* xNew,
   DataFrame* trainingData,
-  Eigen::MatrixXf* weightMatrix,
+  arma::Mat<float>* weightMatrix,
   bool ridgeRF,
   float lambda
 ) {
@@ -171,8 +170,9 @@ void RFNode::predict(
           it != (*updateIndex).end();
           ++it ) {
         for (size_t i = 0; i<idx_in_leaf.size(); i++) {
-          (*weightMatrix)(*it, idx_in_leaf[i] - 1) +=
-                        (double) 1.0 / idx_in_leaf.size();
+          (*weightMatrix)(*it, idx_in_leaf[i] - 1) =
+          (*weightMatrix)(*it, idx_in_leaf[i] - 1) +
+          (double) 1.0 / idx_in_leaf.size();
         }
       }
     }

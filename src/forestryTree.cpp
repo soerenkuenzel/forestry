@@ -1,6 +1,5 @@
 #include <RcppArmadillo.h>
 #include "forestryTree.h"
-#include <RcppEigen.h>
 #include <math.h>
 #include <set>
 #include <map>
@@ -178,7 +177,7 @@ void forestryTree::predict(
     std::vector<float> &outputPrediction,
     std::vector< std::vector<float> >* xNew,
     DataFrame* trainingData,
-    Eigen::MatrixXf* weightMatrix,
+    arma::Mat<float>* weightMatrix,
     bool ridgeRF
 ){
   // If we are estimating the average in each leaf:
