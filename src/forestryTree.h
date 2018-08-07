@@ -90,7 +90,7 @@ public:
     arma::Mat<float>& sTotal
   );
 
-  void initializeRSSComponents(
+  void initializeRidgeRF(
       DataFrame* trainingData,
       arma::Mat<float>& gTotal,
       arma::Mat<float>& sTotal,

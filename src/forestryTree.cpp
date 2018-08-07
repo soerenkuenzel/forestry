@@ -126,7 +126,7 @@ forestryTree::forestryTree(
   arma::Mat<float> gTotal(numLinearFeatures + 1,
                           numLinearFeatures + 1);
   if (ridgeRF) {
-    this->initializeRSSComponents(trainingData,
+    this->initializeRidgeRF(trainingData,
                                   gTotal,
                                   sTotal,
                                   numLinearFeatures,
@@ -477,7 +477,7 @@ void forestryTree::recursivePartition(
   }
 }
 
-void forestryTree::initializeRSSComponents(
+void forestryTree::initializeRidgeRF(
     DataFrame* trainingData,
     arma::Mat<float>& gTotal,
     arma::Mat<float>& sTotal,
@@ -820,6 +820,47 @@ void updateRSSComponents(
   updateAArmadillo(aRight, crossingObservation, false);
 }
 
+void initializeRSSComponents(
+    DataFrame* trainingData,
+    size_t index,
+    size_t numLinearFeatures,
+    float overfitPenalty,
+    arma::Mat<float>& gTotal,
+    arma::Mat<float>& sTotal,
+    arma::Mat<float>& aLeft,
+    arma::Mat<float>& aRight,
+    arma::Mat<float>& sLeft,
+    arma::Mat<float>& sRight,
+    arma::Mat<float>& gLeft,
+    arma::Mat<float>& gRight,
+    arma::Mat<float>& crossingObservation
+) {
+  //Initialize sLeft
+  sLeft = trainingData->getOutcomePoint(index) *crossingObservation;
+
+  sRight = sTotal - sLeft;
+
+  //Initialize gLeft
+  gLeft = crossingObservation * (crossingObservation.t());
+
+  gRight = gTotal - gLeft;
+  //Initialize sRight, gRight
+
+  arma::Mat<float> identity(numLinearFeatures + 1,
+                            numLinearFeatures + 1);
+  identity.eye();
+
+  //Don't penalize intercept
+  identity(numLinearFeatures, numLinearFeatures) = 0.0;
+  identity = overfitPenalty * identity;
+
+  //Initialize aLeft
+  aLeft = (gLeft + identity).i();
+
+  //Initialize aRight
+  aRight = (gRight + identity).i();
+}
+
 void findBestSplitRidge(
   std::vector<size_t>* averagingSampleIndex,
   std::vector<size_t>* splittingSampleIndex,
@@ -918,37 +959,34 @@ void findBestSplitRidge(
   //Initialize crossingObs for body of loop
   arma::Mat<float> crossingObservation(firstOb.size(),
                                        1);
+
+  arma::Mat<float> obOuter(numLinearFeatures + 1,
+                           numLinearFeatures + 1);
+
   crossingObservation.col(0) = arma::conv_to<arma::Col<float> >::from(firstOb);
 
+  arma::Mat<float> aLeft(numLinearFeatures + 1, numLinearFeatures + 1),
+                   aRight(numLinearFeatures + 1, numLinearFeatures + 1),
+                   gLeft(numLinearFeatures + 1, numLinearFeatures + 1),
+                   gRight(numLinearFeatures + 1, numLinearFeatures + 1),
+                   sLeft(numLinearFeatures + 1, 1),
+                   sRight(numLinearFeatures + 1, 1);
 
-  //Initialize sLeft
-  arma::Mat<float> sLeft = trainingData->getOutcomePoint(currentIndex) *
-                            crossingObservation;
-
-  arma::Mat<float> sRight = sTotal - sLeft;
-
-  //Initialize gLeft
-  arma::Mat<float> gLeft = crossingObservation * (crossingObservation.t());
-
-  arma::Mat<float> gRight = gTotal - gLeft;
-  //Initialize sRight, gRight
-
-  arma::Mat<float> identity(numLinearFeatures + 1,
-                            numLinearFeatures + 1);
-  identity.eye();
-
-  //Don't penalize intercept
-  identity(numLinearFeatures, numLinearFeatures) = 0.0;
-  identity = overfitPenalty * identity;
-
-  //Initialize aLeft
-  arma::Mat<float> aLeft = (gLeft + identity).i();
-
-  //Initialize aRight
-  arma::Mat<float> aRight = (gRight + identity).i();
-
-  arma::Mat<float> obOuter(numLinearFeatures+1,
-                           numLinearFeatures+1);
+  initializeRSSComponents(
+    trainingData,
+    currentIndex,
+    numLinearFeatures,
+    overfitPenalty,
+    gTotal,
+    sTotal,
+    aLeft,
+    aRight,
+    sLeft,
+    sRight,
+    gLeft,
+    gRight,
+    crossingObservation
+  );
 
   while (
       splitIter < splittingIndexes.end() ||
