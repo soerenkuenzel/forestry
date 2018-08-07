@@ -17,13 +17,13 @@ struct tree_info {
   // observations in a leaf for a leaf node
   std::vector< long double > split_val;
   // contains the split values for regular nodes
-  std::vector< size_t > leafAveidx;
+  std::vector< int > leafAveidx;
   // contains the indices of observations in a leaf.
-  std::vector< size_t > leafSplidx;
+  std::vector< int > leafSplidx;
   // contains the indices of observations in a leaf.
-  std::vector< size_t > averagingSampleIndex;
+  std::vector< int > averagingSampleIndex;
   // contains the indices of the average set.
-  std::vector< size_t > splittingSampleIndex;
+  std::vector< int > splittingSampleIndex;
   // contains the indices of the splitting set.
 };
 
