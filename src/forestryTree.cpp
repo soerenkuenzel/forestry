@@ -886,7 +886,6 @@ void findBestSplitRidge(
   arma::Mat<float>& sTotal
 ){
 
-
   //Get indexes of observations
   std::vector<size_t> splittingIndexes;
   std::vector<size_t> averagingIndexes;
@@ -901,8 +900,6 @@ void findBestSplitRidge(
 
   //Sort indexes of observations ascending by currentFeature
   std::vector<float>* featureData = trainingData->getFeatureData(currentFeature);
-
-
 
   sort(splittingIndexes.begin(),
        splittingIndexes.end(),
@@ -1088,10 +1085,10 @@ void findBestSplitRidge(
 
     double currentSplitValue;
 
-    float featureValue = trainingData->getPoint(currentIndex,
-                                                currentFeature);
-    float newFeatureValue = trainingData->getPoint(newIndex,
-                                                   currentFeature);
+    float featureValue = trainingData->getPoint(currentIndex, currentFeature);
+
+    float newFeatureValue = trainingData->getPoint(newIndex, currentFeature);
+
     if (splitMiddle) {
       currentSplitValue = (featureValue + newFeatureValue) / 2.0;
     } else {
@@ -1128,7 +1125,6 @@ void findBestSplitRidge(
       bestSplitTableIndex,
       random_number_generator
     );
-
     currentIndex = newIndex;
   }
 }
