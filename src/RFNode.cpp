@@ -148,7 +148,6 @@ void RFNode::predict(
 
       // Calculate the mean of current node
       float predictedMean = (*trainingData).partitionMean(getAveragingIndex());
-      
 
       // Give all updateIndex the mean of the node as prediction values
       for (
