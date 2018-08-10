@@ -20,9 +20,10 @@ Imports:
     rBayesianOptimization,
     methods,
 LinkingTo: 
+    RcppArmadillo,
     Rcpp,
     RcppEigen
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
 SystemRequirements: C++11
 Suggests:
     testthat,

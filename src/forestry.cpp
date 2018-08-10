@@ -1,5 +1,5 @@
 #include "forestry.h"
-#include <RcppEigen.h>
+#include <RcppArmadillo.h>
 #include <random>
 #include <thread>
 #include <mutex>
@@ -38,6 +38,8 @@ forestry::forestry(
   bool verbose,
   bool splitMiddle,
   size_t maxObs,
+  bool ridgeRF,
+  float overfitPenalty,
   bool doubleTree
 ){
   this->_trainingData = trainingData;
@@ -55,6 +57,8 @@ forestry::forestry(
   this->_verbose = verbose;
   this->_splitMiddle = splitMiddle;
   this->maxObs = maxObs;
+  this->_ridgeRF = ridgeRF;
+  this->_overfitPenalty = overfitPenalty;
   this->_doubleTree = doubleTree;
 
   if (splitRatio > 1 || splitRatio < 0) {
@@ -74,6 +78,12 @@ forestry::forestry(
     averageSampleSize < minNodeSizeToSplitAvg
   ) {
     throw std::runtime_error("splitRatio too big or too small.");
+  }
+
+  if (
+    overfitPenalty < 0
+  ) {
+    throw std::runtime_error("overfitPenalty cannot be negative");
   }
 
   std::unique_ptr< std::vector< std::unique_ptr< forestryTree > > > forest (
@@ -216,7 +226,9 @@ void forestry::addTrees(size_t ntree) {
                 std::move(averageSampleIndex),
                 random_number_generator,
                 getSplitMiddle(),
-                getMaxObs()
+                getMaxObs(),
+                getRidgeRF(),
+                getOverfitPenalty()
               )
             );
 
@@ -234,7 +246,9 @@ void forestry::addTrees(size_t ntree) {
                     std::move(splitSampleIndex2),
                     random_number_generator,
                     getSplitMiddle(),
-                    getMaxObs()
+                    getMaxObs(),
+                    getRidgeRF(),
+                    getOverfitPenalty()
                  );
             }
 
@@ -281,7 +295,7 @@ void forestry::addTrees(size_t ntree) {
 
 std::unique_ptr< std::vector<float> > forestry::predict(
   std::vector< std::vector<float> >* xNew,
-  Eigen::MatrixXf* weightMatrix
+  arma::Mat<float>* weightMatrix
 ){
   std::vector<float> prediction;
   size_t numObservations = (*xNew)[0].size();
@@ -324,7 +338,8 @@ std::unique_ptr< std::vector<float> > forestry::predict(
               currentTreePrediction,
               xNew,
               getTrainingData(),
-              weightMatrix
+              weightMatrix,
+              getRidgeRF()
             );
 
             #if DOPARELLEL
@@ -374,7 +389,7 @@ std::unique_ptr< std::vector<float> > forestry::predict(
     size_t ncol = getNtrain(); // number of train data
     for ( size_t i = 0; i < nrow; i++){
       for (size_t j = 0; j < ncol; j++){
-        (*weightMatrix)(i,j) /= _ntree;
+        (*weightMatrix)(i,j) = (*weightMatrix)(i,j) / _ntree;
       }
     }
   }

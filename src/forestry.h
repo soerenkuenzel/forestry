@@ -1,7 +1,8 @@
 #ifndef HTECPP_RF_H
 #define HTECPP_RF_H
 
-#include <RcppEigen.h>
+#include "forestryTree.h"
+#include <RcppArmadillo.h>
 #include <iostream>
 #include <vector>
 #include <string>
@@ -31,12 +32,14 @@ public:
     bool verbose,
     bool splitMiddle,
     size_t maxObs,
+    bool ridgeRF,
+    float overfitPenalty,
     bool doubleTree
   );
 
   std::unique_ptr< std::vector<float> > predict(
     std::vector< std::vector<float> >* xNew,
-    Eigen::MatrixXf* weightMatrix
+    arma::Mat<float>* weightMatrix
   );
 
   void fillinTreeInfo(
@@ -132,6 +135,14 @@ public:
     return maxObs;
   }
 
+  bool getRidgeRF() {
+    return _ridgeRF;
+  }
+
+  float getOverfitPenalty() {
+    return _overfitPenalty;
+  }
+
 private:
   DataFrame* _trainingData;
   size_t _ntree;
@@ -150,6 +161,8 @@ private:
   float _OOBError;
   bool _splitMiddle;
   size_t maxObs;
+  bool _ridgeRF;
+  float _overfitPenalty;
   bool _doubleTree;
 };
 

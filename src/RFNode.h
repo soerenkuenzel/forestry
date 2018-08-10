@@ -1,7 +1,7 @@
 #ifndef FORESTRYCPP_RFNODE_H
 #define FORESTRYCPP_RFNODE_H
 
-#include <RcppEigen.h>
+#include <RcppArmadillo.h>
 #include <iostream>
 #include <vector>
 #include <string>
@@ -28,12 +28,22 @@ public:
     std::unique_ptr< RFNode > rightChild
   );
 
+  void ridgePredict(
+      std::vector<float> &outputPrediction,
+      std::vector<size_t>* updateIndex,
+      std::vector< std::vector<float> >* xNew,
+      DataFrame* trainingData,
+      float lambda
+  );
+
   void predict(
     std::vector<float> &outputPrediction,
     std::vector<size_t>* updateIndex,
     std::vector< std::vector<float> >* xNew,
     DataFrame* trainingData,
-    Eigen::MatrixXf* weightMatrix
+    arma::Mat<float>* weightMatrix,
+    bool ridgeRF,
+    float lambda
   );
 
   void write_node_info(

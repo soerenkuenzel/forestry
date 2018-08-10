@@ -1,5 +1,5 @@
+#include <RcppArmadillo.h>
 #include "RFNode.h"
-#include <RcppEigen.h>
 #include <mutex>
 #include <thread>
 #include "utils.h"
@@ -50,28 +50,114 @@ void RFNode::setSplitNode(
   _rightChild = std::move(rightChild);
 }
 
+void RFNode::ridgePredict(
+  std::vector<float> &outputPrediction,
+  std::vector<size_t>* updateIndex,
+  std::vector< std::vector<float> >* xNew,
+  DataFrame* trainingData,
+  float lambda
+) {
+
+
+  //Observations to do regression with
+  std::vector<size_t>* leafObs = getAveragingIndex();
+
+  //Number of linear features in training data
+  size_t dimension = (trainingData->getLinObsData((*leafObs)[0])).size();
+
+  arma::Mat<float> x(leafObs->size(),
+                     dimension + 1);
+
+  arma::Mat<float> identity(dimension + 1,
+                            dimension + 1);
+  identity.eye();
+
+  //Don't penalize intercept
+  identity(dimension, dimension) = 0.0;
+
+  std::vector<float> outcomePoints;
+  std::vector<float> currentObservation;
+
+  //Contruct X and outcome vector
+  for (size_t i = 0; i < leafObs->size(); i++) {
+    currentObservation = trainingData->getLinObsData((*leafObs)[i]);
+    currentObservation.push_back(1.0);
+
+    x.row(i) = arma::conv_to<arma::Row<float> >::from(currentObservation);
+
+    outcomePoints.push_back(trainingData->getOutcomePoint((*leafObs)[i]));
+  }
+
+  arma::Mat<float> y(outcomePoints.size(),
+                     1);
+  y.col(0) = arma::conv_to<arma::Col<float> >::from(outcomePoints);
+
+  //Compute XtX + lambda * I * Y = C
+  arma::Mat<float> coefficients = (x.t() * x +
+                                  identity * lambda).i() * x.t() * y;
+
+  //Map xNew into Eigen matrix
+  arma::Mat<float> xn(updateIndex->size(),
+                      dimension + 1);
+
+  size_t index = 0;
+  for (std::vector<size_t>::iterator it = updateIndex->begin();
+       it != updateIndex->end();
+       ++it) {
+
+    std::vector<float> newObservation;
+    for (size_t i = 0; i < dimension; i++) {
+      newObservation.push_back((*xNew)[i][*it]);
+    }
+    newObservation.push_back(1.0);
+
+    xn.row(index) = arma::conv_to<arma::Row<float> >::from(newObservation);
+    index++;
+  }
+
+  //Multiply xNew * coefficients = result
+  arma::Mat<float> predictions = xn * coefficients;
+
+  for (size_t i = 0; i < updateIndex->size(); i++) {
+    outputPrediction[(*updateIndex)[i]] = predictions(i, 0);
+  }
+}
 
 void RFNode::predict(
   std::vector<float> &outputPrediction,
   std::vector<size_t>* updateIndex,
   std::vector< std::vector<float> >* xNew,
   DataFrame* trainingData,
-  Eigen::MatrixXf* weightMatrix
+  arma::Mat<float>* weightMatrix,
+  bool ridgeRF,
+  float lambda
 ) {
 
   // If the node is a leaf, aggregate all its averaging data samples
   if (is_leaf()) {
-    // Calculate the mean of current node
 
-    float predictedMean = (*trainingData).partitionMean(getAveragingIndex());
+      if (ridgeRF) {
 
-    // Give all updateIndex the mean of the node as prediction values
-    for (
-      std::vector<size_t>::iterator it = (*updateIndex).begin();
-      it != (*updateIndex).end();
-      ++it
-    ) {
-      outputPrediction[*it] = predictedMean;
+      //Use ridgePredict (fit linear model on leaf avging obs + evaluate it)
+      ridgePredict(outputPrediction,
+                   updateIndex,
+                   xNew,
+                   trainingData,
+                   lambda);
+      } else {
+
+      // Calculate the mean of current node
+      float predictedMean = (*trainingData).partitionMean(getAveragingIndex());
+      
+
+      // Give all updateIndex the mean of the node as prediction values
+      for (
+        std::vector<size_t>::iterator it = (*updateIndex).begin();
+        it != (*updateIndex).end();
+        ++it
+      ) {
+        outputPrediction[*it] = predictedMean;
+      }
     }
 
     if(weightMatrix){
@@ -86,8 +172,9 @@ void RFNode::predict(
           it != (*updateIndex).end();
           ++it ) {
         for (size_t i = 0; i<idx_in_leaf.size(); i++) {
-          (*weightMatrix)(*it, idx_in_leaf[i] - 1) +=
-                        (double) 1.0 / idx_in_leaf.size();
+          (*weightMatrix)(*it, idx_in_leaf[i] - 1) =
+          (*weightMatrix)(*it, idx_in_leaf[i] - 1) +
+          (double) 1.0 / idx_in_leaf.size();
         }
       }
     }
@@ -146,7 +233,9 @@ void RFNode::predict(
         leftPartitionIndex,
         xNew,
         trainingData,
-        weightMatrix
+        weightMatrix,
+        ridgeRF,
+        lambda
       );
     }
     if ((*rightPartitionIndex).size() > 0) {
@@ -155,7 +244,9 @@ void RFNode::predict(
         rightPartitionIndex,
         xNew,
         trainingData,
-        weightMatrix
+        weightMatrix,
+        ridgeRF,
+        lambda
       );
     }
 

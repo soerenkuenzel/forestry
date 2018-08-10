@@ -245,6 +245,8 @@ setClass(
     middleSplit = "logical",
     y = "vector",
     maxObs = "numeric",
+    ridgeRF = "logical",
+    overfitPenalty = "numeric",
     doubleTree = "logical"
   )
 )
@@ -305,6 +307,9 @@ setClass(
 #'   (default) will, however, take longer and it will use more memory. When
 #'   training many RF, it makes a lot of sense to set this to FALSE to save
 #'   time and memory.
+#' @param ridgeRF Fit the model with a ridge regression or not
+#' @param overfitPenalty Value to determine how much to penalize magnitude of
+#' coefficients in ridge regression
 #' @examples
 #' set.seed(292315)
 #' library(forestry)
@@ -318,6 +323,28 @@ setClass(
 #'
 #' weights %*% y_train
 #' predict(rf, x_test)
+#'
+#' set.seed(49)
+#' library(forestry)
+#'
+#' n <- c(100)
+#' a <- rnorm(n)
+#' b <- rnorm(n)
+#' c <- rnorm(n)
+#' y <- 4*a + 5.5*b - .78*c
+#' x <- data.frame(a,b,c)
+#'
+#' forest <- forestry(
+#'           x,
+#'           y,
+#'           ntree = 10,
+#'           replace = TRUE,
+#'           nodesizeStrictSpl = 5,
+#'           nodesizeStrictAvg = 5,
+#'           ridgeRF = TRUE
+#'           )
+#'
+#' predict(forest, x)
 #' @export forestry
 setGeneric(
   name = "forestry",
@@ -339,6 +366,8 @@ setGeneric(
                  splitrule,
                  middleSplit,
                  maxObs,
+                 ridgeRF,
+                 overfitPenalty,
                  doubleTree,
                  reuseforestry,
                  saveable) {
@@ -373,6 +402,8 @@ forestry <- function(x,
                      splitrule = "variance",
                      middleSplit = FALSE,
                      maxObs = length(y),
+                     ridgeRF = FALSE,
+                     overfitPenalty = 1,
                      doubleTree = FALSE,
                      reuseforestry = NULL,
                      saveable = TRUE) {
@@ -433,6 +464,8 @@ forestry <- function(x,
         verbose,
         middleSplit,
         maxObs,
+        ridgeRF,
+        overfitPenalty,
         doubleTree,
         TRUE,
         rcppDataFrame
@@ -466,6 +499,8 @@ forestry <- function(x,
           splitratio = splitratio,
           middleSplit = middleSplit,
           maxObs = maxObs,
+          ridgeRF = ridgeRF,
+          overfitPenalty = overfitPenalty,
           doubleTree = doubleTree
         )
       )
@@ -510,6 +545,8 @@ forestry <- function(x,
         verbose,
         middleSplit,
         maxObs,
+        ridgeRF,
+        overfitPenalty,
         doubleTree,
         TRUE,
         reuseforestry@dataframe
@@ -535,6 +572,8 @@ forestry <- function(x,
           splitratio = splitratio,
           middleSplit = middleSplit,
           maxObs = maxObs,
+          ridgeRF = ridgeRF,
+          overfitPenalty = overfitPenalty,
           doubleTree = doubleTree
         )
       )
