@@ -2,7 +2,6 @@
 // Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 #include <RcppArmadillo.h>
-#include <RcppEigen.h>
 #include <Rcpp.h>
 
 using namespace Rcpp;
@@ -114,8 +113,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // rcpp_reconstructree
-Rcpp::List rcpp_reconstructree(Rcpp::List x, Rcpp::NumericVector y, Rcpp::NumericVector catCols, int numRows, int numColumns, Rcpp::List R_forest, bool replace, int sampsize, float splitratio, int mtry, int nodesizeSpl, int nodesizeAvg, int nodesizeStrictSpl, int nodesizeStrictAvg, int seed, int nthread, bool verbose, bool middleSplit, int maxObs, bool doubleTree);
-RcppExport SEXP _forestry_rcpp_reconstructree(SEXP xSEXP, SEXP ySEXP, SEXP catColsSEXP, SEXP numRowsSEXP, SEXP numColumnsSEXP, SEXP R_forestSEXP, SEXP replaceSEXP, SEXP sampsizeSEXP, SEXP splitratioSEXP, SEXP mtrySEXP, SEXP nodesizeSplSEXP, SEXP nodesizeAvgSEXP, SEXP nodesizeStrictSplSEXP, SEXP nodesizeStrictAvgSEXP, SEXP seedSEXP, SEXP nthreadSEXP, SEXP verboseSEXP, SEXP middleSplitSEXP, SEXP maxObsSEXP, SEXP doubleTreeSEXP) {
+Rcpp::List rcpp_reconstructree(Rcpp::List x, Rcpp::NumericVector y, Rcpp::NumericVector catCols, int numRows, int numColumns, Rcpp::List R_forest, bool replace, int sampsize, float splitratio, int mtry, int nodesizeSpl, int nodesizeAvg, int nodesizeStrictSpl, int nodesizeStrictAvg, int seed, int nthread, bool verbose, bool middleSplit, int maxObs, bool ridgeRF, double overfitPenalty, bool doubleTree);
+RcppExport SEXP _forestry_rcpp_reconstructree(SEXP xSEXP, SEXP ySEXP, SEXP catColsSEXP, SEXP numRowsSEXP, SEXP numColumnsSEXP, SEXP R_forestSEXP, SEXP replaceSEXP, SEXP sampsizeSEXP, SEXP splitratioSEXP, SEXP mtrySEXP, SEXP nodesizeSplSEXP, SEXP nodesizeAvgSEXP, SEXP nodesizeStrictSplSEXP, SEXP nodesizeStrictAvgSEXP, SEXP seedSEXP, SEXP nthreadSEXP, SEXP verboseSEXP, SEXP middleSplitSEXP, SEXP maxObsSEXP, SEXP ridgeRFSEXP, SEXP overfitPenaltySEXP, SEXP doubleTreeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -138,8 +137,10 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
     Rcpp::traits::input_parameter< bool >::type middleSplit(middleSplitSEXP);
     Rcpp::traits::input_parameter< int >::type maxObs(maxObsSEXP);
+    Rcpp::traits::input_parameter< bool >::type ridgeRF(ridgeRFSEXP);
+    Rcpp::traits::input_parameter< double >::type overfitPenalty(overfitPenaltySEXP);
     Rcpp::traits::input_parameter< bool >::type doubleTree(doubleTreeSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_reconstructree(x, y, catCols, numRows, numColumns, R_forest, replace, sampsize, splitratio, mtry, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, seed, nthread, verbose, middleSplit, maxObs, doubleTree));
+    rcpp_result_gen = Rcpp::wrap(rcpp_reconstructree(x, y, catCols, numRows, numColumns, R_forest, replace, sampsize, splitratio, mtry, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, seed, nthread, verbose, middleSplit, maxObs, ridgeRF, overfitPenalty, doubleTree));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -152,7 +153,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_forestry_rcpp_getObservationSizeInterface", (DL_FUNC) &_forestry_rcpp_getObservationSizeInterface, 1},
     {"_forestry_rcpp_AddTreeInterface", (DL_FUNC) &_forestry_rcpp_AddTreeInterface, 2},
     {"_forestry_rcpp_CppToR_translator", (DL_FUNC) &_forestry_rcpp_CppToR_translator, 1},
-    {"_forestry_rcpp_reconstructree", (DL_FUNC) &_forestry_rcpp_reconstructree, 20},
+    {"_forestry_rcpp_reconstructree", (DL_FUNC) &_forestry_rcpp_reconstructree, 22},
     {NULL, NULL, 0}
 };
 

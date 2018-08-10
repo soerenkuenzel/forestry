@@ -11,7 +11,6 @@ Encoding: UTF-8
 LazyData: true
 Imports:
     Rcpp (>= 0.12.9),
-    RcppEigen (>= 0.3.2.2.0),
     foreach,
     doParallel,
     parallel,
@@ -21,8 +20,7 @@ Imports:
     methods,
 LinkingTo: 
     RcppArmadillo,
-    Rcpp,
-    RcppEigen
+    Rcpp
 RoxygenNote: 6.1.0
 SystemRequirements: C++11
 Suggests:

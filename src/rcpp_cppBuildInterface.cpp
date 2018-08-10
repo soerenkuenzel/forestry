@@ -400,6 +400,8 @@ Rcpp::List rcpp_reconstructree(
   bool verbose,
   bool middleSplit,
   int maxObs,
+  bool ridgeRF,
+  double overfitPenalty,
   bool doubleTree
 ){
 
@@ -489,21 +491,23 @@ Rcpp::List rcpp_reconstructree(
 
   forestry* testFullForest = new forestry(
     (DataFrame*) trainingData,
-    (size_t) 0,
+    (int) 0,
     (bool) replace,
-    (size_t) sampsize,
+    (int) sampsize,
     (float) splitratio,
-    (size_t) mtry,
-    (size_t) nodesizeSpl,
-    (size_t) nodesizeAvg,
-    (size_t) nodesizeStrictSpl,
-    (size_t) nodesizeStrictAvg,
+    (int) mtry,
+    (int) nodesizeSpl,
+    (int) nodesizeAvg,
+    (int) nodesizeStrictSpl,
+    (int) nodesizeStrictAvg,
     (unsigned int) seed,
-    (size_t) nthread,
+    (int) nthread,
     (bool) verbose,
     (bool) middleSplit,
-    (size_t) maxObs,
-    (bool) doubleTree
+    (int) maxObs,
+    (bool) ridgeRF,
+    (double) overfitPenalty,
+    doubleTree
   );
 
   testFullForest->reconstructTrees(categoricalFeatureColsRcpp_copy,

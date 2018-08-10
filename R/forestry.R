@@ -1056,6 +1056,8 @@ setMethod(
         verbose = FALSE,
         middleSplit = object@middleSplit,
         maxObs = object@maxObs,
+        ridgeRF = object@ridgeRF,
+        overfitPenalty = object@overfitPenalty,
         doubleTree = object@doubleTree)
 
       object@forest <- forest_and_df_ptr$forest_ptr
