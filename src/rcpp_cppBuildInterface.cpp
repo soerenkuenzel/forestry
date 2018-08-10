@@ -142,7 +142,6 @@ SEXP rcpp_cppBuildInterface(
       );
 
       std::unique_ptr< std::vector<float> > outcomeDataRcpp (
-      std::unique_ptr< std::vector<float> > outcomeDataRcpp (
           new std::vector<float>(
               Rcpp::as< std::vector<float> >(y)
           )
@@ -320,38 +319,38 @@ Rcpp::List rcpp_CppToR_translator(
     Rcpp::List list_to_return;
     for(size_t i=0; i!=forest_dta->size(); i++){
       Rcpp::IntegerVector var_id = Rcpp::wrap(((*forest_dta)[i]).var_id);
-      
+
       // std::cout << "var_id\n";
       // std::cout.flush();
-      
+
       Rcpp::NumericVector split_val = Rcpp::wrap(((*forest_dta)[i]).split_val);
-      
+
       // std::cout << "split_val\n";
       // std::cout.flush();
 
-  
+
       Rcpp::IntegerVector leafAveidx = Rcpp::wrap(((*forest_dta)[i]).leafAveidx);
-      
+
       // std::cout << "leafAveidx\n";
       // std::cout.flush();
-      
+
       Rcpp::IntegerVector leafSplidx = Rcpp::wrap(((*forest_dta)[i]).leafSplidx);
-      
+
       // std::cout << "leafSplidx\n";
       // std::cout.flush();
-      
+
       Rcpp::IntegerVector averagingSampleIndex =
 	Rcpp::wrap(((*forest_dta)[i]).averagingSampleIndex);
-      
+
       // std::cout << "averagingSampleIndex\n";
       // std::cout.flush();
-      
+
       Rcpp::IntegerVector splittingSampleIndex =
 	Rcpp::wrap(((*forest_dta)[i]).splittingSampleIndex);
-      
+
       // std::cout << "splittingSampleIndex\n";
-      // std::cout.flush();      
-      
+      // std::cout.flush();
+
       Rcpp::List list_i =
         Rcpp::List::create(
 			   Rcpp::Named("var_id") = var_id,
@@ -360,15 +359,15 @@ Rcpp::List rcpp_CppToR_translator(
 			   Rcpp::Named("leafSplidx") = leafSplidx,
 			   Rcpp::Named("averagingSampleIndex") = averagingSampleIndex,
 			   Rcpp::Named("splittingSampleIndex") = splittingSampleIndex);
-      
+
       // std::cout << "finished list\n";
-      // std::cout.flush();            
-      
+      // std::cout.flush();
+
       list_to_return.push_back(list_i);
     }
-    
+
     // std::cout << "hello1\n";
-    // std::cout.flush();    
+    // std::cout.flush();
 
     return list_to_return;
 
