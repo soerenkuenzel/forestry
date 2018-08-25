@@ -149,7 +149,7 @@ forestryTree::forestryTree(
     sTotal
   );
 
-  this->_root->printSubtree();
+  //this->_root->printSubtree();
   //this->trainTiming();
 }
 
