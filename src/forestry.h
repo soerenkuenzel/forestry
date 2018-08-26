@@ -133,7 +133,7 @@ public:
   }
 
   size_t getMaxObs() {
-    return maxObs;
+    return _maxObs;
   }
 
   bool getRidgeRF() {
@@ -161,7 +161,7 @@ private:
   size_t _nthread;
   float _OOBError;
   bool _splitMiddle;
-  size_t maxObs;
+  size_t _maxObs;
   bool _ridgeRF;
   float _overfitPenalty;
   bool _doubleTree;

@@ -56,7 +56,7 @@ forestry::forestry(
   this->_nthread = nthread;
   this->_verbose = verbose;
   this->_splitMiddle = splitMiddle;
-  this->maxObs = maxObs;
+  this->_maxObs = maxObs;
   this->_ridgeRF = ridgeRF;
   this->_overfitPenalty = overfitPenalty;
   this->_doubleTree = doubleTree;
