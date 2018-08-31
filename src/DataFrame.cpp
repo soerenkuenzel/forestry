@@ -107,6 +107,8 @@ void DataFrame::getShuffledObservationData(
   size_t swapFeature,
   size_t swapIndex
 ) {
+  // Helper that gives rowIndex observation with
+  // swapFeature value of swapIndex observation
   if (rowIndex < getNumRows() && swapFeature < getNumColumns()) {
     for (size_t i=0; i < getNumColumns(); i++) {
       rowData[i] = (*getAllFeatureData())[i][rowIndex];
