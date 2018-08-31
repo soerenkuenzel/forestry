@@ -101,6 +101,22 @@ void DataFrame::getObservationData(
   }
 }
 
+void DataFrame::getShuffledObservationData(
+  std::vector<float> &rowData,
+  size_t rowIndex,
+  size_t swapFeature,
+  size_t swapIndex
+) {
+  if (rowIndex < getNumRows() && swapFeature < getNumColumns()) {
+    for (size_t i=0; i < getNumColumns(); i++) {
+      rowData[i] = (*getAllFeatureData())[i][rowIndex];
+    }
+    rowData[swapFeature] = getPoint(swapIndex, swapFeature);
+  } else {
+    throw std::runtime_error("Invalid row/colIndex.");
+  }
+}
+
 float DataFrame::partitionMean(
   std::vector<size_t>* sampleIndex
 ){

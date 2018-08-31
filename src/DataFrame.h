@@ -31,6 +31,9 @@ public:
 
   void getObservationData(std::vector<float> &rowData, size_t rowIndex);
 
+  void getShuffledObservationData(std::vector<float> &rowData, size_t rowIndex,
+                                  size_t swapFeature, size_t swapIndex);
+
   float partitionMean(std::vector<size_t>* sampleIndex);
 
   std::vector< std::vector<float> >* getAllFeatureData() {

@@ -1952,6 +1952,57 @@ void forestryTree::getOOBPrediction(
   }
 }
 
+void forestryTree::getShuffledOOBPrediction(
+    std::vector<float> &outputOOBPrediction,
+    std::vector<size_t> &outputOOBCount,
+    DataFrame* trainingData,
+    size_t shuffleFeature
+){
+  // Gives OOB prediction with shuffleFeature premuted randomly
+  // For use in determining variable importance
+
+  std::vector<size_t> OOBIndex;
+  getOOBindex(OOBIndex, trainingData->getNumRows());
+
+  std::vector<size_t> shuffledOOBIndex = OOBIndex;
+  std::shuffle(shuffledOOBIndex.begin(), shuffledOOBIndex.end());
+  size_t currentIndex = 0;
+
+  for (
+      std::vector<size_t>::iterator it=OOBIndex.begin();
+      it!=OOBIndex.end();
+      ++it
+  ) {
+
+    size_t OOBSampleIndex = *it;
+
+    // Predict current oob sample
+    std::vector<float> currentTreePrediction(1);
+    std::vector<float> OOBSampleObservation((*trainingData).getNumColumns());
+    (*trainingData).getShuffledObservationData(OOBSampleObservation,
+                                               OOBSampleIndex,
+                                               shuffleFeature,
+                                               shuffledOOBIndex[i]);
+
+    std::vector< std::vector<float> > OOBSampleObservation_;
+    for (size_t k=0; k<(*trainingData).getNumColumns(); k++){
+      std::vector<float> OOBSampleObservation_iter(1);
+      OOBSampleObservation_iter[0] = OOBSampleObservation[k];
+      OOBSampleObservation_.push_back(OOBSampleObservation_iter);
+    }
+
+    predict(
+      currentTreePrediction,
+      &OOBSampleObservation_,
+      trainingData
+    );
+
+    // Update the global OOB vector
+    outputOOBPrediction[OOBSampleIndex] += currentTreePrediction[0];
+    outputOOBCount[OOBSampleIndex] += 1;
+    currentIndex++;
+  }
+}
 
 // -----------------------------------------------------------------------------
 std::unique_ptr<tree_info> forestryTree::getTreeInfo(

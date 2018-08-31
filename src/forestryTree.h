@@ -139,6 +139,13 @@ public:
     DataFrame* trainingData
   );
 
+  void getShuffledOOBPrediction(
+      std::vector<float> &outputOOBPrediction,
+      std::vector<size_t> &outputOOBCount,
+      DataFrame* trainingData,
+      size_t shuffleFeature
+  );
+
   size_t getMtry() {
     return _mtry;
   }
