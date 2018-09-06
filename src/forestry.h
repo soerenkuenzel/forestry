@@ -60,6 +60,21 @@ public:
 
   void calculateOOBError();
 
+  void calculateVariableImportance();
+
+  std::vector<float> getVariableImportance() {
+    calculateVariableImportance();
+    calculateOOBError();
+
+    float OOB = getOOBError();
+    std::vector<float> OOBPercentages(getTrainingData()->getNumColumns());
+    //Find percentage changes in OOB error
+    for (size_t i = 0; i < getTrainingData()->getNumColumns(); i++) {
+      OOBPercentages[i] = ((*_variableImportance)[i] / OOB) - 1;
+    }
+    return OOBPercentages;
+  }
+
   float getOOBError() {
     calculateOOBError();
     return _OOBError;
@@ -160,6 +175,7 @@ private:
   bool _verbose;
   size_t _nthread;
   float _OOBError;
+  std::unique_ptr< std::vector<float> > _variableImportance;
   bool _splitMiddle;
   size_t _maxObs;
   bool _ridgeRF;

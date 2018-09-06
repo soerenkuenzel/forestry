@@ -397,6 +397,112 @@ std::unique_ptr< std::vector<float> > forestry::predict(
   return prediction_;
 }
 
+void forestry::calculateVariableImportance() {
+  // For all variables, shuffle + get OOB Error, record in
+
+  size_t numObservations = getTrainingData()->getNumRows();
+  std::vector<float> variableImportances;
+
+  std::vector<float> outputOOBPrediction(numObservations);
+  std::vector<size_t> outputOOBCount(numObservations);
+
+  //Loop through all features and populate variableImportances with shuffled OOB
+  for (size_t featNum = 0; featNum < getTrainingData()->getNumColumns(); featNum++) {
+
+    // Initialize MSEs/counts
+    for (size_t i=0; i<numObservations; i++) {
+      outputOOBPrediction[i] = 0;
+      outputOOBCount[i] = 0;
+    }
+    //Use same parallelization scheme as before
+
+    #if DOPARELLEL
+    size_t nthreadToUse = getNthread();
+    if (nthreadToUse == 0) {
+      nthreadToUse = std::thread::hardware_concurrency();
+    }
+    if (isVerbose()) {
+      std::cout << "Calculating OOB parallel using " << nthreadToUse << " threads"
+                << std::endl;
+    }
+
+    std::vector<std::thread> allThreads(nthreadToUse);
+    std::mutex threadLock;
+
+    // For each thread, assign a sequence of tree numbers that the thread
+    // is responsible for handling
+    for (size_t t = 0; t < nthreadToUse; t++) {
+      auto dummyThread = std::bind(
+        [&](const int iStart, const int iEnd, const int t_) {
+
+          // loop over all items
+          for (int i=iStart; i < iEnd; i++) {
+    #else
+    // For non-parallel version, just simply iterate all trees serially
+    for(int i=0; i<((int) getNtree()); i++ ) {
+    #endif
+        try {
+          std::vector<float> outputOOBPrediction_iteration(numObservations);
+          std::vector<size_t> outputOOBCount_iteration(numObservations);
+          for (size_t j=0; j<numObservations; j++) {
+            outputOOBPrediction_iteration[j] = 0;
+            outputOOBCount_iteration[j] = 0;
+          }
+          forestryTree *currentTree = (*getForest())[i].get();
+          (*currentTree).getShuffledOOBPrediction(
+              outputOOBPrediction_iteration,
+              outputOOBCount_iteration,
+              getTrainingData(),
+              featNum
+          );
+          #if DOPARELLEL
+          std::lock_guard<std::mutex> lock(threadLock);
+          #endif
+          for (size_t j=0; j < numObservations; j++) {
+            outputOOBPrediction[j] += outputOOBPrediction_iteration[j];
+            outputOOBCount[j] += outputOOBCount_iteration[j];
+          }
+        } catch (std::runtime_error &err) {
+          std::cerr << err.what() << std::endl;
+        }
+      }
+    #if DOPARELLEL
+      },
+      t * getNtree() / nthreadToUse,
+      (t + 1) == nthreadToUse ?
+        getNtree() :
+        (t + 1) * getNtree() / nthreadToUse,
+          t
+        );
+        allThreads[t] = std::thread(dummyThread);
+      }
+
+      std::for_each(
+        allThreads.begin(),
+        allThreads.end(),
+        [](std::thread& x) { x.join(); }
+      );
+      #endif
+
+      float current_MSE = 0;
+      for (size_t j = 0; j < numObservations; j++){
+        float trueValue = getTrainingData()->getOutcomePoint(j);
+        if (outputOOBCount[j] != 0) {
+          current_MSE +=
+            pow(trueValue - outputOOBPrediction[j] / outputOOBCount[j], 2);
+        }
+      }
+      variableImportances.push_back(current_MSE);
+  }
+
+  std::unique_ptr<std::vector<float> > variableImportances_(
+      new std::vector<float>(variableImportances)
+  );
+
+  // Populate forest's variable importance with all shuffled MSE's
+  this-> _variableImportance = std::move(variableImportances_);
+}
+
 void forestry::calculateOOBError() {
 
   size_t numObservations = getTrainingData()->getNumRows();

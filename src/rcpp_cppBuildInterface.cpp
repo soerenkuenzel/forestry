@@ -266,6 +266,24 @@ float rcpp_OBBPredictInterface(
   return Rcpp::NumericVector::get_na() ;
 }
 
+// [[Rcpp::export]]
+Rcpp::List rcpp_VariableImportanceInterface(
+  SEXP forest
+){
+
+  try {
+    Rcpp::XPtr< forestry > testFullForest(forest);
+    std::vector<float> variableImportances = testFullForest->getVariableImportance();
+    Rcpp::NumericVector importances = Rcpp::wrap(variableImportances);
+    return Rcpp::List::create(importances);
+  } catch(std::runtime_error const& err) {
+    forward_exception_to_r(err);
+  } catch(...) {
+    ::Rf_error("c++ exception (unknown reason)");
+  }
+  return Rcpp::NumericVector::get_na() ;
+}
+
 
 // [[Rcpp::export]]
 float rcpp_getObservationSizeInterface(

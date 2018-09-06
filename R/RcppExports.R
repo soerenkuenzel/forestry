@@ -17,6 +17,10 @@ rcpp_OBBPredictInterface <- function(forest) {
     .Call('_forestry_rcpp_OBBPredictInterface', PACKAGE = 'forestry', forest)
 }
 
+rcpp_VariableImportanceInterface <- function(forest) {
+    .Call('_forestry_rcpp_VariableImportanceInterface', PACKAGE = 'forestry', forest)
+}
+
 rcpp_getObservationSizeInterface <- function(df) {
     .Call('_forestry_rcpp_getObservationSizeInterface', PACKAGE = 'forestry', df)
 }

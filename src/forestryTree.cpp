@@ -1965,7 +1965,7 @@ void forestryTree::getShuffledOOBPrediction(
   getOOBindex(OOBIndex, trainingData->getNumRows());
 
   std::vector<size_t> shuffledOOBIndex = OOBIndex;
-  std::shuffle(shuffledOOBIndex.begin(), shuffledOOBIndex.end());
+  std::random_shuffle(shuffledOOBIndex.begin(), shuffledOOBIndex.end());
   size_t currentIndex = 0;
 
   for (
@@ -1982,7 +1982,7 @@ void forestryTree::getShuffledOOBPrediction(
     (*trainingData).getShuffledObservationData(OOBSampleObservation,
                                                OOBSampleIndex,
                                                shuffleFeature,
-                                               shuffledOOBIndex[i]);
+                                               shuffledOOBIndex[*it]);
 
     std::vector< std::vector<float> > OOBSampleObservation_;
     for (size_t k=0; k<(*trainingData).getNumColumns(); k++){
