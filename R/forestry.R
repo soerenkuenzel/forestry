@@ -682,6 +682,51 @@ setMethod(
   }
 )
 
+# -- Calculate Variable Importance ---------------------------------------------
+#' @title getVI-forestry
+#' @name getVI-forestry
+#' @rdname getVI-forestry
+#' @description Calculate increase in OOB for each shuffled feature for forest.
+#' @param object A `forestry` object.
+#' @param noWarning flag to not display warnings
+#' @aliases getVI
+setGeneric(
+  name = "getVI",
+  def = function(object,
+                 noWarning = FALSE) {
+    standardGeneric("getVI")
+  }
+)
+
+#' @title getVI-forestry
+setMethod(
+  f = "getVI",
+  signature = "forestry",
+  definition = function(object,
+                        noWarning) {
+    # Keep warning for small sample size
+    if (!object@replace &&
+        object@ntree * (rcpp_getObservationSizeInterface(object@dataframe) -
+                        object@sampsize) < 10) {
+      if (!noWarning) {
+        warning(paste(
+          "Samples are drawn without replacement and sample size",
+          "is too big!"
+        ))
+      }
+      return(NA)
+    }
+
+    rcppVI <- tryCatch({
+      return(rcpp_VariableImportanceInterface(object@forest))
+    }, error = function(err) {
+      print(err)
+      return(NA)
+    })
+
+    return(rcppVI)
+  }
+)
 
 
 # -- Add More Trees ------------------------------------------------------------
