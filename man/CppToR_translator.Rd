@@ -6,10 +6,10 @@
 \usage{
 CppToR_translator(object)
 }
-\arguments{
-\item{object}{A `forestry` object.}
+\value{
+A list of lists. Each sublist contains the information to span a
+  tree.
 }
 \description{
-Translates the forest to a list which can then be used with the
-  RToCPP_translator to create an CPP forest object again
+Add more trees to the existing forest.
 }

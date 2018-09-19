@@ -2,12 +2,17 @@
 % Please edit documentation in R/forestry.R
 \name{make_savable}
 \alias{make_savable}
+\alias{make_savable,forestry-method}
 \title{make_savable}
 \usage{
 make_savable(object)
 }
 \arguments{
 \item{object}{an object of class `forestry`}
+}
+\value{
+A list of lists. Each sublist contains the information to span a
+  tree.
 }
 \description{
 When a `foresty` object is saved and then reloaded the Cpp

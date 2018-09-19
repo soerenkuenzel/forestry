@@ -172,58 +172,6 @@ testing_data_checker <- function(feature.new) {
 }
 
 # -- Random Forest Constructor -------------------------------------------------
-#' @title forestry class
-#' @name forestry-class
-#' @description `forestry` object implementing the most basic version of a
-#'   random forest.
-#' @slot forest An external pointer pointing to a C++ forestry object
-#' @slot dataframe An external pointer pointing to a C++ DataFrame object
-#' @slot processed_dta The R version of the training data frame. This will be an
-#'   emapty dataframe, if the forest was created with the `saveable = FALSE`
-#'   option. It is only used to reconstruct the forest after saving and loading
-#'   it.
-#' @slot R_forest This is a list containing for each tree a new list element.
-#'   The list elements are in turn two lists: One containing the slit variable
-#'   and the other one containing the split value. This is only saved, when
-#'   `saveable = FALSE` and it will be used to reconstruct the C++ tree after
-#'   saving and then reloding the tree.
-#' @slot y A vector of all training responses.
-#' @slot categoricalFeatureCols A list of index for all categorical data. Used
-#'   for trees to detect categorical columns.
-#' @slot categoricalFeatureMapping A list of encoding details for each
-#'   categorical column, including all unique factor values and their
-#'   corresponding numeric representation.
-#' @slot ntree The number of trees to grow in the forest. The default value is
-#'   500.
-#' @slot replace An indicator of whether sampling of training data is with
-#'   replacement. The default value is TRUE.
-#' @slot sampsize The size of total samples to draw for the training data. If
-#'   sampling with replacement, the default value is the length of the training
-#'   data. If samplying without replacement, the default value is two-third of
-#'   the length of the training data.
-#' @slot mtry The number of variables randomly selected at each split point. The
-#'   default value is set to be one third of total number of features of the
-#'   training data.
-#' @slot nodesizeSpl The minimum observations contained in terminal nodes. The
-#'   default value is 3.
-#' @slot nodesizeAvg Minimum size of terminal nodes for averaging dataset. The
-#'   default value is 3.
-#' @slot nodesizeStrictSpl Minimum observations to follow strictly in terminal
-#'   nodes. The default value is 1.
-#' @slot nodesizeStrictAvg Minimum size of terminal nodes for averaging dataset
-#'   to follow strictly. The default value is 1.
-#' @slot splitratio Proportion of the training data used as the splitting
-#'   dataset. It is a ratio between 0 and 1. If the ratio is 1, then essentially
-#'   splitting dataset becomes the total entire sampled set and the averaging
-#'   dataset is empty. If the ratio is 0, then the splitting data set is empty
-#'   and all the data is used for the averaging data set (This is not a good
-#'   usage however since there will be no data available for splitting).
-#' @slot middleSplit if the split value is taking the average of two feature
-#'   values. If false, it will take a point based on a uniform distribution
-#'   between two feature values. (Default = FALSE)
-#' @slot maxObs The max number of observations to split on (Default = nrows(y))
-#' @slot doubleTree if the number of tree is doubled as averaging and splitting
-#'   data can be exchanged to create decorrelated trees. (Default = FALSE)
 setClass(
   Class = "forestry",
   slots = list(
@@ -252,10 +200,8 @@ setClass(
 )
 
 
-#' @title forestry-Constructor
-#' @name forestry-forestry
-#' @rdname forestry-forestry
-#' @description Initialize a `forestry` object.
+#' @title forestry
+#' @rdname forestry
 #' @param x A data frame of all training predictors.
 #' @param y A vector of all training responses.
 #' @param ntree The number of trees to grow in the forest. The default value is
@@ -310,6 +256,7 @@ setClass(
 #' @param ridgeRF Fit the model with a ridge regression or not
 #' @param overfitPenalty Value to determine how much to penalize magnitude of
 #' coefficients in ridge regression
+#' @return A `forestry` object.
 #' @examples
 #' set.seed(292315)
 #' library(forestry)
@@ -345,42 +292,9 @@ setClass(
 #'           )
 #'
 #' predict(forest, x)
-#' @export forestry
-setGeneric(
-  name = "forestry",
-  def = function(x,
-                 y,
-                 ntree,
-                 replace,
-                 sampsize,
-                 sample.fraction,
-                 mtry,
-                 nodesizeSpl,
-                 nodesizeAvg,
-                 nodesizeStrictSpl,
-                 nodesizeStrictAvg,
-                 splitratio,
-                 seed,
-                 verbose,
-                 nthread,
-                 splitrule,
-                 middleSplit,
-                 maxObs,
-                 ridgeRF,
-                 overfitPenalty,
-                 doubleTree,
-                 reuseforestry,
-                 saveable) {
-    standardGeneric("forestry")
-  }
-)
-
-#' @title forestry-Constructor
-#' @rdname forestry-forestry
-#' @aliases forestry forestry-method
-#' @importFrom Rcpp evalCpp
 #' @useDynLib forestry
-#' @return A `forestry` object.
+#' @importFrom Rcpp evalCpp
+#' @export
 forestry <- function(x,
                      y,
                      ntree = 500,
@@ -598,14 +512,10 @@ forestry <- function(x,
 #' @param aggregation How shall the leaf be aggregated. The default is to return
 #'   the mean of the leave `average`. Other options are `weightMatrix`.
 #' @return A vector of predicted responses.
-#' @aliases predict,forestry-method
-#' @exportMethod predict
-setMethod(
-  f = "predict",
-  signature = "forestry",
-  definition = function(object,
-                        feature.new,
-                        aggregation = "average") {
+#' @export
+predict.forestry <- function(object,
+                             feature.new,
+                             aggregation = "average") {
     # Preprocess the data
     testing_data_checker(feature.new)
 
@@ -626,37 +536,21 @@ setMethod(
       return(rcppPrediction)
     }
   }
-)
+
 
 
 # -- Calculate OOB Error -------------------------------------------------------
-#' @title getOOB-forestry
+#' getOOB-forestry
 #' @name getOOB-forestry
 #' @rdname getOOB-forestry
 #' @description Calculate the out-of-bag error of a given forest.
 #' @param object A `forestry` object.
 #' @param noWarning flag to not display warnings
-#' @aliases getOOB
-setGeneric(
-  name = "getOOB",
-  def = function(object,
-                 noWarning = FALSE) {
-    standardGeneric("getOOB")
-  }
-)
-
-#' @title getOOB-forestry
-#' @description Calculate the out-of-bag error of a given forest.
-#' @param object A `forestry` object.
-#' @param noWarning flag to not display warnings
 #' @aliases getOOB,forestry-method
 #' @return The OOB error of the forest.
-#' @exportMethod getOOB
-setMethod(
-  f = "getOOB",
-  signature = "forestry",
-  definition = function(object,
-                        noWarning) {
+#' @export
+getOOB.forestry <- function(object,
+                   noWarning) {
     # TODO (all): find a better threshold for throwing such warning. 25 is
     # currently set up arbitrarily.
     if (!object@replace &&
@@ -680,30 +574,17 @@ setMethod(
 
     return(rcppOOB)
   }
-)
+
 
 # -- Calculate Variable Importance ---------------------------------------------
-#' @title getVI-forestry
-#' @name getVI-forestry
+#' getVI-forestry
 #' @rdname getVI-forestry
 #' @description Calculate increase in OOB for each shuffled feature for forest.
 #' @param object A `forestry` object.
 #' @param noWarning flag to not display warnings
-#' @aliases getVI
-setGeneric(
-  name = "getVI",
-  def = function(object,
-                 noWarning = FALSE) {
-    standardGeneric("getVI")
-  }
-)
-
-#' @title getVI-forestry
-setMethod(
-  f = "getVI",
-  signature = "forestry",
-  definition = function(object,
-                        noWarning) {
+#' @export
+getVI.forestry <- function(object,
+                           noWarning) {
     # Keep warning for small sample size
     if (!object@replace &&
         object@ntree * (rcpp_getObservationSizeInterface(object@dataframe) -
@@ -726,37 +607,19 @@ setMethod(
 
     return(rcppVI)
   }
-)
+
 
 
 # -- Add More Trees ------------------------------------------------------------
-#' @title addTrees-forestry
-#' @name addTrees-forestry
+#' addTrees-forestry
 #' @rdname addTrees-forestry
 #' @description Add more trees to the existing forest.
 #' @param object A `forestry` object.
 #' @param ntree Number of new trees to add
-#' @aliases addTrees
-setGeneric(
-  name = "addTrees",
-  def = function(object,
-                 ntree) {
-    standardGeneric("addTrees")
-  }
-)
-
-#' @title addTrees-forestry
-#' @description Add more trees to the existing forest.
-#' @param object A `forestry` object.
-#' @param ntree Number of new trees to add
-#' @aliases addTrees,forestry-method
-#' @exportMethod addTrees
 #' @return A `forestry` object
-setMethod(
-  f = "addTrees",
-  signature = "forestry",
-  definition = function(object,
-                        ntree) {
+#' @export
+addTrees <- function(object,
+                     ntree) {
     if (ntree <= 0 || ntree %% 1 != 0) {
       stop("ntree must be a positive integer.")
     }
@@ -771,39 +634,12 @@ setMethod(
     })
 
   }
-)
+
 
 
 # -- Auto-Tune -----------------------------------------------------------------
-#' @title autoforestry-forestry
-#' @name autoforestry-forestry
+#' autoforestry-forestry
 #' @rdname autoforestry-forestry
-#' @description Autotune a forestry based on the input dataset. The methodology
-#'   is based on paper `Hyperband: A Novel Bandit-Based Approach to
-#'   Hyperparameter Optimization` by Lisha Li, et al.
-#' @inheritParams forestry
-#' @param sampsize The size of total samples to draw for the training data.
-#' @param num_iter Maximum iterations/epochs per configuration. Default is 1024.
-#' @param eta Downsampling rate. Default value is 2.
-#' @param verbose if tuning process in verbose mode
-setGeneric(
-  name = "autoforestry",
-  def = function(x,
-                 y,
-                 sampsize,
-                 num_iter,
-                 eta,
-                 verbose,
-                 seed,
-                 nthread) {
-    standardGeneric("autoforestry")
-  }
-)
-
-#' @title autoforestry-forestry
-#' @description Autotune a forestry based on the input dataset. The methodology
-#'   is based on paper `Hyperband: A Novel Bandit-Based Approach to
-#'   Hyperparameter Optimization` by Lisha Li, et al.
 #' @inheritParams forestry
 #' @param sampsize The size of total samples to draw for the training data.
 #' @param num_iter Maximum iterations/epochs per configuration. Default is 1024.
@@ -812,10 +648,10 @@ setGeneric(
 #' @param seed random seed
 #' @param nthread Number of threads to train and predict theforest. The default
 #'   number is 0 which represents using all cores.
-#' @aliases autoforestry,forestry-method
+
 #' @return A `forestry` object
-#' @export autoforestry
 #' @import stats
+#' @export
 autoforestry <- function(x,
                          y,
                          sampsize = as.integer(nrow(x) * 0.75),
@@ -1018,27 +854,12 @@ autoforestry <- function(x,
 
 # -- Translate C++ to R --------------------------------------------------------
 #' @title Cpp to R translator
-#' @name CppToR_translator
-#' @description Translates the forest to a list which can then be used with the
-#'   RToCPP_translator to create an CPP forest object again
-#' @param object A `forestry` object.
-setGeneric(
-  name = "CppToR_translator",
-  def = function(object) {
-    standardGeneric("CppToR_translator")
-  }
-)
-
-#' @title CppToR_translator
 #' @description Add more trees to the existing forest.
-#' @exportMethod CppToR_translator
 #' @inheritParams CppToR_translator
 #' @return A list of lists. Each sublist contains the information to span a
 #'   tree.
-setMethod(
-  f = "CppToR_translator",
-  signature = "externalptr",
-  definition = function(object) {
+#' @export
+CppToR_translator <- function(object) {
     tryCatch({
       return(rcpp_CppToR_translator(object))
     }, error = function(err) {
@@ -1046,38 +867,16 @@ setMethod(
       return(NA)
     })
   }
-)
+
 
 # -- relink forest CPP ptr -----------------------------------------------------
 #' relink CPP ptr
-#' @rdname relink
-#' @name relinkCPP_prt
 #' @rdname relinkCPP
 #' @description When a `foresty` object is saved and then reloaded the Cpp
 #'   pointers for the data set and the Cpp forest have to be reconstructed
 #' @param object an object of class `forestry`
-#' @exportMethod relinkCPP_prt
-setGeneric(
-  name = "relinkCPP_prt",
-  def = function(object) {
-    standardGeneric("relinkCPP_prt")
-  }
-)
-
-#' relink CPP ptr
-#' @name relinkCPP_prt-forestry
-#' @rdname relinkCPP_prt-forestry
-#' @description When a `foresty` object is saved and then reloaded the Cpp
-#'   pointers for the data set and the Cpp forest have to be reconstructed
-#' @inheritParams relinkCPP_prt
-#' @return A list of lists. Each sublist contains the information to span a
-#'   tree.
-#' @aliases relinkCPP_prt,forestry-method
-#' @exportMethod relinkCPP_prt
-setMethod(
-  f = "relinkCPP_prt",
-  signature = "forestry",
-  definition = function(object) {
+#' @export
+relinkCPP_prt <- function(object) {
     # 1.) reconnect the data.frame to a cpp data.frame
     # 2.) reconnect the forest.
     tryCatch({
@@ -1116,7 +915,7 @@ setMethod(
 
     return(object)
   }
-)
+
 
 
 
@@ -1143,32 +942,16 @@ setMethod(
 #' y_pred_after <- predict(forest, x)
 #' testthat::expect_equal(y_pred_before, y_pred_after)
 #' file.remove("forest.Rda")
-setGeneric(
-  name = "make_savable",
-  def = function(object) {
-    standardGeneric("make_savable")
-  }
-)
-
-#' make_savable
-#' @name make_savable-forestry
-#' @rdname make_savable-forestry
-#' @description When a `foresty` object is saved and then reloaded the Cpp
-#'   pointers for the data set and the Cpp forest have to be reconstructed
-#' @inheritParams make_savable
 #' @return A list of lists. Each sublist contains the information to span a
 #'   tree.
 #' @aliases make_savable,forestry-method
-#' @exportMethod make_savable
-setMethod(
-  f = "make_savable",
-  signature = "forestry",
-  definition = function(object) {
+#' @export
+make_savable <- function(object) {
     object@R_forest <- CppToR_translator(object@forest)
 
     return(object)
   }
-)
+
 
 
 
