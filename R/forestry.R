@@ -549,7 +549,7 @@ predict.forestry <- function(object,
 #' @aliases getOOB,forestry-method
 #' @return The OOB error of the forest.
 #' @export
-getOOB.forestry <- function(object,
+getOOB <- function(object,
                    noWarning) {
     # TODO (all): find a better threshold for throwing such warning. 25 is
     # currently set up arbitrarily.
@@ -583,7 +583,7 @@ getOOB.forestry <- function(object,
 #' @param object A `forestry` object.
 #' @param noWarning flag to not display warnings
 #' @export
-getVI.forestry <- function(object,
+getVI <- function(object,
                            noWarning) {
     # Keep warning for small sample size
     if (!object@replace &&
@@ -648,7 +648,6 @@ addTrees <- function(object,
 #' @param seed random seed
 #' @param nthread Number of threads to train and predict theforest. The default
 #'   number is 0 which represents using all cores.
-
 #' @return A `forestry` object
 #' @import stats
 #' @export
