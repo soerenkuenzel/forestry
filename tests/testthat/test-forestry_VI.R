@@ -12,7 +12,7 @@ test_that("Tests if variable importance works", {
   # Test forestry (mimic RF)
   forest <- forestry(x, y)
 
-  vi <- getVI.forestry(forest)
+  vi <- getVI(forest)
 
   expect_equal(unlist(vi), c(.199, 1.138, .561, .371), tolerance = 5e-2)
 })

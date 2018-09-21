@@ -39,7 +39,7 @@ test_that("Tests if OOB calculation is working correctly", {
   )
 
   expect_warning(
-    testOOB <- getOOB(forest),
+    testOOB <- getOOB(forest, FALSE),
     "Samples are drawn without replacement and sample size is too big!"
   )
 
