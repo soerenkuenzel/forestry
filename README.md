@@ -25,9 +25,9 @@ The package contains compiled code, and you must have a development environment 
 set.seed(292315)
 library(forestry)
 test_idx <- sample(nrow(iris), 3)
-x_train <- iris[-te
-y_train <- iris[-te
-x_test <- iris[test
+x_train <- iris[-test_idx, -1]
+y_train <- iris[-test_idx, 1]
+x_test <- iris[test_idx, -1]
 
 rf <- forestry(x = x_train, y = y_train)
 weights = predict(rf, x_test, aggregation = "weightMatrix")$weightMatrix
