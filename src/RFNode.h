@@ -1,13 +1,14 @@
 #ifndef FORESTRYCPP_RFNODE_H
 #define FORESTRYCPP_RFNODE_H
 
-#include <RcppEigen.h>
+#include <RcppArmadillo.h>
 #include <iostream>
 #include <vector>
 #include <string>
 #include <memory>
 #include <algorithm>
 #include "DataFrame.h"
+#include "utils.h"
 
 class RFNode {
 
@@ -27,12 +28,27 @@ public:
     std::unique_ptr< RFNode > rightChild
   );
 
+  void ridgePredict(
+      std::vector<float> &outputPrediction,
+      std::vector<size_t>* updateIndex,
+      std::vector< std::vector<float> >* xNew,
+      DataFrame* trainingData,
+      float lambda
+  );
+
   void predict(
     std::vector<float> &outputPrediction,
     std::vector<size_t>* updateIndex,
     std::vector< std::vector<float> >* xNew,
     DataFrame* trainingData,
-    Eigen::MatrixXf* weightMatrix
+    arma::Mat<float>* weightMatrix,
+    bool ridgeRF,
+    float lambda
+  );
+
+  void write_node_info(
+    std::unique_ptr<tree_info> & treeInfo,
+    DataFrame* trainingData
   );
 
   bool is_leaf();
@@ -81,6 +97,10 @@ public:
 
   std::vector<size_t>* getAveragingIndex() {
     return _averagingSampleIndex.get();
+  }
+
+  std::vector<size_t>* getSplittingIndex() {
+    return _splittingSampleIndex.get();
   }
 
 private:

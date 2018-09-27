@@ -12,11 +12,11 @@ preprocess_training(x, y)
 \item{y}{A vector of all training responses.}
 }
 \value{
-A list of two datasets along with necessary information that
-encoding the preprocessing.
+A list of two datasets along with necessary information that encoding
+  the preprocessing.
 }
 \description{
 Perform preprocessing for the training data, including
-converting data to dataframe, and encoding categorical data into numerical
-representation.
+  converting data to dataframe, and encoding categorical data into numerical
+  representation.
 }

@@ -23,14 +23,14 @@ autoforestry(x, y, sampsize = as.integer(nrow(x) * 0.75), num_iter = 1024,
 
 \item{seed}{random seed}
 
-\item{nthread}{Number of threads to train and predict theforest. The
-default number is 0 which represents using all cores.}
+\item{nthread}{Number of threads to train and predict theforest. The default
+number is 0 which represents using all cores.}
 }
 \value{
 A `forestry` object
 }
 \description{
 Autotune a forestry based on the input dataset. The methodology
-is based on paper `Hyperband: A Novel Bandit-Based Approach to
-Hyperparameter Optimization` by Lisha Li, et al.
+  is based on paper `Hyperband: A Novel Bandit-Based Approach to
+  Hyperparameter Optimization` by Lisha Li, et al.
 }

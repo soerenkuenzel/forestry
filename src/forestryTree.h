@@ -1,13 +1,15 @@
 #ifndef HTECPP_RFTREE_H
 #define HTECPP_RFTREE_H
 
-#include <RcppEigen.h>
+#include <RcppArmadillo.h>
 #include <iostream>
 #include <vector>
 #include <string>
 #include <random>
+#include <chrono>
 #include "DataFrame.h"
 #include "RFNode.h"
+#include "utils.h"
 
 class forestryTree {
 
@@ -26,7 +28,9 @@ public:
     std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
     std::mt19937_64& random_number_generator,
     bool splitMiddle,
-    size_t maxObs
+    size_t maxObs,
+    bool ridgeRF,
+    float overfitPenalty
   );
 
   // This tree is only for testing purpose
@@ -37,14 +41,42 @@ public:
     size_t minNodeSizeToSplitSpt,
     size_t minNodeSizeToSplitAvg,
     std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
-    std::unique_ptr< std::vector<size_t> > averagingSampleIndex
+    std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
+    float overfitPenalty
   );
 
   void predict(
     std::vector<float> &outputPrediction,
     std::vector< std::vector<float> >* xNew,
     DataFrame* trainingData,
-    Eigen::MatrixXf* weightMatrix = NULL
+    arma::Mat<float>* weightMatrix = NULL,
+    bool ridgeRF = false
+  );
+
+  std::unique_ptr<tree_info> getTreeInfo(
+      DataFrame* trainingData
+  );
+
+  void reconstruct_tree(
+      size_t mtry,
+      size_t minNodeSizeSpt,
+      size_t minNodeSizeAvg,
+      size_t minNodeSizeToSplitSpt,
+      size_t minNodeSizeToSplitAvg,
+      std::vector<size_t> categoricalFeatureColsRcpp,
+      std::vector<int> var_ids,
+      std::vector<double> split_vals,
+      std::vector<size_t> leafAveidxs,
+      std::vector<size_t> leafSplidxs,
+      std::vector<size_t> averagingSampleIndex,
+      std::vector<size_t> splittingSampleIndex);
+
+  void recursive_reconstruction(
+      RFNode* currentNode,
+      std::vector<int> * var_ids,
+      std::vector<double> * split_vals,
+      std::vector<size_t> * leafAveidxs,
+      std::vector<size_t> * leafSplidxs
   );
 
   void recursivePartition(
@@ -54,23 +86,47 @@ public:
     DataFrame* trainingData,
     std::mt19937_64& random_number_generator,
     bool splitMiddle,
-    size_t maxObs
+    size_t maxObs,
+    bool ridgeRF,
+    float overfitPenalty,
+    std::vector<double>* benchmark,
+    arma::Mat<float> gTotal,
+    arma::Mat<float> sTotal
   );
 
   void selectBestFeature(
     size_t& bestSplitFeature,
     double& bestSplitValue,
     float& bestSplitLoss,
+    arma::Mat<float> &bestSplitGL,
+    arma::Mat<float> &bestSplitGR,
+    arma::Mat<float> &bestSplitSL,
+    arma::Mat<float> &bestSplitSR,
     std::vector<size_t>* featureList,
     std::vector<size_t>* averagingSampleIndex,
     std::vector<size_t>* splittingSampleIndex,
     DataFrame* trainingData,
     std::mt19937_64& random_number_generator,
     bool splitMiddle,
-    size_t maxObs
+    size_t maxObs,
+    bool ridgeRF,
+    float overfitPenalty,
+    std::vector<double>* benchmark,
+    arma::Mat<float>& gTotal,
+    arma::Mat<float>& sTotal
+  );
+
+  void initializeRidgeRF(
+      DataFrame* trainingData,
+      arma::Mat<float>& gTotal,
+      arma::Mat<float>& sTotal,
+      size_t numLinearFeatures,
+      std::vector<size_t>* splitIndexes
   );
 
   void printTree();
+
+  void trainTiming();
 
   void getOOBindex(
     std::vector<size_t> &outputOOBIndex,
@@ -81,6 +137,13 @@ public:
     std::vector<float> &outputOOBPrediction,
     std::vector<size_t> &outputOOBCount,
     DataFrame* trainingData
+  );
+
+  void getShuffledOOBPrediction(
+      std::vector<float> &outputOOBPrediction,
+      std::vector<size_t> &outputOOBCount,
+      DataFrame* trainingData,
+      size_t shuffleFeature
   );
 
   size_t getMtry() {
@@ -115,6 +178,14 @@ public:
     return _root.get();
   }
 
+  float getOverfitPenalty() {
+    return _overfitPenalty;
+  }
+
+  std::vector<double>* getBenchmark() {
+    return _benchmark;
+  }
+
 private:
   size_t _mtry;
   size_t _minNodeSizeSpt;
@@ -124,6 +195,8 @@ private:
   std::unique_ptr< std::vector<size_t> > _averagingSampleIndex;
   std::unique_ptr< std::vector<size_t> > _splittingSampleIndex;
   std::unique_ptr< RFNode > _root;
+  float _overfitPenalty;
+  std::vector<double>* _benchmark;
 };
 
 

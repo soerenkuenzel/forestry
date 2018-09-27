@@ -20,7 +20,6 @@ test_that("Tests that random forest is working correctly", {
     splitratio = 1,
     nodesizeStrictAvg = 5
   )
-
   # Test predict
   y_pred <- predict(forest, x)
 

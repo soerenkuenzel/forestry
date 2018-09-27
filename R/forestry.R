@@ -172,54 +172,13 @@ testing_data_checker <- function(feature.new) {
 }
 
 # -- Random Forest Constructor -------------------------------------------------
-#' @title forestry class
-#' @name forestry-class
-#' @description `forestry` object implementing the most basic version of
-#' a random forest.
-#' @slot forest An external pointer pointing to a C++ forestry object
-#' @slot dataframe An external pointer pointing to a C++ DataFrame object
-#' @slot y A vector of all training responses.
-#' @slot categoricalFeatureCols A list of index for all categorical data. Used
-#' for trees to detect categorical columns.
-#' @slot categoricalFeatureMapping A list of encoding details for each
-#' categorical column, including all unique factor values and their
-#' corresponding numeric representation.
-#' @slot ntree The number of trees to grow in the forest. The default value is
-#' 500.
-#' @slot replace An indicator of whether sampling of training data is with
-#' replacement. The default value is TRUE.
-#' @slot sampsize The size of total samples to draw for the training data. If
-#' sampling with replacement, the default value is the length of the training
-#' data. If samplying without replacement, the default value is two-third of
-#' the length of the training data.
-#' @slot mtry The number of variables randomly selected at each split point.
-#' The default value is set to be one third of total number of features of the
-#' training data.
-#' @slot nodesizeSpl The minimum observations contained in terminal nodes. The
-#' default value is 3.
-#' @slot nodesizeAvg Minimum size of terminal nodes for averaging dataset.
-#' The default value is 3.
-#' @slot nodesizeStrictSpl Minimum observations to follow strictly in
-#' terminal nodes. The default value is 1.
-#' @slot nodesizeStrictAvg Minimum size of terminal nodes for averaging
-#' dataset to follow strictly. The default value is 1.
-#' @slot splitratio Proportion of the training data used as the splitting
-#' dataset. It is a ratio between 0 and 1. If the ratio is 1, then essentially
-#' splitting dataset becomes the total entire sampled set and the averaging
-#' dataset is empty. If the ratio is 0, then the splitting data set is empty
-#' and all the data is used for the averaging data set (This is not a good
-#' usage however since there will be no data available for splitting).
-#' @slot middleSplit if the split value is taking the average of two feature
-#' values. If false, it will take a point based on a uniform distribution
-#' between two feature values. (Default = FALSE)
-#' @slot maxObs The max number of observations to split on (Default = nrows(y))
-#' @slot doubleTree if the number of tree is doubled as averaging and splitting
-#' data can be exchanged to create decorrelated trees. (Default = FALSE)
 setClass(
   Class = "forestry",
   slots = list(
     forest = "externalptr",
     dataframe = "externalptr",
+    processed_dta = "list",
+    R_forest = "list",
     categoricalFeatureCols = "list",
     categoricalFeatureMapping = "list",
     ntree = "numeric",
@@ -234,61 +193,70 @@ setClass(
     middleSplit = "logical",
     y = "vector",
     maxObs = "numeric",
+    ridgeRF = "logical",
+    overfitPenalty = "numeric",
     doubleTree = "logical"
   )
 )
 
 
-#' @title forestry-Constructor
-#' @name forestry-forestry
-#' @rdname forestry-forestry
-#' @description Initialize a `forestry` object.
+#' @title forestry
+#' @rdname forestry
 #' @param x A data frame of all training predictors.
 #' @param y A vector of all training responses.
 #' @param ntree The number of trees to grow in the forest. The default value is
-#' 500.
+#'   500.
 #' @param replace An indicator of whether sampling of training data is with
-#' replacement. The default value is TRUE.
+#'   replacement. The default value is TRUE.
 #' @param sampsize The size of total samples to draw for the training data. If
-#' sampling with replacement, the default value is the length of the training
-#' data. If samplying without replacement, the default value is two-third of
-#' the length of the training data.
+#'   sampling with replacement, the default value is the length of the training
+#'   data. If samplying without replacement, the default value is two-third of
+#'   the length of the training data.
 #' @param sample.fraction if this is given, then sampsize is ignored and set to
-#' be round(length(y) * sample.fraction). It must be a real number between 0 and
-#' 1
+#'   be round(length(y) * sample.fraction). It must be a real number between 0
+#'   and 1
 #' @param mtry The number of variables randomly selected at each split point.
-#' The default value is set to be one third of total number of features of the
-#' training data.
+#'   The default value is set to be one third of total number of features of the
+#'   training data.
 #' @param nodesizeSpl Minimum observations contained in terminal nodes. The
-#' default value is 3.
-#' @param nodesizeAvg Minimum size of terminal nodes for averaging dataset.
-#' The default value is 3.
-#' @param nodesizeStrictSpl Minimum observations to follow strictly in
-#' terminal nodes. The default value is 1.
-#' @param nodesizeStrictAvg Minimum size of terminal nodes for averaging
-#' dataset to follow strictly. The default value is 1.
+#'   default value is 3.
+#' @param nodesizeAvg Minimum size of terminal nodes for averaging dataset. The
+#'   default value is 3.
+#' @param nodesizeStrictSpl Minimum observations to follow strictly in terminal
+#'   nodes. The default value is 1.
+#' @param nodesizeStrictAvg Minimum size of terminal nodes for averaging dataset
+#'   to follow strictly. The default value is 1.
 #' @param splitratio Proportion of the training data used as the splitting
-#' dataset. It is a ratio between 0 and 1. If the ratio is 1, then essentially
-#' splitting dataset becomes the total entire sampled set and the averaging
-#' dataset is empty. If the ratio is 0, then the splitting data set is empty
-#' and all the data is used for the averaging data set (This is not a good
-#' usage however since there will be no data available for splitting).
+#'   dataset. It is a ratio between 0 and 1. If the ratio is 1, then essentially
+#'   splitting dataset becomes the total entire sampled set and the averaging
+#'   dataset is empty. If the ratio is 0, then the splitting data set is empty
+#'   and all the data is used for the averaging data set (This is not a good
+#'   usage however since there will be no data available for splitting).
 #' @param seed random seed
 #' @param verbose if training process in verbose mode
-#' @param nthread Number of threads to train and predict the forest. The
-#' default number is 0 which represents using all cores.
+#' @param nthread Number of threads to train and predict the forest. The default
+#'   number is 0 which represents using all cores.
 #' @param splitrule only variance is implemented at this point and it contains
-#' specifies the loss function according to which the splits of random forest
-#' should be made
+#'   specifies the loss function according to which the splits of random forest
+#'   should be made
 #' @param middleSplit if the split value is taking the average of two feature
-#' values. If false, it will take a point based on a uniform distribution
-#' between two feature values. (Default = FALSE)
+#'   values. If false, it will take a point based on a uniform distribution
+#'   between two feature values. (Default = FALSE)
 #' @param doubleTree if the number of tree is doubled as averaging and splitting
-#' data can be exchanged to create decorrelated trees. (Default = FALSE)
+#'   data can be exchanged to create decorrelated trees. (Default = FALSE)
 #' @param reuseforestry pass in an `forestry` object which will recycle the
-#' dataframe the old object created. It will save some space working on the same
-#' dataset.
+#'   dataframe the old object created. It will save some space working on the
+#'   same dataset.
 #' @param maxObs The max number of observations to split on
+#' @param saveable If TRUE, then RF is created in such a way that it can be
+#'   saved and loaded using save(...) and load(...). Setting it to TRUE
+#'   (default) will, however, take longer and it will use more memory. When
+#'   training many RF, it makes a lot of sense to set this to FALSE to save
+#'   time and memory.
+#' @param ridgeRF Fit the model with a ridge regression or not
+#' @param overfitPenalty Value to determine how much to penalize magnitude of
+#' coefficients in ridge regression
+#' @return A `forestry` object.
 #' @examples
 #' set.seed(292315)
 #' library(forestry)
@@ -302,39 +270,31 @@ setClass(
 #'
 #' weights %*% y_train
 #' predict(rf, x_test)
-#' @export forestry
-setGeneric(
-  name = "forestry",
-  def = function(x,
-                 y,
-                 ntree,
-                 replace,
-                 sampsize,
-                 sample.fraction,
-                 mtry,
-                 nodesizeSpl,
-                 nodesizeAvg,
-                 nodesizeStrictSpl,
-                 nodesizeStrictAvg,
-                 splitratio,
-                 seed,
-                 verbose,
-                 nthread,
-                 splitrule,
-                 middleSplit,
-                 maxObs,
-                 doubleTree,
-                 reuseforestry) {
-    standardGeneric("forestry")
-  }
-)
-
-#' @title forestry-Constructor
-#' @rdname forestry-forestry
-#' @aliases forestry forestry-method
-#' @importFrom Rcpp evalCpp
+#'
+#' set.seed(49)
+#' library(forestry)
+#'
+#' n <- c(100)
+#' a <- rnorm(n)
+#' b <- rnorm(n)
+#' c <- rnorm(n)
+#' y <- 4*a + 5.5*b - .78*c
+#' x <- data.frame(a,b,c)
+#'
+#' forest <- forestry(
+#'           x,
+#'           y,
+#'           ntree = 10,
+#'           replace = TRUE,
+#'           nodesizeStrictSpl = 5,
+#'           nodesizeStrictAvg = 5,
+#'           ridgeRF = TRUE
+#'           )
+#'
+#' predict(forest, x)
 #' @useDynLib forestry
-#' @return A `forestry` object.
+#' @importFrom Rcpp evalCpp
+#' @export
 forestry <- function(x,
                      y,
                      ntree = 500,
@@ -356,8 +316,11 @@ forestry <- function(x,
                      splitrule = "variance",
                      middleSplit = FALSE,
                      maxObs = length(y),
+                     ridgeRF = FALSE,
+                     overfitPenalty = 1,
                      doubleTree = FALSE,
-                     reuseforestry = NULL) {
+                     reuseforestry = NULL,
+                     saveable = TRUE) {
   # only if sample.fraction is given, update sampsize
   if (!is.null(sample.fraction))
     sampsize <- ceiling(sample.fraction * nrow(x))
@@ -374,8 +337,10 @@ forestry <- function(x,
   if (is.null(reuseforestry)) {
     preprocessedData <- preprocess_training(x, y)
     processed_x <- preprocessedData$x
-    categoricalFeatureCols <- preprocessedData$categoricalFeatureCols
-    categoricalFeatureMapping <- preprocessedData$categoricalFeatureMapping
+    categoricalFeatureCols <-
+      preprocessedData$categoricalFeatureCols
+    categoricalFeatureMapping <-
+      preprocessedData$categoricalFeatureMapping
 
     categoricalFeatureCols_cpp <- unlist(categoricalFeatureCols)
     if (is.null(categoricalFeatureCols_cpp)) {
@@ -387,30 +352,54 @@ forestry <- function(x,
     # Create rcpp object
     # Create a forest object
     forest <- tryCatch({
-      rcppDataFrame <- rcpp_cppDataFrameInterface(
-        processed_x, y,
-        categoricalFeatureCols_cpp,
-        nObservations,
-        numColumns
-      )
+      rcppDataFrame <- rcpp_cppDataFrameInterface(processed_x,
+                                                  y,
+                                                  categoricalFeatureCols_cpp,
+                                                  nObservations,
+                                                  numColumns)
 
       rcppForest <- rcpp_cppBuildInterface(
-        processed_x, y,
+        processed_x,
+        y,
         categoricalFeatureCols_cpp,
         nObservations,
-        numColumns, ntree, replace, sampsize, mtry,
-        splitratio, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl,
-	nodesizeStrictAvg, seed, nthread, verbose, middleSplit,
-	maxObs,
-	doubleTree,
-	TRUE,
-	rcppDataFrame
+        numColumns,
+        ntree,
+        replace,
+        sampsize,
+        mtry,
+        splitratio,
+        nodesizeSpl,
+        nodesizeAvg,
+        nodesizeStrictSpl,
+        nodesizeStrictAvg,
+        seed,
+        nthread,
+        verbose,
+        middleSplit,
+        maxObs,
+        ridgeRF,
+        overfitPenalty,
+        doubleTree,
+        TRUE,
+        rcppDataFrame
       )
+      processed_dta <- list(
+        "processed_x" = processed_x,
+        "y" = y,
+        "categoricalFeatureCols_cpp" = categoricalFeatureCols_cpp,
+        "nObservations" = nObservations,
+        "numColumns" = numColumns
+      )
+      R_forest <- list()
+
       return(
         new(
           "forestry",
           forest = rcppForest,
           dataframe = rcppDataFrame,
+          processed_dta = processed_dta,
+          R_forest = R_forest,
           categoricalFeatureCols = categoricalFeatureCols,
           categoricalFeatureMapping = categoricalFeatureMapping,
           ntree = ntree * (doubleTree + 1),
@@ -424,18 +413,18 @@ forestry <- function(x,
           splitratio = splitratio,
           middleSplit = middleSplit,
           maxObs = maxObs,
+          ridgeRF = ridgeRF,
+          overfitPenalty = overfitPenalty,
           doubleTree = doubleTree
         )
       )
     },
-	error = function(err) {
-	  print(err)
-	  return(NULL)
-	})
+    error = function(err) {
+      print(err)
+      return(NULL)
+    })
 
   } else {
-
-
     categoricalFeatureCols_cpp <-
       unlist(reuseforestry@categoricalFeatureCols)
     if (is.null(categoricalFeatureCols_cpp)) {
@@ -444,20 +433,37 @@ forestry <- function(x,
       categoricalFeatureCols_cpp <- categoricalFeatureCols_cpp - 1
     }
 
-    categoricalFeatureMapping <- reuseforestry@categoricalFeatureMapping
+    categoricalFeatureMapping <-
+      reuseforestry@categoricalFeatureMapping
 
     # Create rcpp object
     # Create a forest object
     forest <- tryCatch({
       rcppForest <- rcpp_cppBuildInterface(
-        x, y,
+        x,
+        y,
         categoricalFeatureCols_cpp,
         nObservations,
-        numColumns, ntree, replace, sampsize, mtry,
-        splitratio, nodesizeSpl, nodesizeAvg,
-        nodesizeStrictSpl, nodesizeStrictAvg, seed,
-        nthread, verbose, middleSplit, maxObs, doubleTree,
-        TRUE, reuseforestry@dataframe
+        numColumns,
+        ntree,
+        replace,
+        sampsize,
+        mtry,
+        splitratio,
+        nodesizeSpl,
+        nodesizeAvg,
+        nodesizeStrictSpl,
+        nodesizeStrictAvg,
+        seed,
+        nthread,
+        verbose,
+        middleSplit,
+        maxObs,
+        ridgeRF,
+        overfitPenalty,
+        doubleTree,
+        TRUE,
+        reuseforestry@dataframe
       )
 
       return(
@@ -465,6 +471,8 @@ forestry <- function(x,
           "forestry",
           forest = rcppForest,
           dataframe = reuseforestry@dataframe,
+          processed_dta = reuseforestry@processed_dta,
+          R_forest = reuseforestry@R_forest,
           categoricalFeatureCols = reuseforestry@categoricalFeatureCols,
           categoricalFeatureMapping = categoricalFeatureMapping,
           ntree = ntree * (doubleTree + 1),
@@ -478,6 +486,8 @@ forestry <- function(x,
           splitratio = splitratio,
           middleSplit = middleSplit,
           maxObs = maxObs,
+          ridgeRF = ridgeRF,
+          overfitPenalty = overfitPenalty,
           doubleTree = doubleTree
         )
       )
@@ -500,16 +510,12 @@ forestry <- function(x,
 #' @param object A `forestry` object.
 #' @param feature.new A data frame of testing predictors.
 #' @param aggregation How shall the leaf be aggregated. The default is to return
-#' the mean of the leave `average`. Other options are `weightMatrix`.
+#'   the mean of the leave `average`. Other options are `weightMatrix`.
 #' @return A vector of predicted responses.
-#' @aliases predict,forestry-method
-#' @exportMethod predict
-setMethod(
-  f = "predict",
-  signature = "forestry",
-  definition = function(object,
-                        feature.new,
-                        aggregation = "average") {
+#' @export
+predict.forestry <- function(object,
+                             feature.new,
+                             aggregation = "average") {
     # Preprocess the data
     testing_data_checker(feature.new)
 
@@ -530,48 +536,31 @@ setMethod(
       return(rcppPrediction)
     }
   }
-)
+
 
 
 # -- Calculate OOB Error -------------------------------------------------------
-#' @title getOOB-forestry
+#' getOOB-forestry
 #' @name getOOB-forestry
 #' @rdname getOOB-forestry
 #' @description Calculate the out-of-bag error of a given forest.
 #' @param object A `forestry` object.
 #' @param noWarning flag to not display warnings
-#' @aliases getOOB
-setGeneric(
-  name = "getOOB",
-  def = function(object,
-                 noWarning = FALSE) {
-    standardGeneric("getOOB")
-  }
-)
-
-#' @title getOOB-forestry
-#' @description Calculate the out-of-bag error of a given forest.
-#' @param object A `forestry` object.
-#' @param noWarning flag to not display warnings
 #' @aliases getOOB,forestry-method
 #' @return The OOB error of the forest.
-#' @exportMethod getOOB
-setMethod(
-  f="getOOB",
-  signature="forestry",
-  definition=function(
-    object,
-    noWarning
-  ){
-
+#' @export
+getOOB <- function(object,
+                   noWarning) {
     # TODO (all): find a better threshold for throwing such warning. 25 is
     # currently set up arbitrarily.
     if (!object@replace &&
         object@ntree * (rcpp_getObservationSizeInterface(object@dataframe) -
                         object@sampsize) < 10) {
       if (!noWarning) {
-        warning(paste("Samples are drawn without replacement and sample size",
-                      "is too big!"))
+        warning(paste(
+          "Samples are drawn without replacement and sample size",
+          "is too big!"
+        ))
       }
       return(NA)
     }
@@ -585,38 +574,52 @@ setMethod(
 
     return(rcppOOB)
   }
-)
+
+
+# -- Calculate Variable Importance ---------------------------------------------
+#' getVI-forestry
+#' @rdname getVI-forestry
+#' @description Calculate increase in OOB for each shuffled feature for forest.
+#' @param object A `forestry` object.
+#' @param noWarning flag to not display warnings
+#' @export
+getVI <- function(object,
+                           noWarning) {
+    # Keep warning for small sample size
+    if (!object@replace &&
+        object@ntree * (rcpp_getObservationSizeInterface(object@dataframe) -
+                        object@sampsize) < 10) {
+      if (!noWarning) {
+        warning(paste(
+          "Samples are drawn without replacement and sample size",
+          "is too big!"
+        ))
+      }
+      return(NA)
+    }
+
+    rcppVI <- tryCatch({
+      return(rcpp_VariableImportanceInterface(object@forest))
+    }, error = function(err) {
+      print(err)
+      return(NA)
+    })
+
+    return(rcppVI)
+  }
 
 
 
 # -- Add More Trees ------------------------------------------------------------
-#' @title addTrees-forestry
-#' @name addTrees-forestry
+#' addTrees-forestry
 #' @rdname addTrees-forestry
 #' @description Add more trees to the existing forest.
 #' @param object A `forestry` object.
 #' @param ntree Number of new trees to add
-#' @aliases addTrees
-setGeneric(
-  name = "addTrees",
-  def = function(object,
-                 ntree) {
-    standardGeneric("addTrees")
-  }
-)
-
-#' @title addTrees-forestry
-#' @description Add more trees to the existing forest.
-#' @param object A `forestry` object.
-#' @param ntree Number of new trees to add
-#' @aliases addTrees,forestry-method
-#' @exportMethod addTrees
 #' @return A `forestry` object
-setMethod(
-  f = "addTrees",
-  signature = "forestry",
-  definition = function(object,
-                        ntree) {
+#' @export
+addTrees <- function(object,
+                     ntree) {
     if (ntree <= 0 || ntree %% 1 != 0) {
       stop("ntree must be a positive integer.")
     }
@@ -631,51 +634,23 @@ setMethod(
     })
 
   }
-)
+
 
 
 # -- Auto-Tune -----------------------------------------------------------------
-#' @title autoforestry-forestry
-#' @name autoforestry-forestry
+#' autoforestry-forestry
 #' @rdname autoforestry-forestry
-#' @description Autotune a forestry based on the input dataset. The methodology
-#' is based on paper `Hyperband: A Novel Bandit-Based Approach to
-#' Hyperparameter Optimization` by Lisha Li, et al.
-#' @inheritParams forestry
-#' @param sampsize The size of total samples to draw for the training data.
-#' @param num_iter Maximum iterations/epochs per configuration. Default is 1024.
-#' @param eta Downsampling rate. Default value is 2.
-#' @param verbose if tuning process in verbose mode
-setGeneric(
-  name = "autoforestry",
-  def = function(x,
-                 y,
-                 sampsize,
-                 num_iter,
-                 eta,
-                 verbose,
-                 seed,
-                 nthread) {
-    standardGeneric("autoforestry")
-  }
-)
-
-#' @title autoforestry-forestry
-#' @description Autotune a forestry based on the input dataset. The methodology
-#' is based on paper `Hyperband: A Novel Bandit-Based Approach to
-#' Hyperparameter Optimization` by Lisha Li, et al.
 #' @inheritParams forestry
 #' @param sampsize The size of total samples to draw for the training data.
 #' @param num_iter Maximum iterations/epochs per configuration. Default is 1024.
 #' @param eta Downsampling rate. Default value is 2.
 #' @param verbose if tuning process in verbose mode
 #' @param seed random seed
-#' @param nthread Number of threads to train and predict theforest. The
-#' default number is 0 which represents using all cores.
-#' @aliases autoforestry,forestry-method
+#' @param nthread Number of threads to train and predict theforest. The default
+#'   number is 0 which represents using all cores.
 #' @return A `forestry` object
-#' @export autoforestry
 #' @import stats
+#' @export
 autoforestry <- function(x,
                          y,
                          sampsize = as.integer(nrow(x) * 0.75),
@@ -875,3 +850,107 @@ autoforestry <- function(x,
 
   return(models[[model_losses_idx$ix[1]]])
 }
+
+# -- Translate C++ to R --------------------------------------------------------
+#' @title Cpp to R translator
+#' @description Add more trees to the existing forest.
+#' @inheritParams CppToR_translator
+#' @return A list of lists. Each sublist contains the information to span a
+#'   tree.
+#' @export
+CppToR_translator <- function(object) {
+    tryCatch({
+      return(rcpp_CppToR_translator(object))
+    }, error = function(err) {
+      print(err)
+      return(NA)
+    })
+  }
+
+
+# -- relink forest CPP ptr -----------------------------------------------------
+#' relink CPP ptr
+#' @rdname relinkCPP
+#' @description When a `foresty` object is saved and then reloaded the Cpp
+#'   pointers for the data set and the Cpp forest have to be reconstructed
+#' @param object an object of class `forestry`
+#' @export
+relinkCPP_prt <- function(object) {
+    # 1.) reconnect the data.frame to a cpp data.frame
+    # 2.) reconnect the forest.
+    tryCatch({
+      forest_and_df_ptr <- rcpp_reconstructree(
+        x = object@processed_dta$processed_x,
+        y = object@processed_dta$y,
+        catCols = object@processed_dta$categoricalFeatureCols_cpp,
+        numRows = object@processed_dta$nObservations,
+        numColumns = object@processed_dta$numColumns,
+        R_forest = object@R_forest,
+        replace = object@replace,
+        sampsize = object@sampsize,
+        splitratio = object@splitratio,
+        mtry = object@mtry,
+        nodesizeSpl = object@nodesizeSpl,
+        nodesizeAvg = object@nodesizeAvg,
+        nodesizeStrictSpl = object@nodesizeStrictSpl,
+        nodesizeStrictAvg = object@nodesizeStrictAvg,
+        seed = sample(.Machine$integer.max, 1),
+        nthread = 0, # will use all threads available.
+        verbose = FALSE,
+        middleSplit = object@middleSplit,
+        maxObs = object@maxObs,
+        ridgeRF = object@ridgeRF,
+        overfitPenalty = object@overfitPenalty,
+        doubleTree = object@doubleTree)
+
+      object@forest <- forest_and_df_ptr$forest_ptr
+      object@dataframe <- forest_and_df_ptr$data_frame_ptr
+
+    }, error = function(err) {
+      print('Problem when trying to create the forest object in Cpp')
+      print(err)
+      return(NA)
+    })
+
+    return(object)
+  }
+
+
+
+
+# -- relink forest CPP ptr -----------------------------------------------------
+#' make_savable
+#' @name make_savable
+#' @rdname make_savable
+#' @description When a `foresty` object is saved and then reloaded the Cpp
+#'   pointers for the data set and the Cpp forest have to be reconstructed
+#' @param object an object of class `forestry`
+#' @examples
+#' set.seed(323652639)
+#' x <- iris[, -1]
+#' y <- iris[, 1]
+#' forest <- forestry(x, y, ntree = 3)
+#' y_pred_before <- predict(forest, x)
+#'
+#' forest <- make_savable(forest)
+#' save(forest, file = "forest.Rda")
+#' rm(forest)
+#' load("forest.Rda", verbose = FALSE)
+#' forest <- relinkCPP_prt(forest)
+#'
+#' y_pred_after <- predict(forest, x)
+#' testthat::expect_equal(y_pred_before, y_pred_after)
+#' file.remove("forest.Rda")
+#' @return A list of lists. Each sublist contains the information to span a
+#'   tree.
+#' @aliases make_savable,forestry-method
+#' @export
+make_savable <- function(object) {
+    object@R_forest <- CppToR_translator(object@forest)
+
+    return(object)
+  }
+
+
+
+

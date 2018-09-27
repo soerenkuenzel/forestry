@@ -9,12 +9,12 @@ NULL
 # -- Methods for Preprocessing Data --------------------------------------------
 #' @title preprocess_training
 #' @description Perform preprocessing for the training data, including
-#' converting data to dataframe, and encoding categorical data into numerical
-#' representation.
+#'   converting data to dataframe, and encoding categorical data into numerical
+#'   representation.
 #' @inheritParams forestry
 #' @import plyr
-#' @return A list of two datasets along with necessary information that
-#' encoding the preprocessing.
+#' @return A list of two datasets along with necessary information that encoding
+#'   the preprocessing.
 preprocess_training <- function(x, y) {
   x <- as.data.frame(x)
 
@@ -70,16 +70,16 @@ preprocess_training <- function(x, y) {
 }
 
 #' @title preprocess_testing
-#' @description Perform preprocessing for the testing data, including
-#' converting data to dataframe, and testing if the columns are consistent
-#' with the training data and encoding categorical data into numerical
-#' representation in the same way as training data.
+#' @description Perform preprocessing for the testing data, including converting
+#'   data to dataframe, and testing if the columns are consistent with the
+#'   training data and encoding categorical data into numerical representation
+#'   in the same way as training data.
 #' @inheritParams forestry
 #' @param categoricalFeatureCols A list of index for all categorical data. Used
-#' for trees to detect categorical columns.
+#'   for trees to detect categorical columns.
 #' @param categoricalFeatureMapping A list of encoding details for each
-#' categorical column, including all unique factor values and their
-#' corresponding numeric representation.
+#'   categorical column, including all unique factor values and their
+#'   corresponding numeric representation.
 #' @import plyr
 #' @return A preprocessed training dataaset x
 preprocess_testing <- function(x,

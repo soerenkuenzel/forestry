@@ -1,12 +1,15 @@
 #ifndef HTECPP_RF_H
 #define HTECPP_RF_H
 
-#include <RcppEigen.h>
+#include "forestryTree.h"
+#include <RcppArmadillo.h>
 #include <iostream>
 #include <vector>
 #include <string>
 #include "DataFrame.h"
 #include "forestryTree.h"
+#include "utils.h"
+
 
 class forestry {
 
@@ -30,15 +33,47 @@ public:
     bool verbose,
     bool splitMiddle,
     size_t maxObs,
+    bool ridgeRF,
+    float overfitPenalty,
     bool doubleTree
   );
 
   std::unique_ptr< std::vector<float> > predict(
     std::vector< std::vector<float> >* xNew,
-    Eigen::MatrixXf* weightMatrix
+    arma::Mat<float>* weightMatrix
   );
 
+  void fillinTreeInfo(
+      std::unique_ptr< std::vector< tree_info > > & forest_dta
+  );
+
+  void reconstructTrees(
+      std::unique_ptr< std::vector<size_t> > & categoricalFeatureColsRcpp,
+      std::unique_ptr< std::vector< std::vector<int> >  > & var_ids,
+      std::unique_ptr< std::vector< std::vector<double> >  > & split_vals,
+      std::unique_ptr< std::vector< std::vector<size_t> >  > & leafAveidxs,
+      std::unique_ptr< std::vector< std::vector<size_t> >  > & leafSplidxs,
+      std::unique_ptr< std::vector< std::vector<size_t> >  > &
+        averagingSampleIndex,
+      std::unique_ptr< std::vector< std::vector<size_t> >  > &
+        splittingSampleIndex);
+
   void calculateOOBError();
+
+  void calculateVariableImportance();
+
+  std::vector<float> getVariableImportance() {
+    calculateVariableImportance();
+    calculateOOBError();
+
+    float OOB = getOOBError();
+    std::vector<float> OOBPercentages(getTrainingData()->getNumColumns());
+    //Find percentage changes in OOB error
+    for (size_t i = 0; i < getTrainingData()->getNumColumns(); i++) {
+      OOBPercentages[i] = ((*_variableImportance)[i] / OOB) - 1;
+    }
+    return OOBPercentages;
+  }
 
   float getOOBError() {
     calculateOOBError();
@@ -113,7 +148,15 @@ public:
   }
 
   size_t getMaxObs() {
-    return maxObs;
+    return _maxObs;
+  }
+
+  bool getRidgeRF() {
+    return _ridgeRF;
+  }
+
+  float getOverfitPenalty() {
+    return _overfitPenalty;
   }
 
 private:
@@ -132,8 +175,11 @@ private:
   bool _verbose;
   size_t _nthread;
   float _OOBError;
+  std::unique_ptr< std::vector<float> > _variableImportance;
   bool _splitMiddle;
-  size_t maxObs;
+  size_t _maxObs;
+  bool _ridgeRF;
+  float _overfitPenalty;
   bool _doubleTree;
 };
 
