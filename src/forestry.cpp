@@ -245,6 +245,7 @@ void forestry::addTrees(size_t ntree) {
                 getSplitMiddle(),
                 getMaxObs(),
                 getRidgeRF(),
+                getLinFeats(),
                 getOverfitPenalty()
               )
             );
@@ -265,6 +266,7 @@ void forestry::addTrees(size_t ntree) {
                     getSplitMiddle(),
                     getMaxObs(),
                     getRidgeRF(),
+                    getLinFeats(),
                     getOverfitPenalty()
                  );
             }
