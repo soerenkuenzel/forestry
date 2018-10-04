@@ -194,6 +194,7 @@ setClass(
     y = "vector",
     maxObs = "numeric",
     ridgeRF = "logical",
+    linFeats = "numeric",
     overfitPenalty = "numeric",
     doubleTree = "logical"
   )
@@ -254,6 +255,8 @@ setClass(
 #'   training many RF, it makes a lot of sense to set this to FALSE to save
 #'   time and memory.
 #' @param ridgeRF Fit the model with a ridge regression or not
+#' @param linFeats Specify which features to split linearly on when using
+#'   ridgeRF (defaults to use all numerical features)
 #' @param overfitPenalty Value to determine how much to penalize magnitude of
 #' coefficients in ridge regression
 #' @return A `forestry` object.
@@ -317,6 +320,7 @@ forestry <- function(x,
                      middleSplit = FALSE,
                      maxObs = length(y),
                      ridgeRF = FALSE,
+                     linFeats = c(),
                      overfitPenalty = 1,
                      doubleTree = FALSE,
                      reuseforestry = NULL,
@@ -379,6 +383,7 @@ forestry <- function(x,
         middleSplit,
         maxObs,
         ridgeRF,
+        linFeats,
         overfitPenalty,
         doubleTree,
         TRUE,
@@ -414,6 +419,7 @@ forestry <- function(x,
           middleSplit = middleSplit,
           maxObs = maxObs,
           ridgeRF = ridgeRF,
+          linFeats = linFeats,
           overfitPenalty = overfitPenalty,
           doubleTree = doubleTree
         )
@@ -460,6 +466,7 @@ forestry <- function(x,
         middleSplit,
         maxObs,
         ridgeRF,
+        linFeats,
         overfitPenalty,
         doubleTree,
         TRUE,
@@ -487,6 +494,7 @@ forestry <- function(x,
           middleSplit = middleSplit,
           maxObs = maxObs,
           ridgeRF = ridgeRF,
+          linFeats = linFeats,
           overfitPenalty = overfitPenalty,
           doubleTree = doubleTree
         )
@@ -900,6 +908,7 @@ relinkCPP_prt <- function(object) {
         middleSplit = object@middleSplit,
         maxObs = object@maxObs,
         ridgeRF = object@ridgeRF,
+        linFeats = object@linFeats,
         overfitPenalty = object@overfitPenalty,
         doubleTree = object@doubleTree)
 

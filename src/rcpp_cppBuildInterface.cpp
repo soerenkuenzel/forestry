@@ -86,6 +86,7 @@ SEXP rcpp_cppBuildInterface(
   bool middleSplit,
   int maxObs,
   bool ridgeRF,
+  Rcpp::NumericVector linFeats,
   double overfitPenalty,
   bool doubleTree,
   bool existing_dataframe_flag,
@@ -94,6 +95,7 @@ SEXP rcpp_cppBuildInterface(
 
   if (existing_dataframe_flag) {
 
+    std::vector<size_t> linearFeats = Rcpp::as< std::vector<size_t> >(linFeats);
     try {
       Rcpp::XPtr< DataFrame > trainingData(existing_dataframe) ;
 
@@ -114,6 +116,7 @@ SEXP rcpp_cppBuildInterface(
         middleSplit,
         (size_t) maxObs,
         ridgeRF,
+        linearFeats,
         (float) overfitPenalty,
         doubleTree
       );
@@ -161,6 +164,8 @@ SEXP rcpp_cppBuildInterface(
           (size_t) numColumns
       );
 
+      std::vector<size_t> linearFeats = Rcpp::as< std::vector<size_t> >(linFeats);
+
       forestry* testFullForest = new forestry(
         trainingData,
         (size_t) ntree,
@@ -178,6 +183,7 @@ SEXP rcpp_cppBuildInterface(
         middleSplit,
         (size_t) maxObs,
         ridgeRF,
+        linearFeats,
         (float) overfitPenalty,
         doubleTree
       );
@@ -419,6 +425,7 @@ Rcpp::List rcpp_reconstructree(
   bool middleSplit,
   int maxObs,
   bool ridgeRF,
+  Rcpp::NumericVector linFeats,
   double overfitPenalty,
   bool doubleTree
 ){
@@ -507,6 +514,8 @@ Rcpp::List rcpp_reconstructree(
     (size_t) numColumns
   );
 
+  std::vector<size_t> linearFeats = Rcpp::as< std::vector<size_t> >(linFeats);
+
   forestry* testFullForest = new forestry(
     (DataFrame*) trainingData,
     (int) 0,
@@ -524,6 +533,7 @@ Rcpp::List rcpp_reconstructree(
     (bool) middleSplit,
     (int) maxObs,
     (bool) ridgeRF,
+    linearFeats,
     (double) overfitPenalty,
     doubleTree
   );

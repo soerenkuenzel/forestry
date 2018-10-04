@@ -39,6 +39,7 @@ forestry::forestry(
   bool splitMiddle,
   size_t maxObs,
   bool ridgeRF,
+  std::vector<size_t> linFeats,
   float overfitPenalty,
   bool doubleTree
 ){
@@ -84,6 +85,22 @@ forestry::forestry(
     overfitPenalty < 0
   ) {
     throw std::runtime_error("overfitPenalty cannot be negative");
+  }
+
+  if (
+    linFeats.size() > trainingData->getNumColumns()
+  ) {
+    throw std::runtime_error("linear features must contain feature indices only");
+  }
+
+  // If specified, use linear features only, or just use all numerical features
+  if (linFeats.empty() && ridgeRF) {
+    std::vector<size_t> numericalFeatures = *(trainingData->getNumCols());
+    this->_linFeats = numericalFeatures;
+  } else if (ridgeRF) {
+    this->_linFeats = linFeats;
+  } else {
+    this->_linFeats = std::vector<size_t>();
   }
 
   std::unique_ptr< std::vector< std::unique_ptr< forestryTree > > > forest (

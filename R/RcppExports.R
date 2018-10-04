@@ -5,8 +5,8 @@ rcpp_cppDataFrameInterface <- function(x, y, catCols, numRows, numColumns) {
     .Call('_forestry_rcpp_cppDataFrameInterface', PACKAGE = 'forestry', x, y, catCols, numRows, numColumns)
 }
 
-rcpp_cppBuildInterface <- function(x, y, catCols, numRows, numColumns, ntree, replace, sampsize, mtry, splitratio, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, seed, nthread, verbose, middleSplit, maxObs, ridgeRF, overfitPenalty, doubleTree, existing_dataframe_flag, existing_dataframe) {
-    .Call('_forestry_rcpp_cppBuildInterface', PACKAGE = 'forestry', x, y, catCols, numRows, numColumns, ntree, replace, sampsize, mtry, splitratio, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, seed, nthread, verbose, middleSplit, maxObs, ridgeRF, overfitPenalty, doubleTree, existing_dataframe_flag, existing_dataframe)
+rcpp_cppBuildInterface <- function(x, y, catCols, numRows, numColumns, ntree, replace, sampsize, mtry, splitratio, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, seed, nthread, verbose, middleSplit, maxObs, ridgeRF, linFeats, overfitPenalty, doubleTree, existing_dataframe_flag, existing_dataframe) {
+    .Call('_forestry_rcpp_cppBuildInterface', PACKAGE = 'forestry', x, y, catCols, numRows, numColumns, ntree, replace, sampsize, mtry, splitratio, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, seed, nthread, verbose, middleSplit, maxObs, ridgeRF, linFeats, overfitPenalty, doubleTree, existing_dataframe_flag, existing_dataframe)
 }
 
 rcpp_cppPredictInterface <- function(forest, x, aggregation) {
@@ -33,7 +33,7 @@ rcpp_CppToR_translator <- function(forest) {
     .Call('_forestry_rcpp_CppToR_translator', PACKAGE = 'forestry', forest)
 }
 
-rcpp_reconstructree <- function(x, y, catCols, numRows, numColumns, R_forest, replace, sampsize, splitratio, mtry, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, seed, nthread, verbose, middleSplit, maxObs, ridgeRF, overfitPenalty, doubleTree) {
-    .Call('_forestry_rcpp_reconstructree', PACKAGE = 'forestry', x, y, catCols, numRows, numColumns, R_forest, replace, sampsize, splitratio, mtry, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, seed, nthread, verbose, middleSplit, maxObs, ridgeRF, overfitPenalty, doubleTree)
+rcpp_reconstructree <- function(x, y, catCols, numRows, numColumns, R_forest, replace, sampsize, splitratio, mtry, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, seed, nthread, verbose, middleSplit, maxObs, ridgeRF, linFeats, overfitPenalty, doubleTree) {
+    .Call('_forestry_rcpp_reconstructree', PACKAGE = 'forestry', x, y, catCols, numRows, numColumns, R_forest, replace, sampsize, splitratio, mtry, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, seed, nthread, verbose, middleSplit, maxObs, ridgeRF, linFeats, overfitPenalty, doubleTree)
 }
 
