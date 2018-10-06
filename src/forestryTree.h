@@ -30,7 +30,6 @@ public:
     bool splitMiddle,
     size_t maxObs,
     bool ridgeRF,
-    std::vector<size_t> linFeats,
     float overfitPenalty
   );
 
@@ -187,10 +186,6 @@ public:
     return _benchmark;
   }
 
-  std::vector<size_t> getLinFeats() {
-    return _linFeats;
-  }
-
 private:
   size_t _mtry;
   size_t _minNodeSizeSpt;
@@ -201,7 +196,6 @@ private:
   std::unique_ptr< std::vector<size_t> > _splittingSampleIndex;
   std::unique_ptr< RFNode > _root;
   float _overfitPenalty;
-  std::vector<size_t> _linFeats;
   std::vector<double>* _benchmark;
 };
 

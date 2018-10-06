@@ -34,7 +34,6 @@ forestryTree::forestryTree(
   bool splitMiddle,
   size_t maxObs,
   bool ridgeRF,
-  std::vector<size_t> linFeats,
   float overfitPenalty
 ){
   /**
@@ -105,7 +104,6 @@ forestryTree::forestryTree(
   this->_averagingSampleIndex = std::move(averagingSampleIndex);
   this->_splittingSampleIndex = std::move(splittingSampleIndex);
   this->_overfitPenalty = overfitPenalty;
-  this->_linFeats = linFeats;
   std::unique_ptr< RFNode > root ( new RFNode() );
   this->_root = std::move(root);
   this->_benchmark = new std::vector<double>;
@@ -1643,8 +1641,6 @@ void forestryTree::selectBestFeature(
     bestSplitCountAll[i] = 0;
   }
 
-  std::vector<size_t> linearFeatures = (getLinFeats());
-
   // Iterate each selected features
   for (size_t i=0; i<mtry; i++) {
     size_t currentFeature = (*featureList)[i];
@@ -1692,11 +1688,7 @@ void forestryTree::selectBestFeature(
           maxObs
         );
       }
-      // Use ridge splitting only if current feature specified in linearFeatures
-    } else if (ridgeRF && std::find(linearFeatures.begin(),
-                                    linearFeatures.end(),
-                                    currentFeature) != categorialCols.end())
-      {
+    } else if (ridgeRF) {
       findBestSplitRidge(
         averagingSampleIndex,
         splittingSampleIndex,
@@ -1749,8 +1741,7 @@ void forestryTree::selectBestFeature(
     random_number_generator
   );
 
-  // If ridge splitting, need to update RSS components even if split itself
-  // wasn't ridgeSplit
+  // If ridge splitting, need to update RSS components to pass down
   if (ridgeRF) {
     updateBestSplitG(bestSplitGL,
                      bestSplitGR,

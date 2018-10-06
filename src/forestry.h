@@ -34,7 +34,6 @@ public:
     bool splitMiddle,
     size_t maxObs,
     bool ridgeRF,
-    std::vector<size_t> linFeats,
     float overfitPenalty,
     bool doubleTree
   );
@@ -156,10 +155,6 @@ public:
     return _ridgeRF;
   }
 
-  std::vector<size_t> getLinFeats() {
-    return _linFeats;
-  }
-
   float getOverfitPenalty() {
     return _overfitPenalty;
   }
@@ -184,7 +179,6 @@ private:
   bool _splitMiddle;
   size_t _maxObs;
   bool _ridgeRF;
-  std::vector<size_t> _linFeats;
   float _overfitPenalty;
   bool _doubleTree;
 };

@@ -21,6 +21,7 @@ SEXP rcpp_cppDataFrameInterface(
     Rcpp::List x,
     Rcpp::NumericVector y,
     Rcpp::NumericVector catCols,
+    Rcpp::NumericVector linCols,
     int numRows,
     int numColumns
 ){
@@ -44,10 +45,19 @@ SEXP rcpp_cppDataFrameInterface(
         )
     );
 
+    std::unique_ptr< std::vector<size_t> > linearFeats (
+        new std::vector<size_t>(
+            Rcpp::as< std::vector<size_t> >(linCols)
+        )
+    );
+
+    std::sort(linearFeats->begin(), linearFeats->end());
+
     DataFrame* trainingData = new DataFrame(
         std::move(featureDataRcpp),
         std::move(outcomeDataRcpp),
         std::move(categoricalFeatureColsRcpp),
+        std::move(linearFeats),
         (size_t) numRows,
         (size_t) numColumns
     );
@@ -69,6 +79,7 @@ SEXP rcpp_cppBuildInterface(
   Rcpp::List x,
   Rcpp::NumericVector y,
   Rcpp::NumericVector catCols,
+  Rcpp::NumericVector linCols,
   int numRows,
   int numColumns,
   int ntree,
@@ -86,7 +97,6 @@ SEXP rcpp_cppBuildInterface(
   bool middleSplit,
   int maxObs,
   bool ridgeRF,
-  Rcpp::NumericVector linFeats,
   double overfitPenalty,
   bool doubleTree,
   bool existing_dataframe_flag,
@@ -95,7 +105,6 @@ SEXP rcpp_cppBuildInterface(
 
   if (existing_dataframe_flag) {
 
-    std::vector<size_t> linearFeats = Rcpp::as< std::vector<size_t> >(linFeats);
     try {
       Rcpp::XPtr< DataFrame > trainingData(existing_dataframe) ;
 
@@ -116,7 +125,6 @@ SEXP rcpp_cppBuildInterface(
         middleSplit,
         (size_t) maxObs,
         ridgeRF,
-        linearFeats,
         (float) overfitPenalty,
         doubleTree
       );
@@ -156,15 +164,22 @@ SEXP rcpp_cppBuildInterface(
           )
       );
 
+      std::unique_ptr< std::vector<size_t> > linearFeats (
+          new std::vector<size_t>(
+              Rcpp::as< std::vector<size_t> >(linCols)
+          )
+      );
+
+      std::sort(linearFeats->begin(), linearFeats->end());
+
       DataFrame* trainingData = new DataFrame(
           std::move(featureDataRcpp),
           std::move(outcomeDataRcpp),
           std::move(categoricalFeatureColsRcpp),
+          std::move(linearFeats),
           (size_t) numRows,
           (size_t) numColumns
       );
-
-      std::vector<size_t> linearFeats = Rcpp::as< std::vector<size_t> >(linFeats);
 
       forestry* testFullForest = new forestry(
         trainingData,
@@ -183,7 +198,6 @@ SEXP rcpp_cppBuildInterface(
         middleSplit,
         (size_t) maxObs,
         ridgeRF,
-        linearFeats,
         (float) overfitPenalty,
         doubleTree
       );
@@ -408,6 +422,7 @@ Rcpp::List rcpp_reconstructree(
   Rcpp::List x,
   Rcpp::NumericVector y,
   Rcpp::NumericVector catCols,
+  Rcpp::NumericVector linCols,
   int numRows,
   int numColumns,
   Rcpp::List R_forest,
@@ -425,7 +440,6 @@ Rcpp::List rcpp_reconstructree(
   bool middleSplit,
   int maxObs,
   bool ridgeRF,
-  Rcpp::NumericVector linFeats,
   double overfitPenalty,
   bool doubleTree
 ){
@@ -506,15 +520,22 @@ Rcpp::List rcpp_reconstructree(
       )
   );
 
+  std::unique_ptr< std::vector<size_t> > linearFeats (
+      new std::vector<size_t>(
+          Rcpp::as< std::vector<size_t> >(linCols)
+      )
+  );
+
+  std::sort(linearFeats->begin(), linearFeats->end());
+
   DataFrame* trainingData = new DataFrame(
     std::move(featureDataRcpp),
     std::move(outcomeDataRcpp),
     std::move(categoricalFeatureColsRcpp),
+    std::move(linearFeats),
     (size_t) numRows,
     (size_t) numColumns
   );
-
-  std::vector<size_t> linearFeats = Rcpp::as< std::vector<size_t> >(linFeats);
 
   forestry* testFullForest = new forestry(
     (DataFrame*) trainingData,
@@ -533,7 +554,6 @@ Rcpp::List rcpp_reconstructree(
     (bool) middleSplit,
     (int) maxObs,
     (bool) ridgeRF,
-    linearFeats,
     (double) overfitPenalty,
     doubleTree
   );
