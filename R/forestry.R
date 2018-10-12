@@ -83,7 +83,8 @@ training_data_checker <- function(x,
     avgSampleSize <- sampsize
   } else {
     splitSampleSize <- splitratio * sampsize
-    avgSampleSize <- sampsize - splitSampleSize
+    avgSampleSize <- floor(sampsize - splitSampleSize)
+    splitSampleSize <- floor(splitSampleSize)
   }
 
   if (nodesizeStrictSpl > splitSampleSize) {
