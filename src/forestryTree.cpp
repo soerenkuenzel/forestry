@@ -119,10 +119,10 @@ forestryTree::forestryTree(
   std::vector<float> firstOb = trainingData->getLinObsData((*splitIndexes)[0]);
   numLinearFeatures = firstOb.size();
   firstOb.push_back(1.0);
-  arma::Mat<float> sTotal(firstOb.size(),
+  arma::Mat<double> sTotal(firstOb.size(),
                                1);
-  sTotal.col(0) = arma::conv_to<arma::Col<float> >::from(firstOb);
-  arma::Mat<float> gTotal(numLinearFeatures + 1,
+  sTotal.col(0) = arma::conv_to<arma::Col<double> >::from(firstOb);
+  arma::Mat<double> gTotal(numLinearFeatures + 1,
                           numLinearFeatures + 1);
   if (ridgeRF) {
     this->initializeRidgeRF(trainingData,
@@ -322,8 +322,8 @@ void forestryTree::recursivePartition(
     bool ridgeRF,
     float overfitPenalty,
     std::vector<double>* benchmark,
-    arma::Mat<float> gTotal,
-    arma::Mat<float> sTotal
+    arma::Mat<double> gTotal,
+    arma::Mat<double> sTotal
 ){
 
 
@@ -358,10 +358,10 @@ void forestryTree::recursivePartition(
   size_t bestSplitFeature;
   double bestSplitValue;
   float bestSplitLoss;
-  arma::Mat<float> bestSplitGL(size(gTotal));
-  arma::Mat<float> bestSplitGR(size(gTotal));
-  arma::Mat<float> bestSplitSL(size(sTotal));
-  arma::Mat<float> bestSplitSR(size(sTotal));
+  arma::Mat<double> bestSplitGL(size(gTotal));
+  arma::Mat<double> bestSplitGR(size(gTotal));
+  arma::Mat<double> bestSplitSL(size(sTotal));
+  arma::Mat<double> bestSplitSR(size(sTotal));
 
   selectBestFeature(
     bestSplitFeature,
@@ -470,8 +470,8 @@ void forestryTree::recursivePartition(
 
 void forestryTree::initializeRidgeRF(
     DataFrame* trainingData,
-    arma::Mat<float>& gTotal,
-    arma::Mat<float>& sTotal,
+    arma::Mat<double>& gTotal,
+    arma::Mat<double>& sTotal,
     size_t numLinearFeatures,
     std::vector<size_t>* splitIndexes
 ) {
@@ -479,12 +479,12 @@ void forestryTree::initializeRidgeRF(
   sTotal = trainingData->getOutcomePoint((*splitIndexes)[0]) * sTotal;
 
   std::vector<float> temp(numLinearFeatures + 1);
-  arma::Mat<float> tempOb(numLinearFeatures + 1, 1);
+  arma::Mat<double> tempOb(numLinearFeatures + 1, 1);
   /* Sum up sTotal and gTotal once on every observation in splitting set*/
   for (size_t i = 1; i < splitIndexes->size(); i++) {
     temp = trainingData->getLinObsData((*splitIndexes)[i]);
     temp.push_back(1.0);
-    tempOb.col(0) = arma::conv_to<arma::Col<float> >::from(temp);
+    tempOb.col(0) = arma::conv_to<arma::Col<double> >::from(temp);
     gTotal = gTotal + (tempOb * (tempOb.t()));
     sTotal = sTotal + trainingData->getOutcomePoint((*splitIndexes)[i])
       * tempOb;
@@ -529,9 +529,9 @@ void updateBestSplit(
 }
 
 void updateBestSplitS(
-  arma::Mat<float> &bestSplitSL,
-  arma::Mat<float> &bestSplitSR,
-  arma::Mat<float> &sTotal,
+  arma::Mat<double> &bestSplitSL,
+  arma::Mat<double> &bestSplitSR,
+  arma::Mat<double> &sTotal,
   DataFrame* trainingData,
   std::vector<size_t>* splittingSampleIndex,
   size_t bestSplitFeature,
@@ -561,8 +561,8 @@ void updateBestSplitS(
 
 
   std::vector<float> observation;
-  arma::Mat<float> crossingObservation = arma::Mat<float>(size(sTotal)).zeros();
-  arma::Mat<float> sTemp = arma::Mat<float>(size(sTotal)).zeros();
+  arma::Mat<double> crossingObservation = arma::Mat<double>(size(sTotal)).zeros();
+  arma::Mat<double> sTemp = arma::Mat<double>(size(sTotal)).zeros();
 
   while (featIter != splittingIndices.end() &&
          currentValue < bestSplitValue
@@ -572,7 +572,7 @@ void updateBestSplitS(
     observation.push_back(1);
 
     crossingObservation.col(0) =
-          arma::conv_to<arma::Col<float> >::from(observation);
+          arma::conv_to<arma::Col<double> >::from(observation);
     crossingObservation = crossingObservation *
                           trainingData->getOutcomePoint(*featIter);
     sTemp = sTemp + crossingObservation;
@@ -586,9 +586,9 @@ void updateBestSplitS(
 }
 
 void updateBestSplitG(
-    arma::Mat<float> &bestSplitGL,
-    arma::Mat<float> &bestSplitGR,
-    arma::Mat<float> &gTotal,
+    arma::Mat<double> &bestSplitGL,
+    arma::Mat<double> &bestSplitGR,
+    arma::Mat<double> &gTotal,
     DataFrame* trainingData,
     std::vector<size_t>* splittingSampleIndex,
     size_t bestSplitFeature,
@@ -613,8 +613,8 @@ void updateBestSplitG(
 
 
   std::vector<float> observation;
-  arma::Mat<float> crossingObservation = arma::Mat<float>(size(gTotal)).zeros();
-  arma::Mat<float> gTemp = arma::Mat<float>(size(gTotal)).zeros();
+  arma::Mat<double> crossingObservation = arma::Mat<double>(size(gTotal)).zeros();
+  arma::Mat<double> gTemp = arma::Mat<double>(size(gTotal)).zeros();
 
   while (featIter != splittingIndices.end() &&
          currentValue < bestSplitValue
@@ -624,7 +624,7 @@ void updateBestSplitG(
     observation.push_back(1);
 
     crossingObservation.col(0) =
-      arma::conv_to<arma::Col<float> >::from(observation);
+      arma::conv_to<arma::Col<double> >::from(observation);
 
     gTemp = gTemp + (crossingObservation * crossingObservation.t());
 
@@ -637,7 +637,7 @@ void updateBestSplitG(
 }
 
 void updateBestSplitS(
-    arma::Mat<float> &bestSplitS,
+    arma::Mat<double> &bestSplitS,
     size_t bestSplitFeature,
     double bestSplitValue,
     bool left
@@ -646,12 +646,12 @@ void updateBestSplitS(
 }
 
 void updateAArmadillo(
-    arma::Mat<float>& a_k,
-    arma::Mat<float>& new_x,
+    arma::Mat<double>& a_k,
+    arma::Mat<double>& new_x,
     bool leftNode
 ){
   //Initilize z_K
-  arma::Mat<float> z_K = a_k * new_x;
+  arma::Mat<double> z_K = a_k * new_x;
 
   //Update A using Sherman–Morrison formula corresponding to right or left side
   if (leftNode) {
@@ -664,8 +664,8 @@ void updateAArmadillo(
 }
 
 void updateSkArmadillo(
-    arma::Mat<float>& s_k,
-    arma::Mat<float>& next,
+    arma::Mat<double>& s_k,
+    arma::Mat<double>& next,
     float next_y,
     bool left
 ){
@@ -677,12 +677,12 @@ void updateSkArmadillo(
 }
 
 float computeRSSArmadillo(
-    arma::Mat<float>& A_r,
-    arma::Mat<float>& A_l,
-    arma::Mat<float>& S_r,
-    arma::Mat<float>& S_l,
-    arma::Mat<float>& G_r,
-    arma::Mat<float>& G_l
+    arma::Mat<double>& A_r,
+    arma::Mat<double>& A_l,
+    arma::Mat<double>& S_r,
+    arma::Mat<double>& S_l,
+    arma::Mat<double>& G_r,
+    arma::Mat<double>& G_l
 ){
   return (as_scalar((S_l.t() * A_l) * (G_l * (A_l * S_l))) +
           as_scalar((S_r.t() * A_r) * (G_r * (A_r * S_r))) -
@@ -693,14 +693,14 @@ float computeRSSArmadillo(
 void updateRSSComponents(
     DataFrame* trainingData,
     size_t nextIndex,
-    arma::Mat<float>& aLeft,
-    arma::Mat<float>& aRight,
-    arma::Mat<float>& sLeft,
-    arma::Mat<float>& sRight,
-    arma::Mat<float>& gLeft,
-    arma::Mat<float>& gRight,
-    arma::Mat<float>& crossingObservation,
-    arma::Mat<float>& obOuter
+    arma::Mat<double>& aLeft,
+    arma::Mat<double>& aRight,
+    arma::Mat<double>& sLeft,
+    arma::Mat<double>& sRight,
+    arma::Mat<double>& gLeft,
+    arma::Mat<double>& gRight,
+    arma::Mat<double>& crossingObservation,
+    arma::Mat<double>& obOuter
 ) {
   //Get observation that will cross the partition
   std::vector<float> newLeftObservation =
@@ -709,7 +709,7 @@ void updateRSSComponents(
   newLeftObservation.push_back(1.0);
 
   crossingObservation.col(0) =
-    arma::conv_to<arma::Col<float> >::from(newLeftObservation);
+    arma::conv_to<arma::Col<double> >::from(newLeftObservation);
 
   float crossingOutcome = trainingData->getOutcomePoint(nextIndex);
 
@@ -730,15 +730,15 @@ void initializeRSSComponents(
     size_t index,
     size_t numLinearFeatures,
     float overfitPenalty,
-    arma::Mat<float>& gTotal,
-    arma::Mat<float>& sTotal,
-    arma::Mat<float>& aLeft,
-    arma::Mat<float>& aRight,
-    arma::Mat<float>& sLeft,
-    arma::Mat<float>& sRight,
-    arma::Mat<float>& gLeft,
-    arma::Mat<float>& gRight,
-    arma::Mat<float>& crossingObservation
+    arma::Mat<double>& gTotal,
+    arma::Mat<double>& sTotal,
+    arma::Mat<double>& aLeft,
+    arma::Mat<double>& aRight,
+    arma::Mat<double>& sLeft,
+    arma::Mat<double>& sRight,
+    arma::Mat<double>& gLeft,
+    arma::Mat<double>& gRight,
+    arma::Mat<double>& crossingObservation
 ) {
   //Initialize sLeft
   sLeft = trainingData->getOutcomePoint(index) *crossingObservation;
@@ -751,7 +751,7 @@ void initializeRSSComponents(
   gRight = gTotal - gLeft;
   //Initialize sRight, gRight
 
-  arma::Mat<float> identity(numLinearFeatures + 1,
+  arma::Mat<double> identity(numLinearFeatures + 1,
                             numLinearFeatures + 1);
   identity.eye();
 
@@ -780,8 +780,8 @@ void findBestSplitRidgeCategorical(
     size_t averageNodeSize,
     std::mt19937_64& random_number_generator,
     float overfitPenalty,
-    arma::Mat<float>& gTotal,
-    arma::Mat<float>& sTotal
+    arma::Mat<double>& gTotal,
+    arma::Mat<double>& sTotal
 ) {
   /* Put all categories in a set
    * aggregate G_k matrices to put in left node when splitting
@@ -802,12 +802,12 @@ void findBestSplitRidgeCategorical(
   std::vector<float> temp;
 
   // temp matrices for RSS components
-  arma::Mat<float> gRightTemp(size(gTotal));
-  arma::Mat<float> sRightTemp(size(sTotal));
-  arma::Mat<float> aRightTemp(size(gTotal));
-  arma::Mat<float> aLeftTemp(size(gTotal));
-  arma::Mat<float> crossingObservation(size(sTotal));
-  arma::Mat<float> identity(size(gTotal));
+  arma::Mat<double> gRightTemp(size(gTotal));
+  arma::Mat<double> sRightTemp(size(sTotal));
+  arma::Mat<double> aRightTemp(size(gTotal));
+  arma::Mat<double> aLeftTemp(size(gTotal));
+  arma::Mat<double> crossingObservation(size(sTotal));
+  arma::Mat<double> identity(size(gTotal));
 
   identity.eye();
   identity(identity.n_rows-1, identity.n_cols-1) = 0.0;
@@ -817,8 +817,8 @@ void findBestSplitRidgeCategorical(
   // Create map to track the count and RSS components
   std::map<float, size_t> splittingCategoryCount;
   std::map<float, size_t> averagingCategoryCount;
-  std::map<float, arma::Mat<float> > gMatrices;
-  std::map<float, arma::Mat<float> > sMatrices;
+  std::map<float, arma::Mat<double> > gMatrices;
+  std::map<float, arma::Mat<double> > sMatrices;
 
   for (size_t j=0; j<averagingSampleIndex->size(); j++) {
     all_categories.insert(
@@ -841,8 +841,8 @@ void findBestSplitRidgeCategorical(
   ) {
     splittingCategoryCount[*it] = 0;
     averagingCategoryCount[*it] = 0;
-    gMatrices[*it] = arma::Mat<float>(size(gTotal)).zeros();
-    sMatrices[*it] = arma::Mat<float>(size(sTotal)).zeros();
+    gMatrices[*it] = arma::Mat<double>(size(gTotal)).zeros();
+    sMatrices[*it] = arma::Mat<double>(size(sTotal)).zeros();
   }
 
   // Put all matrices in map
@@ -855,7 +855,7 @@ void findBestSplitRidgeCategorical(
 
     temp = trainingData->getLinObsData((*splittingSampleIndex)[j]);
     temp.push_back(1);
-    crossingObservation.col(0) = arma::conv_to<arma::Col<float> >::from(temp);
+    crossingObservation.col(0) = arma::conv_to<arma::Col<double> >::from(temp);
 
     updateSkArmadillo(sMatrices[currentCategory],
                       crossingObservation,
@@ -1080,8 +1080,8 @@ void findBestSplitRidge(
   size_t maxObs,
   float overfitPenalty,
   std::vector<double>* benchmark,
-  arma::Mat<float>& gTotal,
-  arma::Mat<float>& sTotal
+  arma::Mat<double>& gTotal,
+  arma::Mat<double>& sTotal
 ){
 
   //Get indexes of observations
@@ -1152,15 +1152,15 @@ void findBestSplitRidge(
   firstOb.push_back(1.0);
 
   //Initialize crossingObs for body of loop
-  arma::Mat<float> crossingObservation(firstOb.size(),
+  arma::Mat<double> crossingObservation(firstOb.size(),
                                        1);
 
-  arma::Mat<float> obOuter(numLinearFeatures + 1,
+  arma::Mat<double> obOuter(numLinearFeatures + 1,
                            numLinearFeatures + 1);
 
-  crossingObservation.col(0) = arma::conv_to<arma::Col<float> >::from(firstOb);
+  crossingObservation.col(0) = arma::conv_to<arma::Col<double> >::from(firstOb);
 
-  arma::Mat<float> aLeft(numLinearFeatures + 1, numLinearFeatures + 1),
+  arma::Mat<double> aLeft(numLinearFeatures + 1, numLinearFeatures + 1),
                    aRight(numLinearFeatures + 1, numLinearFeatures + 1),
                    gLeft(numLinearFeatures + 1, numLinearFeatures + 1),
                    gRight(numLinearFeatures + 1, numLinearFeatures + 1),
@@ -1607,10 +1607,10 @@ void forestryTree::selectBestFeature(
     size_t &bestSplitFeature,
     double &bestSplitValue,
     float &bestSplitLoss,
-    arma::Mat<float> &bestSplitGL,
-    arma::Mat<float> &bestSplitGR,
-    arma::Mat<float> &bestSplitSL,
-    arma::Mat<float> &bestSplitSR,
+    arma::Mat<double> &bestSplitGL,
+    arma::Mat<double> &bestSplitGR,
+    arma::Mat<double> &bestSplitSL,
+    arma::Mat<double> &bestSplitSR,
     std::vector<size_t>* featureList,
     std::vector<size_t>* averagingSampleIndex,
     std::vector<size_t>* splittingSampleIndex,
@@ -1621,8 +1621,8 @@ void forestryTree::selectBestFeature(
     bool ridgeRF,
     float overfitPenalty,
     std::vector<double>* benchmark,
-    arma::Mat<float> &gTotal,
-    arma::Mat<float> &sTotal
+    arma::Mat<double> &gTotal,
+    arma::Mat<double> &sTotal
 ){
 
   // Get the number of total features
