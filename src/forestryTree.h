@@ -24,6 +24,7 @@ public:
     size_t minNodeSizeAvg,
     size_t minNodeSizeToSplitSpt,
     size_t minNodeSizeToSplitAvg,
+    size_t maxDepth,
     std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
     std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
     std::mt19937_64& random_number_generator,
@@ -40,6 +41,7 @@ public:
     size_t minNodeSizeAvg,
     size_t minNodeSizeToSplitSpt,
     size_t minNodeSizeToSplitAvg,
+    size_t maxDepth,
     std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
     std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
     float overfitPenalty
@@ -63,6 +65,7 @@ public:
       size_t minNodeSizeAvg,
       size_t minNodeSizeToSplitSpt,
       size_t minNodeSizeToSplitAvg,
+      size_t maxDepth,
       std::vector<size_t> categoricalFeatureColsRcpp,
       std::vector<int> var_ids,
       std::vector<double> split_vals,
@@ -166,6 +169,10 @@ public:
     return _minNodeSizeToSplitAvg;
   }
 
+  size_t getMaxDepth() {
+    return _maxDepth;
+  }
+
   std::vector<size_t>* getSplittingIndex() {
     return _splittingSampleIndex.get();
   }
@@ -192,6 +199,7 @@ private:
   size_t _minNodeSizeAvg;
   size_t _minNodeSizeToSplitSpt;
   size_t _minNodeSizeToSplitAvg;
+  size_t _maxDepth;
   std::unique_ptr< std::vector<size_t> > _averagingSampleIndex;
   std::unique_ptr< std::vector<size_t> > _splittingSampleIndex;
   std::unique_ptr< RFNode > _root;

@@ -15,6 +15,7 @@ training_data_checker <- function(x,
                                   nodesizeAvg,
                                   nodesizeStrictSpl,
                                   nodesizeStrictAvg,
+                                  maxDepth,
                                   splitratio,
                                   nthread,
                                   middleSplit,
@@ -75,6 +76,11 @@ training_data_checker <- function(x,
   if (nodesizeStrictAvg <= 0 || nodesizeStrictAvg %% 1 != 0) {
     stop("nodesizeStrictAvg must be a positive integer.")
   }
+
+  if (maxDepth <= 0 || maxDepth %% 1 != 0) {
+    stop("maxDepth must be a positive integer.")
+  }
+
 
   # if the splitratio is 1, then we use adaptive rf and avgSampleSize is the
   # equal to the total sampsize
@@ -190,6 +196,7 @@ setClass(
     nodesizeAvg = "numeric",
     nodesizeStrictSpl = "numeric",
     nodesizeStrictAvg = "numeric",
+    maxDepth = "numeric",
     splitratio = "numeric",
     middleSplit = "logical",
     y = "vector",
@@ -227,6 +234,7 @@ setClass(
 #'   nodes. The default value is 1.
 #' @param nodesizeStrictAvg Minimum size of terminal nodes for averaging dataset
 #'   to follow strictly. The default value is 1.
+#' @param maxDepth Maximum depth of a tree. The default value is 99.
 #' @param splitratio Proportion of the training data used as the splitting
 #'   dataset. It is a ratio between 0 and 1. If the ratio is 1, then essentially
 #'   splitting dataset becomes the total entire sampled set and the averaging
@@ -310,6 +318,7 @@ forestry <- function(x,
                      nodesizeAvg = 3,
                      nodesizeStrictSpl = 1,
                      nodesizeStrictAvg = 1,
+                     maxDepth = 99,
                      splitratio = 1,
                      seed = as.integer(runif(1) * 1000),
                      verbose = FALSE,
@@ -330,7 +339,7 @@ forestry <- function(x,
   # Preprocess the data
   training_data_checker(x, y, ntree,replace, sampsize, mtry, nodesizeSpl,
                         nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg,
-                        splitratio, nthread, middleSplit, doubleTree)
+                        maxDepth, splitratio, nthread, middleSplit, doubleTree)
   # Total number of obervations
   nObservations <- length(y)
   numColumns <- ncol(x)
@@ -374,6 +383,7 @@ forestry <- function(x,
         nodesizeAvg,
         nodesizeStrictSpl,
         nodesizeStrictAvg,
+        maxDepth,
         seed,
         nthread,
         verbose,
@@ -411,6 +421,7 @@ forestry <- function(x,
           nodesizeAvg = nodesizeAvg,
           nodesizeStrictSpl = nodesizeStrictSpl,
           nodesizeStrictAvg = nodesizeStrictAvg,
+          maxDepth = maxDepth,
           splitratio = splitratio,
           middleSplit = middleSplit,
           maxObs = maxObs,
@@ -455,6 +466,7 @@ forestry <- function(x,
         nodesizeAvg,
         nodesizeStrictSpl,
         nodesizeStrictAvg,
+        maxDepth,
         seed,
         nthread,
         verbose,
@@ -484,6 +496,7 @@ forestry <- function(x,
           nodesizeAvg = nodesizeAvg,
           nodesizeStrictSpl = nodesizeStrictSpl,
           nodesizeStrictAvg = nodesizeStrictAvg,
+          maxDepth = maxDepth,
           splitratio = splitratio,
           middleSplit = middleSplit,
           maxObs = maxObs,
@@ -895,6 +908,7 @@ relinkCPP_prt <- function(object) {
         nodesizeAvg = object@nodesizeAvg,
         nodesizeStrictSpl = object@nodesizeStrictSpl,
         nodesizeStrictAvg = object@nodesizeStrictAvg,
+        maxDepth = object@maxDepth,
         seed = sample(.Machine$integer.max, 1),
         nthread = 0, # will use all threads available.
         verbose = FALSE,

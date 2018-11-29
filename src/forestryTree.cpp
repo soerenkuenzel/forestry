@@ -15,6 +15,7 @@ forestryTree::forestryTree():
   _minNodeSizeAvg(0),
   _minNodeSizeToSplitSpt(0),
   _minNodeSizeToSplitAvg(0),
+  _maxDepth(0),
   _averagingSampleIndex(nullptr),
   _splittingSampleIndex(nullptr),
   _root(nullptr) {};
@@ -28,6 +29,7 @@ forestryTree::forestryTree(
   size_t minNodeSizeAvg,
   size_t minNodeSizeToSplitSpt,
   size_t minNodeSizeToSplitAvg,
+  size_t maxDepth,
   std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
   std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
   std::mt19937_64& random_number_generator,
@@ -44,6 +46,7 @@ forestryTree::forestryTree(
   * @param minNodeSizeAvg    Minimum averaging size of leaf node
   * @param minNodeSizeToSplitSpt    Minimum splitting size of a splitting node
   * @param minNodeSizeToSplitAvg    Minimum averaging size of a splitting node
+  * @param maxDepth    Max depth of a tree
   * @param splittingSampleIndex    A vector with index of splitting samples
   * @param averagingSampleIndex    A vector with index of averaging samples
   * @param random_number_generator    A mt19937 random generator
@@ -79,6 +82,9 @@ forestryTree::forestryTree(
       ", splittingSampleSize=" << (*splittingSampleIndex).size() << ".";
     throw std::runtime_error(ostr.str());
   }
+  if (maxDepth == 0) {
+    throw std::runtime_error("maxDepth cannot be set to 0.");
+  }
   if ((*averagingSampleIndex).size() == 0) {
     throw std::runtime_error("averagingSampleIndex size cannot be set to 0.");
   }
@@ -101,6 +107,7 @@ forestryTree::forestryTree(
   this->_minNodeSizeSpt = minNodeSizeSpt;
   this->_minNodeSizeToSplitAvg = minNodeSizeToSplitAvg;
   this->_minNodeSizeToSplitSpt = minNodeSizeToSplitSpt;
+  this->_maxDepth = maxDepth;
   this->_averagingSampleIndex = std::move(averagingSampleIndex);
   this->_splittingSampleIndex = std::move(splittingSampleIndex);
   this->_overfitPenalty = overfitPenalty;
@@ -159,6 +166,7 @@ void forestryTree::setDummyTree(
     size_t minNodeSizeAvg,
     size_t minNodeSizeToSplitSpt,
     size_t minNodeSizeToSplitAvg,
+    size_t maxDepth,
     std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
     std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
     float overfitPenalty
@@ -168,6 +176,7 @@ void forestryTree::setDummyTree(
   this->_minNodeSizeSpt = minNodeSizeSpt;
   this->_minNodeSizeToSplitAvg = minNodeSizeToSplitAvg;
   this->_minNodeSizeToSplitSpt = minNodeSizeToSplitSpt;
+  this->_maxDepth = maxDepth;
   this->_averagingSampleIndex = std::move(averagingSampleIndex);
   this->_splittingSampleIndex = std::move(splittingSampleIndex);
   this->_overfitPenalty = overfitPenalty;
@@ -2029,6 +2038,7 @@ void forestryTree::reconstruct_tree(
     size_t minNodeSizeAvg,
     size_t minNodeSizeToSplitSpt,
     size_t minNodeSizeToSplitAvg,
+    size_t maxDepth,
     std::vector<size_t> categoricalFeatureColsRcpp,
     std::vector<int> var_ids,
     std::vector<double> split_vals,
@@ -2043,6 +2053,7 @@ void forestryTree::reconstruct_tree(
   _minNodeSizeAvg = minNodeSizeAvg;
   _minNodeSizeToSplitSpt = minNodeSizeToSplitSpt;
   _minNodeSizeToSplitAvg = minNodeSizeToSplitAvg;
+  _maxDepth = maxDepth;
 
   _averagingSampleIndex = std::unique_ptr< std::vector<size_t> > (
     new std::vector<size_t>

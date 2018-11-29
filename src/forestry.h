@@ -28,6 +28,7 @@ public:
     size_t minNodeSizeAvg,
     size_t minNodeSizeToSplitSpt,
     size_t minNodeSizeToSplitAvg,
+    size_t maxDepth,
     unsigned int seed,
     size_t nthread,
     bool verbose,
@@ -106,6 +107,10 @@ public:
     return _minNodeSizeToSplitAvg;
   }
 
+  size_t getMaxDepth() {
+    return _maxDepth;
+  }
+
   size_t getNtree() {
     return _ntree;
   }
@@ -170,6 +175,7 @@ private:
   size_t _minNodeSizeAvg;
   size_t _minNodeSizeToSplitSpt;
   size_t _minNodeSizeToSplitAvg;
+  size_t _maxDepth;
   std::unique_ptr< std::vector< std::unique_ptr< forestryTree > > > _forest;
   unsigned int _seed;
   bool _verbose;

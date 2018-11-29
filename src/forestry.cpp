@@ -9,9 +9,9 @@
 forestry::forestry():
   _trainingData(nullptr), _ntree(0), _replace(0), _sampSize(0),
   _splitRatio(0), _mtry(0), _minNodeSizeSpt(0), _minNodeSizeAvg(0),
-  _minNodeSizeToSplitSpt(0), _minNodeSizeToSplitAvg(0), _forest(nullptr),
-  _seed(0), _verbose(0), _nthread(0), _OOBError(0), _splitMiddle(0),
-  _doubleTree(0){};
+  _minNodeSizeToSplitSpt(0), _minNodeSizeToSplitAvg(0), _maxDepth(0),
+  _forest(nullptr), _seed(0), _verbose(0), _nthread(0), _OOBError(0),
+  _splitMiddle(0), _doubleTree(0){};
 
 forestry::~forestry(){
 //  for (std::vector<forestryTree*>::iterator it = (*_forest).begin();
@@ -33,6 +33,7 @@ forestry::forestry(
   size_t minNodeSizeAvg,
   size_t minNodeSizeToSplitSpt,
   size_t minNodeSizeToSplitAvg,
+  size_t maxDepth,
   unsigned int seed,
   size_t nthread,
   bool verbose,
@@ -52,6 +53,7 @@ forestry::forestry(
   this->_minNodeSizeSpt = minNodeSizeSpt;
   this->_minNodeSizeToSplitAvg = minNodeSizeToSplitAvg;
   this->_minNodeSizeToSplitSpt = minNodeSizeToSplitSpt;
+  this->_maxDepth = maxDepth;
   this->_seed = seed;
   this->_nthread = nthread;
   this->_verbose = verbose;
@@ -222,6 +224,7 @@ void forestry::addTrees(size_t ntree) {
                 getMinNodeSizeAvg(),
                 getMinNodeSizeToSplitSpt(),
                 getMinNodeSizeToSplitAvg(),
+                getMaxDepth(),
                 std::move(splitSampleIndex),
                 std::move(averageSampleIndex),
                 random_number_generator,
@@ -242,6 +245,7 @@ void forestry::addTrees(size_t ntree) {
                     getMinNodeSizeAvg(),
                     getMinNodeSizeToSplitSpt(),
                     getMinNodeSizeToSplitAvg(),
+                    getMaxDepth(),
                     std::move(averageSampleIndex2),
                     std::move(splitSampleIndex2),
                     random_number_generator,
@@ -657,6 +661,7 @@ void forestry::reconstructTrees(
                 getMinNodeSizeAvg(),
                 getMinNodeSizeToSplitSpt(),
                 getMinNodeSizeToSplitAvg(),
+                getMaxDepth(),
                 (*categoricalFeatureColsRcpp),
                 (*var_ids)[i],
                 (*split_vals)[i],
