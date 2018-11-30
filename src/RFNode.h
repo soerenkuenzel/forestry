@@ -103,10 +103,6 @@ public:
     return _splittingSampleIndex.get();
   }
 
-  size_t getDepth() {
-    return _depth;
-  }
-
 private:
   std::unique_ptr< std::vector<size_t> > _averagingSampleIndex;
   std::unique_ptr< std::vector<size_t> > _splittingSampleIndex;
@@ -116,7 +112,6 @@ private:
   std::unique_ptr< RFNode > _rightChild;
   size_t _averageCount;
   size_t _splitCount;
-  size_t _depth;
 };
 
 

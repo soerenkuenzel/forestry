@@ -88,6 +88,7 @@ public:
     std::vector<size_t>* splittingSampleIndex,
     DataFrame* trainingData,
     std::mt19937_64& random_number_generator,
+    size_t depth,
     bool splitMiddle,
     size_t maxObs,
     bool ridgeRF,

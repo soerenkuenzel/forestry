@@ -147,6 +147,7 @@ forestryTree::forestryTree(
     getSplittingIndex(),
     trainingData,
     random_number_generator,
+    0,
     splitMiddle,
     maxObs,
     ridgeRF,
@@ -326,6 +327,7 @@ void forestryTree::recursivePartition(
     std::vector<size_t>* splittingSampleIndex,
     DataFrame* trainingData,
     std::mt19937_64& random_number_generator,
+    size_t depth,
     bool splitMiddle,
     size_t maxObs,
     bool ridgeRF,
@@ -337,7 +339,8 @@ void forestryTree::recursivePartition(
 
 
   if ((*averagingSampleIndex).size() < getMinNodeSizeAvg() ||
-      (*splittingSampleIndex).size() < getMinNodeSizeSpt()) {
+      (*splittingSampleIndex).size() < getMinNodeSizeSpt() ||
+      (depth == getMaxDepth())) {
     // Create two lists on heap and transfer the owernship to the node
     std::unique_ptr<std::vector<size_t> > averagingSampleIndex_(
         new std::vector<size_t>(*averagingSampleIndex)
@@ -448,12 +451,15 @@ void forestryTree::recursivePartition(
     std::unique_ptr< RFNode > leftChild ( new RFNode() );
     std::unique_ptr< RFNode > rightChild ( new RFNode() );
 
+    size_t childDepth = depth + 1;
+
     recursivePartition(
       leftChild.get(),
       &averagingLeftPartitionIndex,
       &splittingLeftPartitionIndex,
       trainingData,
       random_number_generator,
+      childDepth,
       splitMiddle,
       maxObs,
       ridgeRF,
@@ -468,6 +474,7 @@ void forestryTree::recursivePartition(
       &splittingRightPartitionIndex,
       trainingData,
       random_number_generator,
+      childDepth,
       splitMiddle,
       maxObs,
       ridgeRF,
