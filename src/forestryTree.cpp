@@ -910,7 +910,7 @@ void findBestSplitRidgeCategorical(
       bestSplitValueAll,
       bestSplitFeatureAll,
       bestSplitCountAll,
-      currentSplitLoss,
+      -currentSplitLoss,
       (double) *it,
       currentFeature,
       bestSplitTableIndex,
@@ -1303,13 +1303,13 @@ void findBestSplitRidge(
         currentSplitValue = epsilon_lower;
       }
     }
-    Rcpp::Rcout << currentRSS << " " << currentSplitValue << "\n";
+    //Rcpp::Rcout << currentRSS << " " << currentSplitValue << "\n";
     updateBestSplit(
       bestSplitLossAll,
       bestSplitValueAll,
       bestSplitFeatureAll,
       bestSplitCountAll,
-      currentRSS,
+      -currentRSS,
       currentSplitValue,
       currentFeature,
       bestSplitTableIndex,
