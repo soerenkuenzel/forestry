@@ -6,7 +6,7 @@
 \usage{
 training_data_checker(x, y, ntree, replace, sampsize, mtry, nodesizeSpl,
   nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, splitratio, nthread,
-  middleSplit, doubleTree)
+  middleSplit, doubleTree, linFeats)
 }
 \arguments{
 \item{x}{A data frame of all training predictors.}
@@ -56,6 +56,9 @@ between two feature values. (Default = FALSE)}
 
 \item{doubleTree}{if the number of tree is doubled as averaging and splitting
 data can be exchanged to create decorrelated trees. (Default = FALSE)}
+
+\item{linFeats}{Specify which features to split linearly on when using
+ridgeRF (defaults to use all numerical features)}
 }
 \description{
 Check the input to forestry constructor
