@@ -62,5 +62,5 @@ test_that("Tests if ridgeRF works", {
   # Mean Square Error
   sum((y_pred - y) ^ 2)
 
-  expect_equal(sum((y_pred - y) ^ 2), 53.46047, tolerance = 1e-2)
+  expect_equal(sum((y_pred - y) ^ 2), 5.006852, tolerance = 1e-2)
 })
