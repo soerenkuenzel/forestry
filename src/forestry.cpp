@@ -88,6 +88,7 @@ forestry::forestry(
     throw std::runtime_error("overfitPenalty cannot be negative");
   }
 
+
   std::unique_ptr< std::vector< std::unique_ptr< forestryTree > > > forest (
     new std::vector< std::unique_ptr< forestryTree > >
   );

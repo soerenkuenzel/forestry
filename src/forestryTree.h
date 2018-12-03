@@ -94,18 +94,18 @@ public:
     bool ridgeRF,
     float overfitPenalty,
     std::vector<double>* benchmark,
-    arma::Mat<float> gTotal,
-    arma::Mat<float> sTotal
+    arma::Mat<double> gTotal,
+    arma::Mat<double> sTotal
   );
 
   void selectBestFeature(
     size_t& bestSplitFeature,
     double& bestSplitValue,
     float& bestSplitLoss,
-    arma::Mat<float> &bestSplitGL,
-    arma::Mat<float> &bestSplitGR,
-    arma::Mat<float> &bestSplitSL,
-    arma::Mat<float> &bestSplitSR,
+    arma::Mat<double> &bestSplitGL,
+    arma::Mat<double> &bestSplitGR,
+    arma::Mat<double> &bestSplitSL,
+    arma::Mat<double> &bestSplitSR,
     std::vector<size_t>* featureList,
     std::vector<size_t>* averagingSampleIndex,
     std::vector<size_t>* splittingSampleIndex,
@@ -116,14 +116,14 @@ public:
     bool ridgeRF,
     float overfitPenalty,
     std::vector<double>* benchmark,
-    arma::Mat<float>& gTotal,
-    arma::Mat<float>& sTotal
+    arma::Mat<double>& gTotal,
+    arma::Mat<double>& sTotal
   );
 
   void initializeRidgeRF(
       DataFrame* trainingData,
-      arma::Mat<float>& gTotal,
-      arma::Mat<float>& sTotal,
+      arma::Mat<double>& gTotal,
+      arma::Mat<double>& sTotal,
       size_t numLinearFeatures,
       std::vector<size_t>* splitIndexes
   );
