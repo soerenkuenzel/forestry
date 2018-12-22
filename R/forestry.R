@@ -532,6 +532,35 @@ forestry <- function(x,
   return(forest)
 }
 
+# -- Multilayer Random Forest Constructor --------------------------------------
+#' @name multilayer-forestry
+#' @title Multilayer forestry
+#' @rdname multilayer-forestry
+#' @description Construct a gradient boosted random forest.
+#' @inheritParams forestry
+#' @param nlayers Number of iterations used for gradient boosting.
+#' @return A `forestry` object.
+#' @export
+multilayerForestry <- function(x,
+                          y,
+                          ntree,
+                          replace,
+                          sampsize,
+                          mtry,
+                          nodesizeSpl,
+                          nodesizeAvg,
+                          nodesizeStrictSpl,
+                          nodesizeStrictAvg,
+                          maxDepth,
+                          splitratio,
+                          nthread,
+                          middleSplit,
+                          doubleTree,
+                          linFeats,
+                          nlayers) {
+  print("Using multilayer forestry.")
+}
+
 
 # -- Predict Method ------------------------------------------------------------
 #' predict-forestry
