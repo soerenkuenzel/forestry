@@ -68,36 +68,35 @@ void multilayerForestry::addForests(size_t ntree) {
   std::unique_ptr< std::vector<float> > predictedOutcome;
 
   // Store first forestry tree
-  forestry *initialForest = new forestry();
-    // forestry(
-    // _trainingData,
-    // ntree,
-    // _replace,
-    // _sampSize,
-    // _splitRatio,
-    // _mtry,
-    // _minNodeSizeSpt,
-    // _minNodeSizeAvg,
-    // _minNodeSizeToSplitSpt,
-    // _minNodeSizeToSplitAvg,
-    // _maxDepth,
-    // _seed,
-    // _nthread,
-    // _verbose,
-    // _splitMiddle,
-    // _maxObs,
-    // _ridgeRF,
-    // _overfitPenalty,
-    // _doubleTree
-  // );
+  forestry *initialForest = new forestry(
+    _trainingData,
+    ntree,
+    _replace,
+    _sampSize,
+    _splitRatio,
+    _mtry,
+    _minNodeSizeSpt,
+    _minNodeSizeAvg,
+    _minNodeSizeToSplitSpt,
+    _minNodeSizeToSplitAvg,
+    _maxDepth,
+    _seed,
+    _nthread,
+    _verbose,
+    _splitMiddle,
+    _maxObs,
+    _ridgeRF,
+    _overfitPenalty,
+    _doubleTree
+  );
 
-  // TODO: results in "implicity-deleted constructor error"
-  // multilayerForests.push_back(&initialForest);
+  // TODO: Fix storing forestry object, result in "implicity-deleted constructor error"
+  // multilayerForests.push_back(initialForest);
   gammas.push_back(1);
 
   // Set initial residuals and predicted outcome
-  std::vector<float> *outcomeData =
-    getTrainingData()->getOutcomeData();
+  DataFrame *trainingData = getTrainingData();
+  std::vector<float> *outcomeData = trainingData->getOutcomeData();
   predictedOutcome =
     (*initialForest).predict(getTrainingData()->getAllFeatureData(), NULL);
   std::vector<float> residuals;
@@ -106,12 +105,10 @@ void multilayerForestry::addForests(size_t ntree) {
   std::unique_ptr< std::vector<float> > predictedResiduals;
 
   for (int i = 1; i < getNrounds(); i++) {
-    // TODO: update trainingData to be residuals and train new forestry object
-    forestry *residualForest = new forestry();
-
+    // trainingData->setOutcomeData(residuals);
     // TODO: Fix storing forestry object
-    // multilayerForests.push_back(&initialForest);
-
+    forestry *residualForest = new forestry();
+    // multilayerForests.push_back(residualForest);
     predictedResiduals =
       (*residualForest).predict(getTrainingData()->getAllFeatureData(), NULL);
 
@@ -143,6 +140,7 @@ void multilayerForestry::addForests(size_t ntree) {
                    bestPredictedResiduals.begin(), predictedOutcome->begin(), std::plus<float>());
   }
 
+  // trainingData->setOutcomeData(*outcomeData);
   // this->_multilayerForests = std::move(multilayerForests);
   this->_gammas = std::move(gammas);
 }
