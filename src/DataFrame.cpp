@@ -158,3 +158,7 @@ size_t DataFrame::get_row_idx(size_t rowIndex) {
     throw std::runtime_error("rowIndex is too large");
   }
 }
+
+void DataFrame::setOutcomeData(std::unique_ptr< std::vector<float> > outcomeData) {
+    _outcomeData = std::move(outcomeData);
+}
