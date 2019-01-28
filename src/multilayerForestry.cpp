@@ -4,6 +4,7 @@
 #include <thread>
 #include <mutex>
 #include "DataFrame.h"
+#include "forestry.h"
 #include "utils.h"
 
 multilayerForestry::multilayerForestry():
@@ -34,7 +35,7 @@ multilayerForestry::multilayerForestry(
   bool doubleTree
 ){
   this->_trainingData = trainingData;
-  this->_ntree = 0;
+  this->_ntree = ntree;
   this->_nrounds= nrounds;
   this->_replace = replace;
   this->_sampSize = sampSize;
@@ -63,54 +64,72 @@ void multilayerForestry::addForests(size_t ntree) {
   std::cout << "Num rounds are " << (_nrounds) << std::endl;
 
   // Create vectors to store trees and gamma values.
-  std::vector< forestry > multilayerForests(_nrounds);
+  std::vector< forestry* > multilayerForests(_nrounds);
   std::vector<float> gammas(_nrounds);
   std::unique_ptr< std::vector<float> > predictedOutcome;
 
   // Store first forestry tree
   forestry *initialForest = new forestry(
-    _trainingData,
-    ntree,
-    _replace,
-    _sampSize,
-    _splitRatio,
-    _mtry,
-    _minNodeSizeSpt,
-    _minNodeSizeAvg,
-    _minNodeSizeToSplitSpt,
-    _minNodeSizeToSplitAvg,
-    _maxDepth,
-    _seed,
-    _nthread,
-    _verbose,
-    _splitMiddle,
-    _maxObs,
-    _ridgeRF,
-    _overfitPenalty,
-    _doubleTree
+      _trainingData,
+      _ntree,
+      _replace,
+      _sampSize,
+      _splitRatio,
+      _mtry,
+      _minNodeSizeSpt,
+      _minNodeSizeAvg,
+      _minNodeSizeToSplitSpt,
+      _minNodeSizeToSplitAvg,
+      _maxDepth,
+      _seed,
+      _nthread,
+      _verbose,
+      _splitMiddle,
+      _maxObs,
+      _ridgeRF,
+      _overfitPenalty,
+      _doubleTree
   );
 
-  // TODO: Fix storing forestry object, result in "implicity-deleted constructor error"
-  // multilayerForests.push_back(initialForest);
+  multilayerForests.push_back(initialForest);
   gammas.push_back(1);
 
   // Set initial residuals and predicted outcome
   DataFrame *trainingData = getTrainingData();
   std::vector<float> *outcomeData = trainingData->getOutcomeData();
   predictedOutcome =
-    (*initialForest).predict(getTrainingData()->getAllFeatureData(), NULL);
-  std::vector<float> residuals;
+    initialForest->predict(getTrainingData()->getAllFeatureData(), NULL);
+  std::unique_ptr< std::vector<float> > residuals;
   std::transform(outcomeData->begin(), outcomeData->end(),
-                 predictedOutcome->begin(), residuals.begin(), std::minus<float>());
+                 predictedOutcome->begin(), residuals->begin(), std::minus<float>());
   std::unique_ptr< std::vector<float> > predictedResiduals;
 
   for (int i = 1; i < getNrounds(); i++) {
     // trainingData->setOutcomeData(residuals);
-    // TODO: Fix storing forestry object
-    forestry *residualForest = new forestry();
-    // multilayerForests.push_back(residualForest);
+    forestry *residualForest = new forestry(
+      _trainingData,
+      _ntree,
+      _replace,
+      _sampSize,
+      _splitRatio,
+      _mtry,
+      _minNodeSizeSpt,
+      _minNodeSizeAvg,
+      _minNodeSizeToSplitSpt,
+      _minNodeSizeToSplitAvg,
+      _maxDepth,
+      _seed,
+      _nthread,
+      _verbose,
+      _splitMiddle,
+      _maxObs,
+      _ridgeRF,
+      _overfitPenalty,
+      _doubleTree
+    );
+    multilayerForests.push_back(residualForest);
     predictedResiduals =
-      (*residualForest).predict(getTrainingData()->getAllFeatureData(), NULL);
+      residualForest->predict(getTrainingData()->getAllFeatureData(), NULL);
 
     // Store best gamma value
     std::vector<float> gammaPredictedResiduals;
@@ -140,7 +159,7 @@ void multilayerForestry::addForests(size_t ntree) {
                    bestPredictedResiduals.begin(), predictedOutcome->begin(), std::plus<float>());
   }
 
-  // trainingData->setOutcomeData(*outcomeData);
+  // trainingData->setOutcomeData(outcomeData);
   // this->_multilayerForests = std::move(multilayerForests);
   this->_gammas = std::move(gammas);
 }
@@ -149,27 +168,20 @@ std::unique_ptr< std::vector<float> > multilayerForestry::predict(
     std::vector< std::vector<float> >* xNew,
     arma::Mat<float>* weightMatrix
 ) {
-  std::vector<float> prediction;
-  // std::vector< std::unique_ptr< forestry > > multilayerForests = *getMultilayerForests();
+  std::unique_ptr< std::vector<float> > prediction;
+  std::vector< forestry* > multilayerForests = *getMultilayerForests();
   std::vector<float> gammas = getGammas();
 
-  // prediction =
-  //   (this->_multilayerForests[0]).predict(xNew, weightMatrix);
-  // std::unique_ptr< std::vector<float> > predictedResiduals;
-  // for (int i = 1; i < getNrounds(); i ++) {
-  //   std::unique_ptr< forestry > residualForest = multilayerForests[0];
-  //   predictedResiduals =
-  //     (*residualForest).predict(xNew, weightMatrix);
-  //   std::transform(predictedResiduals->begin(), predictedResiduals->end(),
-  //                  predictedResiduals->begin(), std::bind1st(std::multiplies<float>(), gammas[i]));
-  //   std::transform(prediction.begin(), prediction.end(),
-  //                  predictedResiduals->begin(), prediction.begin(), std::plus<float>());
-  // }
+  prediction = multilayerForests[0]->predict(xNew, weightMatrix);
+  std::unique_ptr< std::vector<float> > predictedResiduals;
+  for (int i = 1; i < getNrounds(); i ++) {
+    predictedResiduals = multilayerForests[i]->predict(xNew, weightMatrix);
+    std::transform(predictedResiduals->begin(), predictedResiduals->end(),
+                   predictedResiduals->begin(), std::bind1st(std::multiplies<float>(), gammas[i]));
+    std::transform(prediction->begin(), prediction->end(),
+                   predictedResiduals->begin(), prediction->begin(), std::plus<float>());
+  }
 
-  std::unique_ptr< std::vector<float> > prediction_ (
-      new std::vector<float>(prediction)
-  );
-
-  return prediction_;
+  return prediction;
 }
 

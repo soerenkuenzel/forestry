@@ -105,10 +105,6 @@ public:
     return _seed;
   }
 
-  std::vector< std::unique_ptr< forestryTree > >* getForest() {
-    return _forest.get();
-  }
-
   bool isVerbose() {
     return _verbose;
   }
@@ -133,7 +129,12 @@ public:
     return _overfitPenalty;
   }
 
-  std::vector< std::unique_ptr< forestry > >*  getMultilayerForests() {
+
+  bool isDoubleTree() {
+    return _doubleTree;
+  }
+
+  std::vector< forestry* >* getMultilayerForests() {
     return _multilayerForests.get();
   }
 
@@ -155,7 +156,6 @@ private:
   size_t _minNodeSizeToSplitSpt;
   size_t _minNodeSizeToSplitAvg;
   size_t _maxDepth;
-  std::unique_ptr< std::vector< std::unique_ptr< forestryTree > > > _forest;
   unsigned int _seed;
   bool _verbose;
   size_t _nthread;
@@ -167,7 +167,7 @@ private:
   float _overfitPenalty;
   bool _doubleTree;
 
-  std::unique_ptr< std::vector< std::unique_ptr< forestry > > > _multilayerForests;
+  std::unique_ptr<std::vector< forestry* > > _multilayerForests;
   std::vector<float> _gammas;
 };
 
