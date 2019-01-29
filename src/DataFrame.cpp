@@ -159,6 +159,9 @@ size_t DataFrame::get_row_idx(size_t rowIndex) {
   }
 }
 
-void DataFrame::setOutcomeData(std::unique_ptr< std::vector<float> > outcomeData) {
-    _outcomeData = std::move(outcomeData);
+void DataFrame::setOutcomeData(std::vector<float> outcomeData) {
+  std::unique_ptr<std::vector<float> > outcomeData_(
+      new std::vector<float>(outcomeData)
+  );
+  this->_outcomeData =std::move(outcomeData_);
 }

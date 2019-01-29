@@ -73,7 +73,7 @@ public:
 
   size_t get_row_idx(size_t rowIndex);
 
-  void setOutcomeData(std::unique_ptr< std::vector<float> > outcomeData);
+  void setOutcomeData(std::vector<float> outcomeData);
 
 private:
   std::unique_ptr< std::vector< std::vector<float> > > _featureData;
