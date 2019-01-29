@@ -5,9 +5,15 @@
 \alias{multilayerForestry}
 \title{Multilayer forestry}
 \usage{
-multilayerForestry(x, y, ntree, replace, sampsize, mtry, nodesizeSpl,
-  nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, maxDepth, splitratio,
-  nthread, middleSplit, doubleTree, linFeats, nlayers)
+multilayerForestry(x, y, ntree = 500, nrounds = 1, replace = TRUE,
+  sampsize = if (replace) nrow(x) else ceiling(0.632 * nrow(x)),
+  sample.fraction = NULL, mtry = max(floor(ncol(x)/3), 1),
+  nodesizeSpl = 3, nodesizeAvg = 3, nodesizeStrictSpl = 1,
+  nodesizeStrictAvg = 1, maxDepth = 99, splitratio = 1,
+  seed = as.integer(runif(1) * 1000), verbose = FALSE, nthread = 0,
+  splitrule = "variance", middleSplit = FALSE, maxObs = length(y),
+  ridgeRF = FALSE, linFeats = 0:(ncol(x) - 1), overfitPenalty = 1,
+  doubleTree = FALSE, reuseforestry = NULL, saveable = TRUE)
 }
 \arguments{
 \item{x}{A data frame of all training predictors.}
@@ -24,6 +30,10 @@ replacement. The default value is TRUE.}
 sampling with replacement, the default value is the length of the training
 data. If samplying without replacement, the default value is two-third of
 the length of the training data.}
+
+\item{sample.fraction}{if this is given, then sampsize is ignored and set to
+be round(length(y) * sample.fraction). It must be a real number between 0
+and 1}
 
 \item{mtry}{The number of variables randomly selected at each split point.
 The default value is set to be one third of total number of features of the
@@ -50,23 +60,48 @@ dataset is empty. If the ratio is 0, then the splitting data set is empty
 and all the data is used for the averaging data set (This is not a good
 usage however since there will be no data available for splitting).}
 
+\item{seed}{random seed}
+
+\item{verbose}{if training process in verbose mode}
+
 \item{nthread}{Number of threads to train and predict the forest. The default
 number is 0 which represents using all cores.}
+
+\item{splitrule}{only variance is implemented at this point and it contains
+specifies the loss function according to which the splits of random forest
+should be made}
 
 \item{middleSplit}{if the split value is taking the average of two feature
 values. If false, it will take a point based on a uniform distribution
 between two feature values. (Default = FALSE)}
 
-\item{doubleTree}{if the number of tree is doubled as averaging and splitting
-data can be exchanged to create decorrelated trees. (Default = FALSE)}
+\item{maxObs}{The max number of observations to split on}
+
+\item{ridgeRF}{Fit the model with a ridge regression or not}
 
 \item{linFeats}{Specify which features to split linearly on when using
 ridgeRF (defaults to use all numerical features)}
 
+\item{overfitPenalty}{Value to determine how much to penalize magnitude of
+coefficients in ridge regression}
+
+\item{doubleTree}{if the number of tree is doubled as averaging and splitting
+data can be exchanged to create decorrelated trees. (Default = FALSE)}
+
+\item{reuseforestry}{pass in an `forestry` object which will recycle the
+dataframe the old object created. It will save some space working on the
+same dataset.}
+
+\item{saveable}{If TRUE, then RF is created in such a way that it can be
+saved and loaded using save(...) and load(...). Setting it to TRUE
+(default) will, however, take longer and it will use more memory. When
+training many RF, it makes a lot of sense to set this to FALSE to save
+time and memory.}
+
 \item{nlayers}{Number of iterations used for gradient boosting.}
 }
 \value{
-A `forestry` object.
+A `multilayerForestry` object.
 }
 \description{
 Construct a gradient boosted random forest.

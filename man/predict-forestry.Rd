@@ -2,13 +2,14 @@
 % Please edit documentation in R/forestry.R
 \name{predict-forestry}
 \alias{predict-forestry}
-\alias{predict.forestry}
+\alias{predict.multilayerForestry}
 \title{predict-forestry}
 \usage{
-\method{predict}{forestry}(object, feature.new, aggregation = "average")
+\method{predict}{multilayerForestry}(object, feature.new,
+  aggregation = "average")
 }
 \arguments{
-\item{object}{A `forestry` object.}
+\item{object}{A `multilayerorestry` object.}
 
 \item{feature.new}{A data frame of testing predictors.}
 
