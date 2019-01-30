@@ -213,6 +213,36 @@ setClass(
   )
 )
 
+setClass(
+  Class = "multilayerForestry",
+  slots = list(
+    forest = "externalptr",
+    dataframe = "externalptr",
+    processed_dta = "list",
+    R_forest = "list",
+    categoricalFeatureCols = "list",
+    categoricalFeatureMapping = "list",
+    ntree = "numeric",
+    nrounds = "numeric",
+    replace = "logical",
+    sampsize = "numeric",
+    mtry = "numeric",
+    nodesizeSpl = "numeric",
+    nodesizeAvg = "numeric",
+    nodesizeStrictSpl = "numeric",
+    nodesizeStrictAvg = "numeric",
+    maxDepth = "numeric",
+    splitratio = "numeric",
+    middleSplit = "logical",
+    y = "vector",
+    maxObs = "numeric",
+    ridgeRF = "logical",
+    linFeats = "numeric",
+    overfitPenalty = "numeric",
+    doubleTree = "logical"
+  )
+)
+
 
 #' @title forestry
 #' @rdname forestry
@@ -538,7 +568,7 @@ forestry <- function(x,
 #' @rdname multilayer-forestry
 #' @description Construct a gradient boosted random forest.
 #' @inheritParams forestry
-#' @param nlayers Number of iterations used for gradient boosting.
+#' @param nrounds Number of iterations used for gradient boosting.
 #' @return A `multilayerForestry` object.
 #' @export
 multilayerForestry <- function(x,
@@ -602,7 +632,7 @@ multilayerForestry <- function(x,
 
     # Create rcpp object
     # Create a forest object
-    forest <- tryCatch({
+    multilayerForestry <- tryCatch({
       rcppDataFrame <- rcpp_cppDataFrameInterface(processed_x,
                                                   y,
                                                   categoricalFeatureCols_cpp,
@@ -697,7 +727,7 @@ multilayerForestry <- function(x,
 
     # Create rcpp object
     # Create a forest object
-    forest <- tryCatch({
+    multilayerForestry <- tryCatch({
       rcppForest <- rcpp_cppMultilayerBuildInterface(
         x,
         y,
@@ -763,16 +793,51 @@ multilayerForestry <- function(x,
 
   }
 
-  return(forestry)
+  return(multilayerForestry)
 }
-
 
 # -- Predict Method ------------------------------------------------------------
 #' predict-forestry
 #' @name predict-forestry
 #' @rdname predict-forestry
 #' @description Return the prediction from the forest.
-#' @param object A `multilayerorestry` object.
+#' @param object A `forestry` object.
+#' @param feature.new A data frame of testing predictors.
+#' @param aggregation How shall the leaf be aggregated. The default is to return
+#'   the mean of the leave `average`. Other options are `weightMatrix`.
+#' @return A vector of predicted responses.
+#' @export
+predict.forestry <- function(object,
+                             feature.new,
+                             aggregation = "average") {
+  # Preprocess the data
+  testing_data_checker(feature.new)
+
+  processed_x <- preprocess_testing(feature.new,
+                                    object@categoricalFeatureCols,
+                                    object@categoricalFeatureMapping)
+
+  rcppPrediction <- tryCatch({
+    rcpp_cppPredictInterface(object@forest, processed_x, aggregation)
+  }, error = function(err) {
+    print(err)
+    return(NULL)
+  })
+
+  if (aggregation == "average") {
+    return(rcppPrediction$prediction)
+  } else if (aggregation == "weightMatrix") {
+    return(rcppPrediction)
+  }
+}
+
+
+# -- Multilayer Predict Method -------------------------------------------------------
+#' predict-multilayer-forestry
+#' @name predict-multilayer-forestry
+#' @rdname predict-multilayer-forestry
+#' @description Return the prediction from the forest.
+#' @param object A `multilayerForestry` object.
 #' @param feature.new A data frame of testing predictors.
 #' @param aggregation How shall the leaf be aggregated. The default is to return
 #'   the mean of the leave `average`. Other options are `weightMatrix`.
