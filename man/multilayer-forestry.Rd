@@ -23,6 +23,8 @@ multilayerForestry(x, y, ntree = 500, nrounds = 1, replace = TRUE,
 \item{ntree}{The number of trees to grow in the forest. The default value is
 500.}
 
+\item{nrounds}{Number of iterations used for gradient boosting.}
+
 \item{replace}{An indicator of whether sampling of training data is with
 replacement. The default value is TRUE.}
 
@@ -97,8 +99,6 @@ saved and loaded using save(...) and load(...). Setting it to TRUE
 (default) will, however, take longer and it will use more memory. When
 training many RF, it makes a lot of sense to set this to FALSE to save
 time and memory.}
-
-\item{nlayers}{Number of iterations used for gradient boosting.}
 }
 \value{
 A `multilayerForestry` object.
