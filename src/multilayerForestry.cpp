@@ -58,75 +58,39 @@ multilayerForestry::multilayerForestry(
   addForests(ntree);
 }
 
-static inline float computeSquare (float x) { return x*x; }
-
 void multilayerForestry::addForests(size_t ntree) {
-  std::cout << "Number of gradient boosting iterations: " << (_nrounds) << std::endl;
 
   // Create vectors to store gradient boosted forests and gamma values
   std::vector< forestry* > multilayerForests(_nrounds);
   std::vector<float> gammas(_nrounds);
-  std::unique_ptr< std::vector<float> > predictedOutcome;
   float eta = 0.3;
 
-  // Save initial forestry object
-  forestry *initialForest = new forestry(
-      _trainingData,
-      _ntree,
-      _replace,
-      _sampSize,
-      _splitRatio,
-      _mtry,
-      _minNodeSizeSpt,
-      _minNodeSizeAvg,
-      _minNodeSizeToSplitSpt,
-      _minNodeSizeToSplitAvg,
-      _maxDepth,
-      _seed,
-      _nthread,
-      _verbose,
-      _splitMiddle,
-      _maxObs,
-      _ridgeRF,
-      _overfitPenalty,
-      _doubleTree
-  );
-
-  multilayerForests[0] = initialForest;
-  gammas[0] = 1;
-
-  // Calculate initial residuals
+  // Calculate initial prediction
   DataFrame *trainingData = getTrainingData();
   std::vector<float> outcomeData = *(trainingData->getOutcomeData());
+  float meanOutcome =
+    accumulate(outcomeData.begin(), outcomeData.end(), 0.0) / outcomeData.size();
+  this->_meanOutcome = meanOutcome;
 
+  std::vector<float> predictedOutcome(trainingData->getNumRows(), meanOutcome);
+
+  // Apply gradient boosting to predict residuals
   std::vector<float> residuals(trainingData->getNumRows());
-  predictedOutcome =
-    initialForest->predict(getTrainingData()->getAllFeatureData(), NULL);
-
-  // Apply gradient boosting using forestry to predict residuals
-  for (int i = 1; i < getNrounds(); i++) {
+  for (int i = 0; i < getNrounds(); i++) {
     std::transform(outcomeData.begin(), outcomeData.end(),
-                   predictedOutcome->begin(), residuals.begin(), std::minus<float>());
-
-    std::vector< std::vector<float> >* featData = trainingData->getAllFeatureData();
-    std::vector<size_t>* catCols = trainingData->getCatCols();
-    std::vector<size_t>* linCols = trainingData->getLinCols();
-
-    std::vector< std::vector<float> > residualFeatureData(*featData);
-    std::vector<size_t> residualCatCols(*catCols);
-    std::vector<size_t> residualLinCols(*linCols);
+                   predictedOutcome.begin(), residuals.begin(), std::minus<float>());
 
     std::unique_ptr< std::vector< std::vector<float> > >  residualFeatureData_(
-        new std::vector< std::vector<float> >(residualFeatureData)
+        new std::vector< std::vector<float> >(*(trainingData->getAllFeatureData()))
     );
     std::unique_ptr< std::vector<float> > residuals_(
         new std::vector<float>(residuals)
     );
     std::unique_ptr< std::vector<size_t> > residualCatCols_(
-        new std::vector<size_t>(residualCatCols)
+        new std::vector<size_t>(*(trainingData->getCatCols()))
     );
     std::unique_ptr< std::vector<size_t> > residualLinCols_(
-        new std::vector<size_t>(residualLinCols)
+        new std::vector<size_t>(*(trainingData->getLinCols()))
     );
 
     DataFrame* residualDataFrame = new DataFrame(
@@ -165,9 +129,9 @@ void multilayerForestry::addForests(size_t ntree) {
       residualForest->predict(getTrainingData()->getAllFeatureData(), NULL);
 
     // Calculate and store best gamma value
-    std::vector<float> bestPredictedResiduals(trainingData->getNumRows());
-
-    float minMeanSquaredError = INFINITY;
+    // std::vector<float> bestPredictedResiduals(trainingData->getNumRows());
+    // float minMeanSquaredError = INFINITY;
+    // static inline float computeSquare (float x) { return x*x; }
 
     // for (float gamma = -1; gamma <= 1; gamma += 0.02) {
     //   std::vector<float> gammaPredictedResiduals(trainingData->getNumRows());
@@ -193,11 +157,13 @@ void multilayerForestry::addForests(size_t ntree) {
     //   }
     // }
 
-    gammas[i] = 0.3;
+    gammas[i] = 1 * eta;
+    std::transform(predictedResiduals->begin(), predictedResiduals->end(),
+                   predictedResiduals->begin(), std::bind1st(std::multiplies<float>(), gammas[i]));
 
     // Update prediction after each round of gradient boosting
-    std::transform(predictedOutcome->begin(), predictedOutcome->end(),
-                   bestPredictedResiduals.begin(), predictedOutcome->begin(), std::plus<float>());
+    std::transform(predictedOutcome.begin(), predictedOutcome.end(),
+                   predictedResiduals->begin(), predictedOutcome.begin(), std::plus<float>());
   }
 
   // Save vector of forestry objects and gamma values
@@ -207,9 +173,6 @@ void multilayerForestry::addForests(size_t ntree) {
 
   this->_multilayerForests = std::move(multilayerForests_);
   this->_gammas = std::move(gammas);
-
-  // trainingData->setOutcomeData(outcomeData);
-  std::cout << "End data: " << _trainingData->getOutcomeData()->at(2) << std::endl;
 }
 
 std::unique_ptr< std::vector<float> > multilayerForestry::predict(
@@ -218,23 +181,28 @@ std::unique_ptr< std::vector<float> > multilayerForestry::predict(
 ) {
   std::vector< forestry* > multilayerForests = *getMultilayerForests();
   std::vector<float> gammas = getGammas();
-  forestry* firstForest = multilayerForests[0];
+
+  std::unique_ptr< std::vector<float> > initialPrediction =
+    multilayerForests[0]->predict(xNew, weightMatrix);
+
+  std::vector<float> prediction(initialPrediction->size(), getMeanOutcome());
 
   // Use forestry objects and gamma values to make prediction
-  std::unique_ptr< std::vector<float> > prediction =
-    firstForest->predict(xNew, NULL);
-
-    for (int i = 1; i < getNrounds(); i ++) {
+  for (int i = 0; i < getNrounds(); i ++) {
     std::unique_ptr< std::vector<float> > predictedResiduals =
       multilayerForests[i]->predict(xNew, weightMatrix);
 
     std::transform(predictedResiduals->begin(), predictedResiduals->end(),
                    predictedResiduals->begin(), std::bind1st(std::multiplies<float>(), gammas[i]));
 
-    std::transform(prediction->begin(), prediction->end(),
-                   predictedResiduals->begin(), prediction->begin(), std::plus<float>());
+    std::transform(prediction.begin(), prediction.end(),
+                   predictedResiduals->begin(), prediction.begin(), std::plus<float>());
   }
 
-  return prediction;
+  std::unique_ptr< std::vector<float> > prediction_ (
+      new std::vector<float>(prediction)
+  );
+
+  return prediction_;
 }
 

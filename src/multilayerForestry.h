@@ -142,6 +142,10 @@ public:
     return _gammas;
   }
 
+  float getMeanOutcome() {
+    return _meanOutcome;
+  }
+
 
 private:
   DataFrame* _trainingData;
@@ -159,7 +163,6 @@ private:
   unsigned int _seed;
   bool _verbose;
   size_t _nthread;
-  float _OOBError;
   std::unique_ptr< std::vector<float> > _variableImportance;
   bool _splitMiddle;
   size_t _maxObs;
@@ -169,6 +172,7 @@ private:
 
   std::unique_ptr<std::vector< forestry* > > _multilayerForests;
   std::vector<float> _gammas;
+  float _meanOutcome;
 };
 
 
