@@ -10,7 +10,7 @@ DataFrame::~DataFrame() {
 }
 
 DataFrame::DataFrame(
-  std::unique_ptr< std::vector< std::vector<float> > > featureData,
+  std::shared_ptr< std::vector< std::vector<float> > > featureData,
   std::unique_ptr< std::vector<float> > outcomeData,
   std::unique_ptr< std::vector<size_t> > categoricalFeatureCols,
   std::unique_ptr< std::vector<size_t> > linearFeatureCols,
