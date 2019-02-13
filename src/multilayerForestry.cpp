@@ -80,7 +80,7 @@ void multilayerForestry::addForests(size_t ntree) {
     std::transform(outcomeData.begin(), outcomeData.end(),
                    predictedOutcome.begin(), residuals.begin(), std::minus<float>());
 
-    std::unique_ptr< std::vector< std::vector<float> > >  residualFeatureData_(
+    std::shared_ptr< std::vector< std::vector<float> > > residualFeatureData_(
         new std::vector< std::vector<float> >(*(trainingData->getAllFeatureData()))
     );
     std::unique_ptr< std::vector<float> > residuals_(
@@ -94,7 +94,7 @@ void multilayerForestry::addForests(size_t ntree) {
     );
 
     DataFrame* residualDataFrame = new DataFrame(
-      std::move(residualFeatureData_),
+      residualFeatureData_,
       std::move(residuals_),
       std::move(residualCatCols_),
       std::move(residualLinCols_),
