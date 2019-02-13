@@ -86,7 +86,6 @@ training_data_checker <- function(x,
     stop("maxDepth must be a positive integer.")
   }
 
-
   # if the splitratio is 1, then we use adaptive rf and avgSampleSize is the
   # equal to the total sampsize
   if (splitratio == 0 || splitratio == 1) {

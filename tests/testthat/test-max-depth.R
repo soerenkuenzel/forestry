@@ -2,7 +2,7 @@ test_that("Tests that maxDepth parameter is working correctly", {
   x <- iris[, -1]
   y <- iris[, 1]
 
-  context('Forestry base function')
+  context('Max depth of trees')
   # Set seed for reproductivity
   set.seed(24750371)
 
