@@ -24,6 +24,7 @@ public:
     size_t minNodeSizeAvg,
     size_t minNodeSizeToSplitSpt,
     size_t minNodeSizeToSplitAvg,
+    size_t maxDepth,
     std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
     std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
     std::mt19937_64& random_number_generator,
@@ -40,6 +41,7 @@ public:
     size_t minNodeSizeAvg,
     size_t minNodeSizeToSplitSpt,
     size_t minNodeSizeToSplitAvg,
+    size_t maxDepth,
     std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
     std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
     float overfitPenalty
@@ -63,6 +65,7 @@ public:
       size_t minNodeSizeAvg,
       size_t minNodeSizeToSplitSpt,
       size_t minNodeSizeToSplitAvg,
+      size_t maxDepth,
       std::vector<size_t> categoricalFeatureColsRcpp,
       std::vector<int> var_ids,
       std::vector<double> split_vals,
@@ -85,23 +88,24 @@ public:
     std::vector<size_t>* splittingSampleIndex,
     DataFrame* trainingData,
     std::mt19937_64& random_number_generator,
+    size_t depth,
     bool splitMiddle,
     size_t maxObs,
     bool ridgeRF,
     float overfitPenalty,
     std::vector<double>* benchmark,
-    arma::Mat<float> gTotal,
-    arma::Mat<float> sTotal
+    arma::Mat<double> gTotal,
+    arma::Mat<double> sTotal
   );
 
   void selectBestFeature(
     size_t& bestSplitFeature,
     double& bestSplitValue,
     float& bestSplitLoss,
-    arma::Mat<float> &bestSplitGL,
-    arma::Mat<float> &bestSplitGR,
-    arma::Mat<float> &bestSplitSL,
-    arma::Mat<float> &bestSplitSR,
+    arma::Mat<double> &bestSplitGL,
+    arma::Mat<double> &bestSplitGR,
+    arma::Mat<double> &bestSplitSL,
+    arma::Mat<double> &bestSplitSR,
     std::vector<size_t>* featureList,
     std::vector<size_t>* averagingSampleIndex,
     std::vector<size_t>* splittingSampleIndex,
@@ -112,14 +116,14 @@ public:
     bool ridgeRF,
     float overfitPenalty,
     std::vector<double>* benchmark,
-    arma::Mat<float>& gTotal,
-    arma::Mat<float>& sTotal
+    arma::Mat<double>& gTotal,
+    arma::Mat<double>& sTotal
   );
 
   void initializeRidgeRF(
       DataFrame* trainingData,
-      arma::Mat<float>& gTotal,
-      arma::Mat<float>& sTotal,
+      arma::Mat<double>& gTotal,
+      arma::Mat<double>& sTotal,
       size_t numLinearFeatures,
       std::vector<size_t>* splitIndexes
   );
@@ -166,6 +170,10 @@ public:
     return _minNodeSizeToSplitAvg;
   }
 
+  size_t getMaxDepth() {
+    return _maxDepth;
+  }
+
   std::vector<size_t>* getSplittingIndex() {
     return _splittingSampleIndex.get();
   }
@@ -192,6 +200,7 @@ private:
   size_t _minNodeSizeAvg;
   size_t _minNodeSizeToSplitSpt;
   size_t _minNodeSizeToSplitAvg;
+  size_t _maxDepth;
   std::unique_ptr< std::vector<size_t> > _averagingSampleIndex;
   std::unique_ptr< std::vector<size_t> > _splittingSampleIndex;
   std::unique_ptr< RFNode > _root;

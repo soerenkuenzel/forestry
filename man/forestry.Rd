@@ -7,10 +7,11 @@
 forestry(x, y, ntree = 500, replace = TRUE, sampsize = if (replace)
   nrow(x) else ceiling(0.632 * nrow(x)), sample.fraction = NULL,
   mtry = max(floor(ncol(x)/3), 1), nodesizeSpl = 3, nodesizeAvg = 3,
-  nodesizeStrictSpl = 1, nodesizeStrictAvg = 1, splitratio = 1,
-  seed = as.integer(runif(1) * 1000), verbose = FALSE, nthread = 0,
-  splitrule = "variance", middleSplit = FALSE, maxObs = length(y),
-  ridgeRF = FALSE, overfitPenalty = 1, doubleTree = FALSE,
+  nodesizeStrictSpl = 1, nodesizeStrictAvg = 1, maxDepth = 99,
+  splitratio = 1, seed = as.integer(runif(1) * 1000),
+  verbose = FALSE, nthread = 0, splitrule = "variance",
+  middleSplit = FALSE, maxObs = length(y), ridgeRF = FALSE,
+  linFeats = 0:(ncol(x) - 1), overfitPenalty = 1, doubleTree = FALSE,
   reuseforestry = NULL, saveable = TRUE)
 }
 \arguments{
@@ -49,6 +50,8 @@ nodes. The default value is 1.}
 \item{nodesizeStrictAvg}{Minimum size of terminal nodes for averaging dataset
 to follow strictly. The default value is 1.}
 
+\item{maxDepth}{Maximum depth of a tree. The default value is 99.}
+
 \item{splitratio}{Proportion of the training data used as the splitting
 dataset. It is a ratio between 0 and 1. If the ratio is 1, then essentially
 splitting dataset becomes the total entire sampled set and the averaging
@@ -74,6 +77,9 @@ between two feature values. (Default = FALSE)}
 \item{maxObs}{The max number of observations to split on}
 
 \item{ridgeRF}{Fit the model with a ridge regression or not}
+
+\item{linFeats}{Specify which features to split linearly on when using
+ridgeRF (defaults to use all numerical features)}
 
 \item{overfitPenalty}{Value to determine how much to penalize magnitude of
 coefficients in ridge regression}

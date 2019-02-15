@@ -15,10 +15,12 @@ training_data_checker <- function(x,
                                   nodesizeAvg,
                                   nodesizeStrictSpl,
                                   nodesizeStrictAvg,
+                                  maxDepth,
                                   splitratio,
                                   nthread,
                                   middleSplit,
-                                  doubleTree) {
+                                  doubleTree,
+                                  linFeats) {
   x <- as.data.frame(x)
   nfeatures <- ncol(x)
 
@@ -45,6 +47,10 @@ training_data_checker <- function(x,
 
   if (sampsize <= 0 || sampsize %% 1 != 0) {
     stop("sampsize must be a positive integer.")
+  }
+
+  if (max(linFeats) >= nfeatures || any(linFeats < 0)) {
+    stop("linFeats must be a positive integer less than ncol(x).")
   }
 
   if (!replace && sampsize > nrow(x)) {
@@ -74,6 +80,10 @@ training_data_checker <- function(x,
   }
   if (nodesizeStrictAvg <= 0 || nodesizeStrictAvg %% 1 != 0) {
     stop("nodesizeStrictAvg must be a positive integer.")
+  }
+
+  if (maxDepth <= 0 || maxDepth %% 1 != 0) {
+    stop("maxDepth must be a positive integer.")
   }
 
   # if the splitratio is 1, then we use adaptive rf and avgSampleSize is the
@@ -190,11 +200,13 @@ setClass(
     nodesizeAvg = "numeric",
     nodesizeStrictSpl = "numeric",
     nodesizeStrictAvg = "numeric",
+    maxDepth = "numeric",
     splitratio = "numeric",
     middleSplit = "logical",
     y = "vector",
     maxObs = "numeric",
     ridgeRF = "logical",
+    linFeats = "numeric",
     overfitPenalty = "numeric",
     doubleTree = "logical"
   )
@@ -227,6 +239,7 @@ setClass(
 #'   nodes. The default value is 1.
 #' @param nodesizeStrictAvg Minimum size of terminal nodes for averaging dataset
 #'   to follow strictly. The default value is 1.
+#' @param maxDepth Maximum depth of a tree. The default value is 99.
 #' @param splitratio Proportion of the training data used as the splitting
 #'   dataset. It is a ratio between 0 and 1. If the ratio is 1, then essentially
 #'   splitting dataset becomes the total entire sampled set and the averaging
@@ -255,6 +268,8 @@ setClass(
 #'   training many RF, it makes a lot of sense to set this to FALSE to save
 #'   time and memory.
 #' @param ridgeRF Fit the model with a ridge regression or not
+#' @param linFeats Specify which features to split linearly on when using
+#'   ridgeRF (defaults to use all numerical features)
 #' @param overfitPenalty Value to determine how much to penalize magnitude of
 #' coefficients in ridge regression
 #' @return A `forestry` object.
@@ -310,6 +325,7 @@ forestry <- function(x,
                      nodesizeAvg = 3,
                      nodesizeStrictSpl = 1,
                      nodesizeStrictAvg = 1,
+                     maxDepth = 99,
                      splitratio = 1,
                      seed = as.integer(runif(1) * 1000),
                      verbose = FALSE,
@@ -318,6 +334,7 @@ forestry <- function(x,
                      middleSplit = FALSE,
                      maxObs = length(y),
                      ridgeRF = FALSE,
+                     linFeats = 0:(ncol(x)-1),
                      overfitPenalty = 1,
                      doubleTree = FALSE,
                      reuseforestry = NULL,
@@ -325,12 +342,14 @@ forestry <- function(x,
   # only if sample.fraction is given, update sampsize
   if (!is.null(sample.fraction))
     sampsize <- ceiling(sample.fraction * nrow(x))
+  linFeats <- unique(linFeats)
 
   x <- as.data.frame(x)
   # Preprocess the data
   training_data_checker(x, y, ntree,replace, sampsize, mtry, nodesizeSpl,
                         nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg,
-                        splitratio, nthread, middleSplit, doubleTree)
+                        maxDepth, splitratio, nthread, middleSplit, doubleTree,
+                        linFeats)
   # Total number of obervations
   nObservations <- length(y)
   numColumns <- ncol(x)
@@ -356,6 +375,7 @@ forestry <- function(x,
       rcppDataFrame <- rcpp_cppDataFrameInterface(processed_x,
                                                   y,
                                                   categoricalFeatureCols_cpp,
+                                                  linFeats,
                                                   nObservations,
                                                   numColumns)
 
@@ -363,6 +383,7 @@ forestry <- function(x,
         processed_x,
         y,
         categoricalFeatureCols_cpp,
+        linFeats,
         nObservations,
         numColumns,
         ntree,
@@ -374,6 +395,7 @@ forestry <- function(x,
         nodesizeAvg,
         nodesizeStrictSpl,
         nodesizeStrictAvg,
+        maxDepth,
         seed,
         nthread,
         verbose,
@@ -389,6 +411,7 @@ forestry <- function(x,
         "processed_x" = processed_x,
         "y" = y,
         "categoricalFeatureCols_cpp" = categoricalFeatureCols_cpp,
+        "linearFeatureCols_cpp" = linFeats,
         "nObservations" = nObservations,
         "numColumns" = numColumns
       )
@@ -411,10 +434,12 @@ forestry <- function(x,
           nodesizeAvg = nodesizeAvg,
           nodesizeStrictSpl = nodesizeStrictSpl,
           nodesizeStrictAvg = nodesizeStrictAvg,
+          maxDepth = maxDepth,
           splitratio = splitratio,
           middleSplit = middleSplit,
           maxObs = maxObs,
           ridgeRF = ridgeRF,
+          linFeats = linFeats,
           overfitPenalty = overfitPenalty,
           doubleTree = doubleTree
         )
@@ -444,6 +469,7 @@ forestry <- function(x,
         x,
         y,
         categoricalFeatureCols_cpp,
+        linFeats,
         nObservations,
         numColumns,
         ntree,
@@ -455,6 +481,7 @@ forestry <- function(x,
         nodesizeAvg,
         nodesizeStrictSpl,
         nodesizeStrictAvg,
+        maxDepth,
         seed,
         nthread,
         verbose,
@@ -484,10 +511,12 @@ forestry <- function(x,
           nodesizeAvg = nodesizeAvg,
           nodesizeStrictSpl = nodesizeStrictSpl,
           nodesizeStrictAvg = nodesizeStrictAvg,
+          maxDepth = maxDepth,
           splitratio = splitratio,
           middleSplit = middleSplit,
           maxObs = maxObs,
           ridgeRF = ridgeRF,
+          linFeats = linFeats,
           overfitPenalty = overfitPenalty,
           doubleTree = doubleTree
         )
@@ -884,6 +913,7 @@ relinkCPP_prt <- function(object) {
         x = object@processed_dta$processed_x,
         y = object@processed_dta$y,
         catCols = object@processed_dta$categoricalFeatureCols_cpp,
+        linCols = object@processed_dta$linearFeatureCols_cpp,
         numRows = object@processed_dta$nObservations,
         numColumns = object@processed_dta$numColumns,
         R_forest = object@R_forest,
@@ -895,6 +925,7 @@ relinkCPP_prt <- function(object) {
         nodesizeAvg = object@nodesizeAvg,
         nodesizeStrictSpl = object@nodesizeStrictSpl,
         nodesizeStrictAvg = object@nodesizeStrictAvg,
+        maxDepth = object@maxDepth,
         seed = sample(.Machine$integer.max, 1),
         nthread = 0, # will use all threads available.
         verbose = FALSE,

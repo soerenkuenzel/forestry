@@ -21,6 +21,7 @@ SEXP rcpp_cppDataFrameInterface(
     Rcpp::List x,
     Rcpp::NumericVector y,
     Rcpp::NumericVector catCols,
+    Rcpp::NumericVector linCols,
     int numRows,
     int numColumns
 ){
@@ -44,10 +45,19 @@ SEXP rcpp_cppDataFrameInterface(
         )
     );
 
+    std::unique_ptr< std::vector<size_t> > linearFeats (
+        new std::vector<size_t>(
+            Rcpp::as< std::vector<size_t> >(linCols)
+        )
+    );
+
+    std::sort(linearFeats->begin(), linearFeats->end());
+
     DataFrame* trainingData = new DataFrame(
         std::move(featureDataRcpp),
         std::move(outcomeDataRcpp),
         std::move(categoricalFeatureColsRcpp),
+        std::move(linearFeats),
         (size_t) numRows,
         (size_t) numColumns
     );
@@ -69,6 +79,7 @@ SEXP rcpp_cppBuildInterface(
   Rcpp::List x,
   Rcpp::NumericVector y,
   Rcpp::NumericVector catCols,
+  Rcpp::NumericVector linCols,
   int numRows,
   int numColumns,
   int ntree,
@@ -80,6 +91,7 @@ SEXP rcpp_cppBuildInterface(
   int nodesizeAvg,
   int nodesizeStrictSpl,
   int nodesizeStrictAvg,
+  int maxDepth,
   int seed,
   int nthread,
   bool verbose,
@@ -108,6 +120,7 @@ SEXP rcpp_cppBuildInterface(
         (size_t) nodesizeAvg,
         (size_t) nodesizeStrictSpl,
         (size_t) nodesizeStrictAvg,
+        (size_t) maxDepth,
         (unsigned int) seed,
         (size_t) nthread,
         verbose,
@@ -153,10 +166,19 @@ SEXP rcpp_cppBuildInterface(
           )
       );
 
+      std::unique_ptr< std::vector<size_t> > linearFeats (
+          new std::vector<size_t>(
+              Rcpp::as< std::vector<size_t> >(linCols)
+          )
+      );
+
+      std::sort(linearFeats->begin(), linearFeats->end());
+
       DataFrame* trainingData = new DataFrame(
           std::move(featureDataRcpp),
           std::move(outcomeDataRcpp),
           std::move(categoricalFeatureColsRcpp),
+          std::move(linearFeats),
           (size_t) numRows,
           (size_t) numColumns
       );
@@ -172,6 +194,7 @@ SEXP rcpp_cppBuildInterface(
         (size_t) nodesizeAvg,
         (size_t) nodesizeStrictSpl,
         (size_t) nodesizeStrictAvg,
+        (size_t) maxDepth,
         (unsigned int) seed,
         (size_t) nthread,
         verbose,
@@ -402,6 +425,7 @@ Rcpp::List rcpp_reconstructree(
   Rcpp::List x,
   Rcpp::NumericVector y,
   Rcpp::NumericVector catCols,
+  Rcpp::NumericVector linCols,
   int numRows,
   int numColumns,
   Rcpp::List R_forest,
@@ -413,6 +437,7 @@ Rcpp::List rcpp_reconstructree(
   int nodesizeAvg,
   int nodesizeStrictSpl,
   int nodesizeStrictAvg,
+  int maxDepth,
   int seed,
   int nthread,
   bool verbose,
@@ -499,10 +524,19 @@ Rcpp::List rcpp_reconstructree(
       )
   );
 
+  std::unique_ptr< std::vector<size_t> > linearFeats (
+      new std::vector<size_t>(
+          Rcpp::as< std::vector<size_t> >(linCols)
+      )
+  );
+
+  std::sort(linearFeats->begin(), linearFeats->end());
+
   DataFrame* trainingData = new DataFrame(
     std::move(featureDataRcpp),
     std::move(outcomeDataRcpp),
     std::move(categoricalFeatureColsRcpp),
+    std::move(linearFeats),
     (size_t) numRows,
     (size_t) numColumns
   );
@@ -518,6 +552,7 @@ Rcpp::List rcpp_reconstructree(
     (int) nodesizeAvg,
     (int) nodesizeStrictSpl,
     (int) nodesizeStrictAvg,
+    (int) maxDepth,
     (unsigned int) seed,
     (int) nthread,
     (bool) verbose,

@@ -2,8 +2,8 @@
 
 DataFrame::DataFrame():
   _featureData(nullptr), _outcomeData(nullptr), _rowNumbers(nullptr),
-  _categoricalFeatureCols(nullptr),
-  _numericalFeatureCols(nullptr), _numRows(0), _numColumns(0) {}
+  _categoricalFeatureCols(nullptr), _numericalFeatureCols(nullptr),
+  _linearFeatureCols(nullptr), _numRows(0), _numColumns(0) {}
 
 DataFrame::~DataFrame() {
 //  std::cout << "DataFrame() destructor is called." << std::endl;
@@ -13,12 +13,14 @@ DataFrame::DataFrame(
   std::unique_ptr< std::vector< std::vector<float> > > featureData,
   std::unique_ptr< std::vector<float> > outcomeData,
   std::unique_ptr< std::vector<size_t> > categoricalFeatureCols,
+  std::unique_ptr< std::vector<size_t> > linearFeatureCols,
   std::size_t numRows,
   std::size_t numColumns
 ) {
   this->_featureData = std::move(featureData);
   this->_outcomeData = std::move(outcomeData);
   this->_categoricalFeatureCols = std::move(categoricalFeatureCols);
+  this->_linearFeatureCols = std::move(linearFeatureCols);
   this->_numRows = numRows;
   this->_numColumns = numColumns;
 
@@ -79,8 +81,8 @@ std::vector<float> DataFrame::getLinObsData(
 ) {
   if (rowIndex < getNumRows()) {
     std::vector<float> feat;
-    for (size_t i = 0; i < getNumCols()->size(); i++) {
-      feat.push_back(getPoint(rowIndex, (*getNumCols())[i]));
+    for (size_t i = 0; i < getLinCols()->size(); i++) {
+      feat.push_back(getPoint(rowIndex, (*getLinCols())[i]));
     }
     return feat;
   } else {

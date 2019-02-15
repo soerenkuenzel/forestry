@@ -65,10 +65,10 @@ void RFNode::ridgePredict(
   //Number of linear features in training data
   size_t dimension = (trainingData->getLinObsData((*leafObs)[0])).size();
 
-  arma::Mat<float> x(leafObs->size(),
+  arma::Mat<double> x(leafObs->size(),
                      dimension + 1);
 
-  arma::Mat<float> identity(dimension + 1,
+  arma::Mat<double> identity(dimension + 1,
                             dimension + 1);
   identity.eye();
 
@@ -83,21 +83,21 @@ void RFNode::ridgePredict(
     currentObservation = trainingData->getLinObsData((*leafObs)[i]);
     currentObservation.push_back(1.0);
 
-    x.row(i) = arma::conv_to<arma::Row<float> >::from(currentObservation);
+    x.row(i) = arma::conv_to<arma::Row<double> >::from(currentObservation);
 
     outcomePoints.push_back(trainingData->getOutcomePoint((*leafObs)[i]));
   }
 
-  arma::Mat<float> y(outcomePoints.size(),
+  arma::Mat<double> y(outcomePoints.size(),
                      1);
-  y.col(0) = arma::conv_to<arma::Col<float> >::from(outcomePoints);
+  y.col(0) = arma::conv_to<arma::Col<double> >::from(outcomePoints);
 
   //Compute XtX + lambda * I * Y = C
-  arma::Mat<float> coefficients = (x.t() * x +
+  arma::Mat<double> coefficients = (x.t() * x +
                                   identity * lambda).i() * x.t() * y;
 
   //Map xNew into Eigen matrix
-  arma::Mat<float> xn(updateIndex->size(),
+  arma::Mat<double> xn(updateIndex->size(),
                       dimension + 1);
 
   size_t index = 0;
@@ -111,12 +111,12 @@ void RFNode::ridgePredict(
     }
     newObservation.push_back(1.0);
 
-    xn.row(index) = arma::conv_to<arma::Row<float> >::from(newObservation);
+    xn.row(index) = arma::conv_to<arma::Row<double> >::from(newObservation);
     index++;
   }
 
   //Multiply xNew * coefficients = result
-  arma::Mat<float> predictions = xn * coefficients;
+  arma::Mat<double> predictions = xn * coefficients;
 
   for (size_t i = 0; i < updateIndex->size(); i++) {
     outputPrediction[(*updateIndex)[i]] = predictions(i, 0);

@@ -1,7 +1,7 @@
 Package: forestry
 Type: Package
 Title: Forestry
-Version: 0.6.0.0
+Version: 0.7.0.0
 Author: Sören Künzel, Theo Saarinen, Jasjeet Sekhon, Allen Tang
 Maintainer: Sören Künzel <srk@berkeley.edu>, Allen Tang <actang.me@gmail.com>
 Description: Gradient Boosting, Random Forests, Tree Estimators, Optimal Trees,
@@ -21,7 +21,7 @@ Imports:
 LinkingTo: 
     RcppArmadillo,
     Rcpp
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
 SystemRequirements: C++11
 Suggests:
     testthat,
