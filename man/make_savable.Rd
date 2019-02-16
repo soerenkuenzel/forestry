@@ -35,4 +35,3 @@ y_pred_after <- predict(forest, x)
 testthat::expect_equal(y_pred_before, y_pred_after)
 file.remove("forest.Rda")
 }
-

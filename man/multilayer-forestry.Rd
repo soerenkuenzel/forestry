@@ -5,9 +5,9 @@
 \alias{multilayerForestry}
 \title{Multilayer forestry}
 \usage{
-multilayerForestry(x, y, ntree = 500, nrounds = 1, replace = FALSE,
-  sampsize = nrow(x), sample.fraction = NULL, mtry = ncol(x),
-  nodesizeSpl = 3, nodesizeAvg = 3,
+multilayerForestry(x, y, ntree = 500, nrounds = 1, eta = 0.3,
+  replace = FALSE, sampsize = nrow(x), sample.fraction = NULL,
+  mtry = ncol(x), nodesizeSpl = 3, nodesizeAvg = 3,
   nodesizeStrictSpl = max(round(nrow(x)/128), 1),
   nodesizeStrictAvg = max(round(nrow(x)/128), 1), maxDepth = 99,
   splitratio = 1, seed = as.integer(runif(1) * 1000), verbose = FALSE,
@@ -25,6 +25,8 @@ multilayerForestry(x, y, ntree = 500, nrounds = 1, replace = FALSE,
 500.}
 
 \item{nrounds}{Number of iterations used for gradient boosting.}
+
+\item{eta}{Step size shrinkage used in gradient boosting update.}
 
 \item{replace}{An indicator of whether sampling of training data is with
 replacement. The default value is TRUE.}
@@ -107,4 +109,3 @@ A `multilayerForestry` object.
 \description{
 Construct a gradient boosted random forest.
 }
-

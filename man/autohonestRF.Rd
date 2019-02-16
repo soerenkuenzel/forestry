@@ -13,4 +13,3 @@ autohonestRF(...)
 This function is deprecated and only exists for backwards
   backwards compatibility. The function you want to use is `autoforestry`.
 }
-

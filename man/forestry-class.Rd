@@ -7,4 +7,3 @@
 \description{
 `honestRF` class only exists for backwards compatibility reasons
 }
-

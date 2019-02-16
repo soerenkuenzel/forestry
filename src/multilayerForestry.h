@@ -22,6 +22,7 @@ public:
     DataFrame* trainingData,
     size_t ntree,
     size_t nrounds,
+    float eta,
     bool replace,
     size_t sampSize,
     float splitRatio,
@@ -82,6 +83,10 @@ public:
 
   size_t getNrounds() {
     return _nrounds;
+  }
+
+  size_t getEta() {
+    return _eta;
   }
 
   size_t getNtrain(){
@@ -151,6 +156,7 @@ private:
   DataFrame* _trainingData;
   size_t _ntree;
   size_t _nrounds;
+  float _eta;
   bool _replace;
   size_t _sampSize;
   float _splitRatio;

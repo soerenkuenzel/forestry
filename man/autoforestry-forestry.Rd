@@ -31,4 +31,3 @@ A `forestry` object
 \description{
 autoforestry-forestry
 }
-

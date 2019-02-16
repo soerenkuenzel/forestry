@@ -13,4 +13,3 @@ relinkCPP_prt(object)
 When a `foresty` object is saved and then reloaded the Cpp
   pointers for the data set and the Cpp forest have to be reconstructed
 }
-

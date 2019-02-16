@@ -14,4 +14,3 @@ getVI(object, noWarning)
 \description{
 Calculate increase in OOB for each shuffled feature for forest.
 }
-

@@ -16,6 +16,7 @@ multilayerForestry::multilayerForestry(
   DataFrame* trainingData,
   size_t ntree,
   size_t nrounds,
+  float eta,
   bool replace,
   size_t sampSize,
   float splitRatio,
@@ -37,6 +38,7 @@ multilayerForestry::multilayerForestry(
   this->_trainingData = trainingData;
   this->_ntree = ntree;
   this->_nrounds= nrounds;
+  this->_eta = eta;
   this->_replace = replace;
   this->_sampSize = sampSize;
   this->_splitRatio = splitRatio;
@@ -63,7 +65,6 @@ void multilayerForestry::addForests(size_t ntree) {
   // Create vectors to store gradient boosted forests and gamma values
   std::vector< forestry* > multilayerForests(_nrounds);
   std::vector<float> gammas(_nrounds);
-  float eta = 0.3;
 
   // Calculate initial prediction
   DataFrame *trainingData = getTrainingData();
@@ -157,7 +158,7 @@ void multilayerForestry::addForests(size_t ntree) {
     //   }
     // }
 
-    gammas[i] = 1 * eta;
+    gammas[i] = 1 * _eta;
     std::transform(predictedResiduals->begin(), predictedResiduals->end(),
                    predictedResiduals->begin(), std::bind1st(std::multiplies<float>(), gammas[i]));
 

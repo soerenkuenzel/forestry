@@ -65,4 +65,3 @@ ridgeRF (defaults to use all numerical features)}
 \description{
 Check the input to forestry constructor
 }
-
