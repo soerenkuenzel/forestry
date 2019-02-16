@@ -22,3 +22,4 @@ A vector of predicted responses.
 \description{
 Return the prediction from the forest.
 }
+

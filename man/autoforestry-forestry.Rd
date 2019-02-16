@@ -4,9 +4,8 @@
 \alias{autoforestry}
 \title{autoforestry-forestry}
 \usage{
-autoforestry(x, y, sampsize = as.integer(nrow(x) * 0.75),
-  num_iter = 1024, eta = 2, verbose = FALSE, seed = 24750371,
-  nthread = 0)
+autoforestry(x, y, sampsize = as.integer(nrow(x) * 0.75), num_iter = 1024,
+  eta = 2, verbose = FALSE, seed = 24750371, nthread = 0)
 }
 \arguments{
 \item{x}{A data frame of all training predictors.}
@@ -32,3 +31,4 @@ A `forestry` object
 \description{
 autoforestry-forestry
 }
+

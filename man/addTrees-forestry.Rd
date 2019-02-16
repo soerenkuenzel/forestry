@@ -17,3 +17,4 @@ A `forestry` object
 \description{
 Add more trees to the existing forest.
 }
+
