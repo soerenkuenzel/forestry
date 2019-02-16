@@ -7,12 +7,12 @@
 forestry(x, y, ntree = 500, replace = TRUE, sampsize = if (replace)
   nrow(x) else ceiling(0.632 * nrow(x)), sample.fraction = NULL,
   mtry = max(floor(ncol(x)/3), 1), nodesizeSpl = 3, nodesizeAvg = 3,
-  nodesizeStrictSpl = 1, nodesizeStrictAvg = 1, maxDepth = 99,
-  splitratio = 1, seed = as.integer(runif(1) * 1000),
-  verbose = FALSE, nthread = 0, splitrule = "variance",
-  middleSplit = FALSE, maxObs = length(y), ridgeRF = FALSE,
-  linFeats = 0:(ncol(x) - 1), overfitPenalty = 1, doubleTree = FALSE,
-  reuseforestry = NULL, saveable = TRUE)
+  nodesizeStrictSpl = 1, nodesizeStrictAvg = 1,
+  maxDepth = round(nrow(x)/2) + 1, splitratio = 1,
+  seed = as.integer(runif(1) * 1000), verbose = FALSE, nthread = 0,
+  splitrule = "variance", middleSplit = FALSE, maxObs = length(y),
+  ridgeRF = FALSE, linFeats = 0:(ncol(x) - 1), overfitPenalty = 1,
+  doubleTree = FALSE, reuseforestry = NULL, saveable = TRUE)
 }
 \arguments{
 \item{x}{A data frame of all training predictors.}
