@@ -18,17 +18,16 @@ Imports:
     MASS (>= 7.3.0),
     rBayesianOptimization,
     methods,
-LinkingTo: 
-    RcppArmadillo,
+LinkingTo: RcppArmadillo,
     Rcpp
-RoxygenNote: 6.1.1
+RoxygenNote: 6.0.1
 SystemRequirements: C++11
 Suggests:
     testthat,
     knitr,
     rmarkdown
 VignetteBuilder: knitr
-Collate: 
+Collate:
     'R_preprocessing.R'
     'RcppExports.R'
     'forestry.R'

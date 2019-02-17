@@ -58,6 +58,44 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rcpp_cppMultilayerBuildInterface
+SEXP rcpp_cppMultilayerBuildInterface(Rcpp::List x, Rcpp::NumericVector y, Rcpp::NumericVector catCols, Rcpp::NumericVector linCols, int numRows, int numColumns, int ntree, int nrounds, float eta, bool replace, int sampsize, int mtry, float splitratio, int nodesizeSpl, int nodesizeAvg, int nodesizeStrictSpl, int nodesizeStrictAvg, int maxDepth, int seed, int nthread, bool verbose, bool middleSplit, int maxObs, bool ridgeRF, double overfitPenalty, bool doubleTree, bool existing_dataframe_flag, SEXP existing_dataframe);
+RcppExport SEXP _forestry_rcpp_cppMultilayerBuildInterface(SEXP xSEXP, SEXP ySEXP, SEXP catColsSEXP, SEXP linColsSEXP, SEXP numRowsSEXP, SEXP numColumnsSEXP, SEXP ntreeSEXP, SEXP nroundsSEXP, SEXP etaSEXP, SEXP replaceSEXP, SEXP sampsizeSEXP, SEXP mtrySEXP, SEXP splitratioSEXP, SEXP nodesizeSplSEXP, SEXP nodesizeAvgSEXP, SEXP nodesizeStrictSplSEXP, SEXP nodesizeStrictAvgSEXP, SEXP maxDepthSEXP, SEXP seedSEXP, SEXP nthreadSEXP, SEXP verboseSEXP, SEXP middleSplitSEXP, SEXP maxObsSEXP, SEXP ridgeRFSEXP, SEXP overfitPenaltySEXP, SEXP doubleTreeSEXP, SEXP existing_dataframe_flagSEXP, SEXP existing_dataframeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type x(xSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type catCols(catColsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type linCols(linColsSEXP);
+    Rcpp::traits::input_parameter< int >::type numRows(numRowsSEXP);
+    Rcpp::traits::input_parameter< int >::type numColumns(numColumnsSEXP);
+    Rcpp::traits::input_parameter< int >::type ntree(ntreeSEXP);
+    Rcpp::traits::input_parameter< int >::type nrounds(nroundsSEXP);
+    Rcpp::traits::input_parameter< float >::type eta(etaSEXP);
+    Rcpp::traits::input_parameter< bool >::type replace(replaceSEXP);
+    Rcpp::traits::input_parameter< int >::type sampsize(sampsizeSEXP);
+    Rcpp::traits::input_parameter< int >::type mtry(mtrySEXP);
+    Rcpp::traits::input_parameter< float >::type splitratio(splitratioSEXP);
+    Rcpp::traits::input_parameter< int >::type nodesizeSpl(nodesizeSplSEXP);
+    Rcpp::traits::input_parameter< int >::type nodesizeAvg(nodesizeAvgSEXP);
+    Rcpp::traits::input_parameter< int >::type nodesizeStrictSpl(nodesizeStrictSplSEXP);
+    Rcpp::traits::input_parameter< int >::type nodesizeStrictAvg(nodesizeStrictAvgSEXP);
+    Rcpp::traits::input_parameter< int >::type maxDepth(maxDepthSEXP);
+    Rcpp::traits::input_parameter< int >::type seed(seedSEXP);
+    Rcpp::traits::input_parameter< int >::type nthread(nthreadSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    Rcpp::traits::input_parameter< bool >::type middleSplit(middleSplitSEXP);
+    Rcpp::traits::input_parameter< int >::type maxObs(maxObsSEXP);
+    Rcpp::traits::input_parameter< bool >::type ridgeRF(ridgeRFSEXP);
+    Rcpp::traits::input_parameter< double >::type overfitPenalty(overfitPenaltySEXP);
+    Rcpp::traits::input_parameter< bool >::type doubleTree(doubleTreeSEXP);
+    Rcpp::traits::input_parameter< bool >::type existing_dataframe_flag(existing_dataframe_flagSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type existing_dataframe(existing_dataframeSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_cppMultilayerBuildInterface(x, y, catCols, linCols, numRows, numColumns, ntree, nrounds, eta, replace, sampsize, mtry, splitratio, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, maxDepth, seed, nthread, verbose, middleSplit, maxObs, ridgeRF, overfitPenalty, doubleTree, existing_dataframe_flag, existing_dataframe));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rcpp_cppPredictInterface
 Rcpp::List rcpp_cppPredictInterface(SEXP forest, Rcpp::List x, std::string aggregation);
 RcppExport SEXP _forestry_rcpp_cppPredictInterface(SEXP forestSEXP, SEXP xSEXP, SEXP aggregationSEXP) {
@@ -68,6 +106,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::List >::type x(xSEXP);
     Rcpp::traits::input_parameter< std::string >::type aggregation(aggregationSEXP);
     rcpp_result_gen = Rcpp::wrap(rcpp_cppPredictInterface(forest, x, aggregation));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_cppMultilayerPredictInterface
+Rcpp::List rcpp_cppMultilayerPredictInterface(SEXP multilayerForest, Rcpp::List x, std::string aggregation);
+RcppExport SEXP _forestry_rcpp_cppMultilayerPredictInterface(SEXP multilayerForestSEXP, SEXP xSEXP, SEXP aggregationSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type multilayerForest(multilayerForestSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type x(xSEXP);
+    Rcpp::traits::input_parameter< std::string >::type aggregation(aggregationSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_cppMultilayerPredictInterface(multilayerForest, x, aggregation));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -164,7 +215,9 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_forestry_rcpp_cppDataFrameInterface", (DL_FUNC) &_forestry_rcpp_cppDataFrameInterface, 6},
     {"_forestry_rcpp_cppBuildInterface", (DL_FUNC) &_forestry_rcpp_cppBuildInterface, 26},
+    {"_forestry_rcpp_cppMultilayerBuildInterface", (DL_FUNC) &_forestry_rcpp_cppMultilayerBuildInterface, 28},
     {"_forestry_rcpp_cppPredictInterface", (DL_FUNC) &_forestry_rcpp_cppPredictInterface, 3},
+    {"_forestry_rcpp_cppMultilayerPredictInterface", (DL_FUNC) &_forestry_rcpp_cppMultilayerPredictInterface, 3},
     {"_forestry_rcpp_OBBPredictInterface", (DL_FUNC) &_forestry_rcpp_OBBPredictInterface, 1},
     {"_forestry_rcpp_VariableImportanceInterface", (DL_FUNC) &_forestry_rcpp_VariableImportanceInterface, 1},
     {"_forestry_rcpp_getObservationSizeInterface", (DL_FUNC) &_forestry_rcpp_getObservationSizeInterface, 1},

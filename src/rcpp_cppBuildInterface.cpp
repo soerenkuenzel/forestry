@@ -4,6 +4,7 @@
 #include "forestryTree.h"
 #include "RFNode.h"
 #include "forestry.h"
+#include "multilayerForestry.h"
 #include "utils.h"
 
 void freeforestry(
@@ -12,6 +13,16 @@ void freeforestry(
   if (NULL == R_ExternalPtrAddr(ptr))
     return;
   forestry* pm = (forestry*)(R_ExternalPtrAddr(ptr));
+  delete(pm);
+  R_ClearExternalPtr(ptr);
+}
+
+void freeMultilayerForestry(
+    SEXP ptr
+){
+  if (NULL == R_ExternalPtrAddr(ptr))
+    return;
+  multilayerForestry* pm = (multilayerForestry*)(R_ExternalPtrAddr(ptr));
   delete(pm);
   R_ClearExternalPtr(ptr);
 }
@@ -224,6 +235,87 @@ SEXP rcpp_cppBuildInterface(
 }
 
 // [[Rcpp::export]]
+SEXP rcpp_cppMultilayerBuildInterface(
+    Rcpp::List x,
+    Rcpp::NumericVector y,
+    Rcpp::NumericVector catCols,
+    Rcpp::NumericVector linCols,
+    int numRows,
+    int numColumns,
+    int ntree,
+    int nrounds,
+    float eta,
+    bool replace,
+    int sampsize,
+    int mtry,
+    float splitratio,
+    int nodesizeSpl,
+    int nodesizeAvg,
+    int nodesizeStrictSpl,
+    int nodesizeStrictAvg,
+    int maxDepth,
+    int seed,
+    int nthread,
+    bool verbose,
+    bool middleSplit,
+    int maxObs,
+    bool ridgeRF,
+    double overfitPenalty,
+    bool doubleTree,
+    bool existing_dataframe_flag,
+    SEXP existing_dataframe
+){
+
+  if (existing_dataframe_flag) {
+
+    try {
+      Rcpp::XPtr< DataFrame > trainingData(existing_dataframe) ;
+
+      multilayerForestry* testMultiForest = new multilayerForestry(
+        trainingData,
+        (size_t) ntree,
+        (size_t) nrounds,
+        (float) eta,
+        replace,
+        (size_t) sampsize,
+        splitratio,
+        (size_t) mtry,
+        (size_t) nodesizeSpl,
+        (size_t) nodesizeAvg,
+        (size_t) nodesizeStrictSpl,
+        (size_t) nodesizeStrictAvg,
+        (size_t) maxDepth,
+        (unsigned int) seed,
+        (size_t) nthread,
+        verbose,
+        middleSplit,
+        (size_t) maxObs,
+        ridgeRF,
+        (float) overfitPenalty,
+        doubleTree
+      );
+
+      // delete(testFullForest);
+      Rcpp::XPtr<multilayerForestry> ptr(testMultiForest, true) ;
+      R_RegisterCFinalizerEx(
+        ptr,
+        (R_CFinalizer_t) freeMultilayerForestry,
+        (Rboolean) TRUE
+      );
+      return ptr;
+    } catch(std::runtime_error const& err) {
+      forward_exception_to_r(err);
+    } catch(...) {
+      ::Rf_error("c++ exception (unknown reason)");
+    }
+  } else {
+    std::cout << "Issue with Multilayer DataFrame.";
+  }
+
+  return NULL;
+}
+
+// [[Rcpp::export]]
 Rcpp::List rcpp_cppPredictInterface(
   SEXP forest,
   Rcpp::List x,
@@ -257,6 +349,54 @@ Rcpp::List rcpp_cppPredictInterface(
       new std::vector<float>(*testForestPrediction.get());
 
     Rcpp::NumericVector predictions = Rcpp::wrap(*testForestPrediction_);
+
+    return Rcpp::List::create(Rcpp::Named("predictions") = predictions,
+                              Rcpp::Named("weightMatrix") = weightMatrix);
+
+    // return output;
+
+  } catch(std::runtime_error const& err) {
+    forward_exception_to_r(err);
+  } catch(...) {
+    ::Rf_error("c++ exception (unknown reason)");
+  }
+  return NULL;
+}
+
+// [[Rcpp::export]]
+Rcpp::List rcpp_cppMultilayerPredictInterface(
+    SEXP multilayerForest,
+    Rcpp::List x,
+    std::string aggregation
+){
+  try {
+
+    Rcpp::XPtr< multilayerForestry > testMultiForest(multilayerForest) ;
+
+    std::vector< std::vector<float> > featureData =
+      Rcpp::as< std::vector< std::vector<float> > >(x);
+
+    std::unique_ptr< std::vector<float> > testMultiForestPrediction;
+    // We always initialize the weightMatrix. If the aggregation is weightMatrix
+    // then we inialize the empty weight matrix
+    arma::Mat<float> weightMatrix;
+    if(aggregation == "weightMatrix") {
+      size_t nrow = featureData[0].size(); // number of features to be predicted
+      size_t ncol = (*testMultiForest).getNtrain(); // number of train data
+      weightMatrix.resize(nrow, ncol); // initialize the space for the matrix
+      weightMatrix.zeros(nrow, ncol);// set it all to 0
+
+      // The idea is that, if the weightMatrix is point to NULL it won't be
+      // be updated, but otherwise it will be updated:
+      testMultiForestPrediction = (*testMultiForest).predict(&featureData, &weightMatrix);
+    } else {
+      testMultiForestPrediction = (*testMultiForest).predict(&featureData, NULL);
+    }
+
+    std::vector<float>* testMultiForestPrediction_ =
+      new std::vector<float>(*testMultiForestPrediction.get());
+
+    Rcpp::NumericVector predictions = Rcpp::wrap(*testMultiForestPrediction_);
 
     return Rcpp::List::create(Rcpp::Named("predictions") = predictions,
                               Rcpp::Named("weightMatrix") = weightMatrix);

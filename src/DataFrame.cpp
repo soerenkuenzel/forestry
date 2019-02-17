@@ -10,7 +10,7 @@ DataFrame::~DataFrame() {
 }
 
 DataFrame::DataFrame(
-  std::unique_ptr< std::vector< std::vector<float> > > featureData,
+  std::shared_ptr< std::vector< std::vector<float> > > featureData,
   std::unique_ptr< std::vector<float> > outcomeData,
   std::unique_ptr< std::vector<size_t> > categoricalFeatureCols,
   std::unique_ptr< std::vector<size_t> > linearFeatureCols,
@@ -157,4 +157,11 @@ size_t DataFrame::get_row_idx(size_t rowIndex) {
   } else {
     throw std::runtime_error("rowIndex is too large");
   }
+}
+
+void DataFrame::setOutcomeData(std::vector<float> outcomeData) {
+  std::unique_ptr<std::vector<float> > outcomeData_(
+      new std::vector<float>(outcomeData)
+  );
+  this->_outcomeData =std::move(outcomeData_);
 }

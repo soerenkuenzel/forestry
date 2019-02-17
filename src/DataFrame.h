@@ -14,7 +14,7 @@ public:
   virtual ~DataFrame();
 
   DataFrame(
-    std::unique_ptr< std::vector< std::vector<float> > > featureData,
+    std::shared_ptr< std::vector< std::vector<float> > > featureData,
     std::unique_ptr< std::vector<float> > outcomeData,
     std::unique_ptr< std::vector<size_t> > categoricalFeatureCols,
     std::unique_ptr< std::vector<size_t> > linearCols,
@@ -73,8 +73,10 @@ public:
 
   size_t get_row_idx(size_t rowIndex);
 
+  void setOutcomeData(std::vector<float> outcomeData);
+
 private:
-  std::unique_ptr< std::vector< std::vector<float> > > _featureData;
+  std::shared_ptr< std::vector< std::vector<float> > > _featureData;
   std::unique_ptr< std::vector<float> > _outcomeData;
   std::unique_ptr< std::vector<size_t> > _rowNumbers;
   std::unique_ptr< std::vector<size_t> > _categoricalFeatureCols;

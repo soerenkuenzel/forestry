@@ -212,6 +212,37 @@ setClass(
   )
 )
 
+setClass(
+  Class = "multilayerForestry",
+  slots = list(
+    forest = "externalptr",
+    dataframe = "externalptr",
+    processed_dta = "list",
+    R_forest = "list",
+    categoricalFeatureCols = "list",
+    categoricalFeatureMapping = "list",
+    ntree = "numeric",
+    nrounds = "numeric",
+    eta = "numeric",
+    replace = "logical",
+    sampsize = "numeric",
+    mtry = "numeric",
+    nodesizeSpl = "numeric",
+    nodesizeAvg = "numeric",
+    nodesizeStrictSpl = "numeric",
+    nodesizeStrictAvg = "numeric",
+    maxDepth = "numeric",
+    splitratio = "numeric",
+    middleSplit = "logical",
+    y = "vector",
+    maxObs = "numeric",
+    ridgeRF = "logical",
+    linFeats = "numeric",
+    overfitPenalty = "numeric",
+    doubleTree = "logical"
+  )
+)
+
 
 #' @title forestry
 #' @rdname forestry
@@ -531,6 +562,240 @@ forestry <- function(x,
   return(forest)
 }
 
+# -- Multilayer Random Forest Constructor --------------------------------------
+#' @name multilayer-forestry
+#' @title Multilayer forestry
+#' @rdname multilayer-forestry
+#' @description Construct a gradient boosted random forest.
+#' @inheritParams forestry
+#' @param nrounds Number of iterations used for gradient boosting.
+#' @param eta Step size shrinkage used in gradient boosting update.
+#' @return A `multilayerForestry` object.
+#' @export
+multilayerForestry <- function(x,
+                     y,
+                     ntree = 500,
+                     nrounds = 1,
+                     eta = 0.3,
+                     replace = FALSE,
+                     sampsize = nrow(x),
+                     sample.fraction = NULL,
+                     mtry = ncol(x),
+                     nodesizeSpl = 3,
+                     nodesizeAvg = 3,
+                     nodesizeStrictSpl = max(round(nrow(x)/128), 1),
+                     nodesizeStrictAvg = max(round(nrow(x)/128), 1),
+                     maxDepth = 99,
+                     splitratio = 1,
+                     seed = as.integer(runif(1) * 1000),
+                     verbose = FALSE,
+                     nthread = 0,
+                     splitrule = "variance",
+                     middleSplit = TRUE,
+                     maxObs = length(y),
+                     ridgeRF = FALSE,
+                     linFeats = 0:(ncol(x)-1),
+                     overfitPenalty = 1,
+                     doubleTree = FALSE,
+                     reuseforestry = NULL,
+                     saveable = TRUE) {
+  # only if sample.fraction is given, update sampsize
+  if (!is.null(sample.fraction))
+    sampsize <- ceiling(sample.fraction * nrow(x))
+  linFeats <- unique(linFeats)
+
+  x <- as.data.frame(x)
+  # Preprocess the data
+  training_data_checker(x, y, ntree,replace, sampsize, mtry, nodesizeSpl,
+                        nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg,
+                        maxDepth, splitratio, nthread, middleSplit, doubleTree,
+                        linFeats)
+  # Total number of obervations
+  nObservations <- length(y)
+  numColumns <- ncol(x)
+
+  if (is.null(reuseforestry)) {
+    preprocessedData <- preprocess_training(x, y)
+    processed_x <- preprocessedData$x
+    categoricalFeatureCols <-
+      preprocessedData$categoricalFeatureCols
+    categoricalFeatureMapping <-
+      preprocessedData$categoricalFeatureMapping
+
+    categoricalFeatureCols_cpp <- unlist(categoricalFeatureCols)
+    if (is.null(categoricalFeatureCols_cpp)) {
+      categoricalFeatureCols_cpp <- vector(mode = "numeric", length = 0)
+    } else {
+      categoricalFeatureCols_cpp <- categoricalFeatureCols_cpp - 1
+    }
+
+    # Create rcpp object
+    # Create a forest object
+    multilayerForestry <- tryCatch({
+      rcppDataFrame <- rcpp_cppDataFrameInterface(processed_x,
+                                                  y,
+                                                  categoricalFeatureCols_cpp,
+                                                  linFeats,
+                                                  nObservations,
+                                                  numColumns)
+
+      rcppForest <- rcpp_cppMultilayerBuildInterface(
+        processed_x,
+        y,
+        categoricalFeatureCols_cpp,
+        linFeats,
+        nObservations,
+        numColumns,
+        ntree,
+        nrounds,
+        eta,
+        replace,
+        sampsize,
+        mtry,
+        splitratio,
+        nodesizeSpl,
+        nodesizeAvg,
+        nodesizeStrictSpl,
+        nodesizeStrictAvg,
+        maxDepth,
+        seed,
+        nthread,
+        verbose,
+        middleSplit,
+        maxObs,
+        ridgeRF,
+        overfitPenalty,
+        doubleTree,
+        TRUE,
+        rcppDataFrame
+      )
+      processed_dta <- list(
+        "processed_x" = processed_x,
+        "y" = y,
+        "categoricalFeatureCols_cpp" = categoricalFeatureCols_cpp,
+        "linearFeatureCols_cpp" = linFeats,
+        "nObservations" = nObservations,
+        "numColumns" = numColumns
+      )
+      R_forest <- list()
+
+      return(
+        new(
+          "multilayerForestry",
+          forest = rcppForest,
+          dataframe = rcppDataFrame,
+          processed_dta = processed_dta,
+          R_forest = R_forest,
+          categoricalFeatureCols = categoricalFeatureCols,
+          categoricalFeatureMapping = categoricalFeatureMapping,
+          ntree = ntree * (doubleTree + 1),
+          nrounds = nrounds,
+          eta = eta,
+          replace = replace,
+          sampsize = sampsize,
+          mtry = mtry,
+          nodesizeSpl = nodesizeSpl,
+          nodesizeAvg = nodesizeAvg,
+          nodesizeStrictSpl = nodesizeStrictSpl,
+          nodesizeStrictAvg = nodesizeStrictAvg,
+          maxDepth = maxDepth,
+          splitratio = splitratio,
+          middleSplit = middleSplit,
+          maxObs = maxObs,
+          ridgeRF = ridgeRF,
+          linFeats = linFeats,
+          overfitPenalty = overfitPenalty,
+          doubleTree = doubleTree
+        )
+      )
+    },
+    error = function(err) {
+      print(err)
+      return(NULL)
+    })
+
+  } else {
+    categoricalFeatureCols_cpp <-
+      unlist(reuseforestry@categoricalFeatureCols)
+    if (is.null(categoricalFeatureCols_cpp)) {
+      categoricalFeatureCols_cpp <- vector(mode = "numeric", length = 0)
+    } else {
+      categoricalFeatureCols_cpp <- categoricalFeatureCols_cpp - 1
+    }
+
+    categoricalFeatureMapping <-
+      reuseforestry@categoricalFeatureMapping
+
+    # Create rcpp object
+    # Create a forest object
+    multilayerForestry <- tryCatch({
+      rcppForest <- rcpp_cppMultilayerBuildInterface(
+        x,
+        y,
+        categoricalFeatureCols_cpp,
+        linFeats,
+        nObservations,
+        numColumns,
+        ntree,
+        nrounds,
+        eta,
+        replace,
+        sampsize,
+        mtry,
+        splitratio,
+        nodesizeSpl,
+        nodesizeAvg,
+        nodesizeStrictSpl,
+        nodesizeStrictAvg,
+        maxDepth,
+        seed,
+        nthread,
+        verbose,
+        middleSplit,
+        maxObs,
+        ridgeRF,
+        overfitPenalty,
+        doubleTree,
+        TRUE,
+        reuseforestry@dataframe
+      )
+
+      return(
+        new(
+          "multilayerForestry",
+          forest = rcppForest,
+          dataframe = reuseforestry@dataframe,
+          processed_dta = reuseforestry@processed_dta,
+          R_forest = reuseforestry@R_forest,
+          categoricalFeatureCols = reuseforestry@categoricalFeatureCols,
+          categoricalFeatureMapping = categoricalFeatureMapping,
+          ntree = ntree * (doubleTree + 1),
+          replace = replace,
+          sampsize = sampsize,
+          mtry = mtry,
+          nodesizeSpl = nodesizeSpl,
+          nodesizeAvg = nodesizeAvg,
+          nodesizeStrictSpl = nodesizeStrictSpl,
+          nodesizeStrictAvg = nodesizeStrictAvg,
+          maxDepth = maxDepth,
+          splitratio = splitratio,
+          middleSplit = middleSplit,
+          maxObs = maxObs,
+          ridgeRF = ridgeRF,
+          linFeats = linFeats,
+          overfitPenalty = overfitPenalty,
+          doubleTree = doubleTree
+        )
+      )
+    }, error = function(err) {
+      print(err)
+      return(NULL)
+    })
+
+  }
+
+  return(multilayerForestry)
+}
 
 # -- Predict Method ------------------------------------------------------------
 #' predict-forestry
@@ -546,6 +811,42 @@ forestry <- function(x,
 predict.forestry <- function(object,
                              feature.new,
                              aggregation = "average") {
+  # Preprocess the data
+  testing_data_checker(feature.new)
+
+  processed_x <- preprocess_testing(feature.new,
+                                    object@categoricalFeatureCols,
+                                    object@categoricalFeatureMapping)
+
+  rcppPrediction <- tryCatch({
+    rcpp_cppPredictInterface(object@forest, processed_x, aggregation)
+  }, error = function(err) {
+    print(err)
+    return(NULL)
+  })
+
+  if (aggregation == "average") {
+    return(rcppPrediction$prediction)
+  } else if (aggregation == "weightMatrix") {
+    return(rcppPrediction)
+  }
+}
+
+
+# -- Multilayer Predict Method -------------------------------------------------------
+#' predict-multilayer-forestry
+#' @name predict-multilayer-forestry
+#' @rdname predict-multilayer-forestry
+#' @description Return the prediction from the forest.
+#' @param object A `multilayerForestry` object.
+#' @param feature.new A data frame of testing predictors.
+#' @param aggregation How shall the leaf be aggregated. The default is to return
+#'   the mean of the leave `average`. Other options are `weightMatrix`.
+#' @return A vector of predicted responses.
+#' @export
+predict.multilayerForestry <- function(object,
+                             feature.new,
+                             aggregation = "average") {
     # Preprocess the data
     testing_data_checker(feature.new)
 
@@ -554,7 +855,7 @@ predict.forestry <- function(object,
                                       object@categoricalFeatureMapping)
 
     rcppPrediction <- tryCatch({
-      rcpp_cppPredictInterface(object@forest, processed_x, aggregation)
+      rcpp_cppMultilayerPredictInterface(object@forest, processed_x, aggregation)
     }, error = function(err) {
       print(err)
       return(NULL)
