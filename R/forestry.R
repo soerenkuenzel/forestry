@@ -354,7 +354,7 @@ setClass(
 #'           )
 #'
 #' predict(forest, x)
-#' @useDynLib forestry
+#' @useDynLib forestry, .registration = TRUE
 #' @importFrom Rcpp evalCpp
 #' @export
 forestry <- function(x,
