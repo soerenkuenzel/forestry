@@ -1130,8 +1130,9 @@ void findBestSplitRidge(
   /* Move appropriate averagingObs to left */
 
   while (
-    trainingData->getPoint((*averageIter), currentFeature) <
-    trainingData->getPoint(currentIndex, currentFeature)
+    averageIter < averagingIndexes.end() && (
+    trainingData->getPoint((*averageIter), currentFeature) <=
+    trainingData->getPoint(currentIndex, currentFeature))
   ) {
     ++averageIter;
     averageLeftCount++;
@@ -1192,7 +1193,7 @@ void findBestSplitRidge(
     //Move iterators forward
     while (
         splitIter < splittingIndexes.end() &&
-          trainingData->getPoint((*splitIter), currentFeature) == currentValue
+          trainingData->getPoint((*splitIter), currentFeature) <= currentValue
     ) {
       //UPDATE RSS pieces with current splitIter index
       updateRSSComponents(
@@ -1214,7 +1215,7 @@ void findBestSplitRidge(
 
     while (
             averageIter < averagingIndexes.end() &&
-            trainingData->getPoint((*averageIter), currentFeature) ==
+            trainingData->getPoint((*averageIter), currentFeature) <=
             currentValue
             ) {
       averageLeftCount++;
@@ -1247,15 +1248,13 @@ void findBestSplitRidge(
         averageIter == averagingIndexes.end()
     ) {
       newIndex = (*splitIter);
+    } else if (
+        trainingData->getPoint((*averageIter), currentFeature) <
+          trainingData->getPoint((*splitIter), currentFeature)
+    ) {
+      newIndex = (*averageIter);
     } else {
-      if (
-          trainingData->getPoint((*averageIter), currentFeature) <
-            trainingData->getPoint((*splitIter), currentFeature)
-      ) {
-        newIndex = (*averageIter);
-      } else {
-        newIndex = (*splitIter);
-      }
+      newIndex = (*splitIter);
     }
 
     //Check if split would create a node too small

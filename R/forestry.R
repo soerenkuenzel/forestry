@@ -98,7 +98,7 @@ training_data_checker <- function(x,
         "We have set nodesizeStrictSpl to be the maximum"
       )
     )
-    nodesizeStrictSpl <<- splitSampleSize
+    nodesizeStrictSpl <- splitSampleSize
   }
   if (nodesizeStrictAvg > avgSampleSize) {
     warning(
@@ -107,14 +107,13 @@ training_data_checker <- function(x,
         "We have set nodesizeStrictAvg to be the maximum"
       )
     )
-    nodesizeStrictAvg <<- avgSampleSize
+    nodesizeStrictAvg <- avgSampleSize
   }
-
   if (doubleTree) {
     if (splitratio == 0 || splitratio == 1) {
       warning("Trees cannot be doubled if splitratio is 1. We have set
               doubleTree to FALSE")
-      doubleTree <<- FALSE
+      doubleTree <- FALSE
     } else {
       if (nodesizeStrictAvg > splitSampleSize) {
         warning(
@@ -123,7 +122,7 @@ training_data_checker <- function(x,
             "We have set nodesizeStrictAvg to be the maximum"
           )
         )
-        nodesizeStrictAvg <<- splitSampleSize
+        nodesizeStrictAvg <- splitSampleSize
       }
       if (nodesizeStrictSpl > avgSampleSize) {
         warning(
@@ -132,7 +131,7 @@ training_data_checker <- function(x,
             "We have set nodesizeStrictSpl to be the maximum"
           )
         )
-        nodesizeStrictSpl <<- avgSampleSize
+        nodesizeStrictSpl <- avgSampleSize
       }
     }
   }
@@ -163,6 +162,21 @@ training_data_checker <- function(x,
   if (!is.logical(middleSplit)) {
     stop("middleSplit must be TRUE or FALSE.")
   }
+  return(list("x" = x,
+              "y" = y,
+              "ntree" = ntree,
+              "replace" = replace,
+              "sampsize" = sampsize,
+              "mtry" = mtry,
+              "nodesizeSpl" = nodesizeSpl,
+              "nodesizeAvg" = nodesizeAvg,
+              "nodesizeStrictSpl" = nodesizeStrictSpl,
+              "nodesizeStrictAvg" = nodesizeStrictAvg,
+              "splitratio" = splitratio,
+              "nthread" = nthread,
+              "middleSplit" = middleSplit,
+              "doubleTree" = doubleTree,
+              "linFeats" = linFeats))
 }
 
 #' @title Test data check
@@ -337,9 +351,15 @@ forestry <- function(x,
 
   x <- as.data.frame(x)
   # Preprocess the data
-  training_data_checker(x, y, ntree,replace, sampsize, mtry, nodesizeSpl,
+
+  updated_variables <- training_data_checker(x, y, ntree,replace, sampsize, mtry, nodesizeSpl,
                         nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg,
                         splitratio, nthread, middleSplit, doubleTree, linFeats)
+
+  for (variable in names(updated_variables)) {
+    assign(x = variable, value = updated_variables[[variable]], envir = environment())
+  }
+
   # Total number of obervations
   nObservations <- length(y)
   numColumns <- ncol(x)
