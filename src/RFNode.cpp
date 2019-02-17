@@ -21,7 +21,6 @@ void RFNode::setLeafNode(
   std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
   std::unique_ptr< std::vector<size_t> > splittingSampleIndex
 ) {
-  Rcpp::checkUserInterrupt();
   if (
       (*averagingSampleIndex).size() == 0 &&
         (*splittingSampleIndex).size() == 0
@@ -41,7 +40,6 @@ void RFNode::setSplitNode(
   std::unique_ptr< RFNode > leftChild,
   std::unique_ptr< RFNode > rightChild
 ) {
-  Rcpp::checkUserInterrupt();
   // Split node constructor
   _averageCount = 0;
   _splitCount = 0;

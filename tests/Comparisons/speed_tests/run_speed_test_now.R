@@ -1,3 +1,5 @@
+setwd("~/Dropbox/forestry/")
+
 devtools::load_all()
 library(microbenchmark)
 set.seed(292315)
@@ -81,6 +83,10 @@ mcb_s <- summary(mcb)
 
 write.table(x = cbind(current_time, current_commit, mcb_s),
           file = "tests/Comparisons/speed_tests/speed_snapshots.csv",
+          sep = ",",
           append = TRUE)
+
+
+
 
 

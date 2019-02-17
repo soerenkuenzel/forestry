@@ -103,6 +103,8 @@ void forestry::addTrees(size_t ntree) {
   int newStartingTreeNumber = (int) getNtree();
   int newEndingTreeNumber = newStartingTreeNumber + (int) ntree;
 
+  Rcpp::checkUserInterrupt();
+
   size_t nthreadToUse = getNthread();
   if (nthreadToUse == 0) {
     // Use all threads
