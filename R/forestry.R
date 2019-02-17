@@ -842,11 +842,12 @@ multilayerForestry <- function(x,
 #' @param feature.new A data frame of testing predictors.
 #' @param aggregation How shall the leaf be aggregated. The default is to return
 #'   the mean of the leave `average`. Other options are `weightMatrix`.
+#' @param ... additional arguments.
 #' @return A vector of predicted responses.
 #' @export
 predict.forestry <- function(object,
                              feature.new,
-                             aggregation = "average") {
+                             aggregation = "average", ...) {
   # Preprocess the data
   testing_data_checker(feature.new)
 
@@ -878,11 +879,13 @@ predict.forestry <- function(object,
 #' @param feature.new A data frame of testing predictors.
 #' @param aggregation How shall the leaf be aggregated. The default is to return
 #'   the mean of the leave `average`. Other options are `weightMatrix`.
+#' @param ... additional arguments.
 #' @return A vector of predicted responses.
 #' @export
 predict.multilayerForestry <- function(object,
                              feature.new,
-                             aggregation = "average") {
+                             aggregation = "average",
+                             ...) {
     # Preprocess the data
     testing_data_checker(feature.new)
 

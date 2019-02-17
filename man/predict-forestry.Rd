@@ -5,7 +5,8 @@
 \alias{predict.forestry}
 \title{predict-forestry}
 \usage{
-\method{predict}{forestry}(object, feature.new, aggregation = "average")
+\method{predict}{forestry}(object, feature.new, aggregation = "average",
+  ...)
 }
 \arguments{
 \item{object}{A `forestry` object.}
@@ -14,6 +15,8 @@
 
 \item{aggregation}{How shall the leaf be aggregated. The default is to return
 the mean of the leave `average`. Other options are `weightMatrix`.}
+
+\item{...}{additional arguments.}
 }
 \value{
 A vector of predicted responses.

@@ -6,7 +6,7 @@
 \title{predict-multilayer-forestry}
 \usage{
 \method{predict}{multilayerForestry}(object, feature.new,
-  aggregation = "average")
+  aggregation = "average", ...)
 }
 \arguments{
 \item{object}{A `multilayerForestry` object.}
@@ -15,6 +15,8 @@
 
 \item{aggregation}{How shall the leaf be aggregated. The default is to return
 the mean of the leave `average`. Other options are `weightMatrix`.}
+
+\item{...}{additional arguments.}
 }
 \value{
 A vector of predicted responses.
