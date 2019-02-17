@@ -309,7 +309,7 @@ SEXP rcpp_cppMultilayerBuildInterface(
       ::Rf_error("c++ exception (unknown reason)");
     }
   } else {
-    std::cout << "Issue with Multilayer DataFrame.";
+    Rcpp::Rcout << "Issue with Multilayer DataFrame.";
   }
 
   return NULL;

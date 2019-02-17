@@ -115,7 +115,7 @@ void forestry::addTrees(size_t ntree) {
 
   #if DOPARELLEL
   if (isVerbose()) {
-    std::cout << "Training parallel using " << nthreadToUse << " threads"
+    Rcpp::Rcout << "Training parallel using " << nthreadToUse << " threads"
               << std::endl;
   }
 
@@ -264,7 +264,7 @@ void forestry::addTrees(size_t ntree) {
             #endif
 
             if (isVerbose()) {
-              std::cout << "Finish training tree # " << (i + 1) << std::endl;
+              Rcpp::Rcout << "Finish training tree # " << (i + 1) << std::endl;
             }
             (*getForest()).emplace_back(oneTree);
             _ntree = _ntree + 1;
@@ -318,7 +318,7 @@ std::unique_ptr< std::vector<float> > forestry::predict(
   }
 
   if (isVerbose()) {
-    std::cout << "Prediction parallel using " << nthreadToUse << " threads"
+    Rcpp::Rcout << "Prediction parallel using " << nthreadToUse << " threads"
               << std::endl;
   }
 
@@ -429,7 +429,7 @@ void forestry::calculateVariableImportance() {
       nthreadToUse = std::thread::hardware_concurrency();
     }
     if (isVerbose()) {
-      std::cout << "Calculating OOB parallel using " << nthreadToUse << " threads"
+      Rcpp::Rcout << "Calculating OOB parallel using " << nthreadToUse << " threads"
                 << std::endl;
     }
 
@@ -529,7 +529,7 @@ void forestry::calculateOOBError() {
     nthreadToUse = std::thread::hardware_concurrency();
   }
   if (isVerbose()) {
-    std::cout << "Calculating OOB parallel using " << nthreadToUse << " threads"
+    Rcpp::Rcout << "Calculating OOB parallel using " << nthreadToUse << " threads"
               << std::endl;
   }
 
@@ -613,7 +613,7 @@ void forestry::fillinTreeInfo(
 ){
 
   if (isVerbose()) {
-    std::cout << "Starting to translate Forest to R.\n";
+    Rcpp::Rcout << "Starting to translate Forest to R.\n";
   }
 
   for(int i=0; i<((int) getNtree()); i++ ) {
@@ -631,13 +631,13 @@ void forestry::fillinTreeInfo(
     }
 
     if (isVerbose()) {
-      std::cout << "Done with tree " << i + 1 << " of " << getNtree() << ".\n";
+      Rcpp::Rcout << "Done with tree " << i + 1 << " of " << getNtree() << ".\n";
     }
 
   }
 
   if (isVerbose()) {
-    std::cout << "Translation done.\n";
+    Rcpp::Rcout << "Translation done.\n";
   }
 
   return ;

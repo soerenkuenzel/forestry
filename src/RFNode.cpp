@@ -275,7 +275,7 @@ void RFNode::printSubtree(int indentSpace) {
   if (is_leaf()) {
 
     // Print count of samples in the leaf node
-    std::cout << std::string((unsigned long) indentSpace, ' ')
+    Rcpp::Rcout << std::string((unsigned long) indentSpace, ' ')
               << "Leaf Node: # of split samples = "
               << getSplitCount()
               << ", # of average samples = "
@@ -285,7 +285,7 @@ void RFNode::printSubtree(int indentSpace) {
   } else {
 
     // Print split feature and split value
-    std::cout << std::string((unsigned long) indentSpace, ' ')
+    Rcpp::Rcout << std::string((unsigned long) indentSpace, ' ')
               << "Tree Node: split feature = "
               << getSplitFeature()
               << ", split value = "
