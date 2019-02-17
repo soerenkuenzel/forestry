@@ -1,4 +1,4 @@
-#' @useDynLib forestry
+#' @useDynLib forestry, .registration = TRUE
 #' @importFrom Rcpp sourceCpp
 NULL
 
