@@ -276,7 +276,7 @@ void forestry::addTrees(size_t ntree) {
             }
 
           } catch (std::runtime_error &err) {
-            std::cerr << err.what() << std::endl;
+            Rcpp::Rcerr << err.what() << std::endl;
           }
 
         }
@@ -358,7 +358,7 @@ std::unique_ptr< std::vector<float> > forestry::predict(
             }
 
           } catch (std::runtime_error &err) {
-            std::cerr << err.what() << std::endl;
+            Rcpp::Rcerr << err.what() << std::endl;
           }
       }
   #if DOPARELLEL
@@ -470,7 +470,7 @@ void forestry::calculateVariableImportance() {
             outputOOBCount[j] += outputOOBCount_iteration[j];
           }
         } catch (std::runtime_error &err) {
-          std::cerr << err.what() << std::endl;
+          Rcpp::Rcerr << err.what() << std::endl;
         }
       }
     #if DOPARELLEL
@@ -572,7 +572,7 @@ void forestry::calculateOOBError() {
             }
 
           } catch (std::runtime_error &err) {
-            std::cerr << err.what() << std::endl;
+            Rcpp::Rcerr << err.what() << std::endl;
           }
         }
   #if DOPARELLEL
@@ -626,7 +626,7 @@ void forestry::fillinTreeInfo(
       forest_dta->push_back(*treeInfo_i);
 
     } catch (std::runtime_error &err) {
-      std::cerr << err.what() << std::endl;
+      Rcpp::Rcerr << err.what() << std::endl;
 
     }
 
@@ -676,7 +676,7 @@ void forestry::reconstructTrees(
         (*getForest()).emplace_back(oneTree);
         _ntree = _ntree + 1;
       } catch (std::runtime_error &err) {
-        std::cerr << err.what() << std::endl;
+        Rcpp::Rcerr << err.what() << std::endl;
       }
 
   }
