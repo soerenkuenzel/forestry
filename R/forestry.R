@@ -1,3 +1,8 @@
+#' @useDynLib forestry
+#' @importFrom Rcpp sourceCpp
+NULL
+
+
 #' @include R_preprocessing.R
 #-- Sanity Checker -------------------------------------------------------------
 #' @name training_data_checker
@@ -354,8 +359,6 @@ setClass(
 #'           )
 #'
 #' predict(forest, x)
-#' @useDynLib forestry, .registration = TRUE
-#' @importFrom Rcpp evalCpp
 #' @export
 forestry <- function(x,
                      y,
