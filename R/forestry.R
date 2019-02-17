@@ -1221,7 +1221,8 @@ autoforestry <- function(x,
 # -- Translate C++ to R --------------------------------------------------------
 #' @title Cpp to R translator
 #' @description Add more trees to the existing forest.
-#' @inheritParams CppToR_translator
+#' @param object external CPP pointer that should be translated from Cpp to an R
+#'   object
 #' @return A list of lists. Each sublist contains the information to span a
 #'   tree.
 #' @export

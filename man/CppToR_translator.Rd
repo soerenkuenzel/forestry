@@ -6,6 +6,10 @@
 \usage{
 CppToR_translator(object)
 }
+\arguments{
+\item{object}{external CPP pointer that should be translated from Cpp to an R
+object}
+}
 \value{
 A list of lists. Each sublist contains the information to span a
   tree.
