@@ -10,11 +10,11 @@ multilayerForestry(x, y, ntree = 500, nrounds = 1, eta = 0.3,
   mtry = ncol(x), nodesizeSpl = 3, nodesizeAvg = 3,
   nodesizeStrictSpl = max(round(nrow(x)/128), 1),
   nodesizeStrictAvg = max(round(nrow(x)/128), 1), maxDepth = 99,
-  splitratio = 1, seed = as.integer(runif(1) * 1000), verbose = FALSE,
-  nthread = 0, splitrule = "variance", middleSplit = TRUE,
-  maxObs = length(y), ridgeRF = FALSE, linFeats = 0:(ncol(x) - 1),
-  overfitPenalty = 1, doubleTree = FALSE, reuseforestry = NULL,
-  saveable = TRUE)
+  splitratio = 1, seed = as.integer(runif(1) * 1000),
+  verbose = FALSE, nthread = 0, splitrule = "variance",
+  middleSplit = TRUE, maxObs = length(y), ridgeRF = FALSE,
+  linFeats = 0:(ncol(x) - 1), overfitPenalty = 1, doubleTree = FALSE,
+  reuseforestry = NULL, saveable = TRUE)
 }
 \arguments{
 \item{x}{A data frame of all training predictors.}

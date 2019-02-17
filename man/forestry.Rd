@@ -100,6 +100,9 @@ time and memory.}
 \value{
 A `forestry` object.
 }
+\description{
+forestry
+}
 \examples{
 set.seed(292315)
 library(forestry)
