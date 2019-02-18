@@ -26,5 +26,5 @@ test_that("Tests that maxDepth parameter is working correctly", {
 
   # Mean Square Error
   sum((y_pred - y) ^ 2)
-  expect_equal(sum((y_pred - y) ^ 2), 11.3, tolerance = 1e-2)
+  expect_equal(sum((y_pred - y) ^ 2), 11.1, tolerance = 1e-2)
 })

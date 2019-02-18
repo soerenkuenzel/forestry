@@ -34,7 +34,7 @@ test_that("Tests if ridgeRF works", {
   # Mean Square Error
   sum((y_pred - y) ^ 2)
 
-  expect_equal(sum((y_pred - y) ^ 2), 5.1317, tolerance = 1e-2)
+  expect_equal(sum((y_pred - y) ^ 2), 3.72, tolerance = 1e-2)
 
   for (seed in 270:275) {
     set.seed(seed)
@@ -62,5 +62,5 @@ test_that("Tests if ridgeRF works", {
   # Mean Square Error
   sum((y_pred - y) ^ 2)
 
-  expect_equal(sum((y_pred - y) ^ 2), 5.006852, tolerance = 1e-2)
+  expect_equal(sum((y_pred - y) ^ 2), 3.8, tolerance = 1e-2)
 })
