@@ -276,7 +276,7 @@ void forestry::addTrees(size_t ntree) {
             }
 
           } catch (std::runtime_error &err) {
-            Rcpp::Rcerr << err.what() << std::endl;
+            // Rcpp::Rcerr << err.what() << std::endl;
           }
 
         }
@@ -572,7 +572,7 @@ void forestry::calculateOOBError() {
             }
 
           } catch (std::runtime_error &err) {
-            Rcpp::Rcerr << err.what() << std::endl;
+            // Rcpp::Rcerr << err.what() << std::endl;
           }
         }
   #if DOPARELLEL
