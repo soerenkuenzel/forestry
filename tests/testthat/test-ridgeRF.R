@@ -9,13 +9,13 @@ test_that("Tests if ridgeRF works", {
   iris
 
 
-  set.seed(27521)
+  set.seed(275)
 
   # Test forestry (mimic RF)
   forest <- forestry(
     x,
     y,
-    ntree = 200,
+    ntree = 1,
     replace = TRUE,
     sample.fraction = .8,
     mtry = 3,
@@ -34,7 +34,7 @@ test_that("Tests if ridgeRF works", {
   # Mean Square Error
   sum((y_pred - y) ^ 2)
 
-  expect_equal(sum((y_pred - y) ^ 2), 2.927504, tolerance = 0.2)
+  expect_equal(sum((y_pred - y) ^ 2), 5.131799, tolerance = 1e-2)
 
   for (seed in 270:275) {
     set.seed(seed)
