@@ -1,9 +1,9 @@
 #include "forestry.h"
-#include <RcppArmadillo.h>
+#include "utils.h"
 #include <random>
 #include <thread>
 #include <mutex>
-#include "utils.h"
+#include <RcppArmadillo.h>
 #define DOPARELLEL true
 
 forestry::forestry():

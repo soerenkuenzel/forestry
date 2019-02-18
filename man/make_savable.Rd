@@ -32,6 +32,6 @@ load("forest.Rda", verbose = FALSE)
 forest <- relinkCPP_prt(forest)
 
 y_pred_after <- predict(forest, x)
-testthat::expect_equal(y_pred_before, y_pred_after)
+testthat::expect_equal(y_pred_before, y_pred_after, tolerance = 0.000001)
 file.remove("forest.Rda")
 }

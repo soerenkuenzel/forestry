@@ -1,0 +1,7 @@
+## Use c++11
+CXX_STD = CXX11
+PKG_CPPFLAGS = -DR_BUILD
+
+
+# Link RcppArmadillo against the BLAS and LAPACK libraries
+PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)

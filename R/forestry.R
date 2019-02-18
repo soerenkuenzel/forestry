@@ -1,3 +1,8 @@
+#' @useDynLib forestry, .registration = TRUE
+#' @importFrom Rcpp sourceCpp
+NULL
+
+
 #' @include R_preprocessing.R
 #-- Sanity Checker -------------------------------------------------------------
 #' @name training_data_checker
@@ -354,8 +359,6 @@ setClass(
 #'           )
 #'
 #' predict(forest, x)
-#' @useDynLib forestry
-#' @importFrom Rcpp evalCpp
 #' @export
 forestry <- function(x,
                      y,
@@ -1312,7 +1315,7 @@ relinkCPP_prt <- function(object) {
 #' forest <- relinkCPP_prt(forest)
 #'
 #' y_pred_after <- predict(forest, x)
-#' testthat::expect_equal(y_pred_before, y_pred_after)
+#' testthat::expect_equal(y_pred_before, y_pred_after, tolerance = 0.000001)
 #' file.remove("forest.Rda")
 #' @return A list of lists. Each sublist contains the information to span a
 #'   tree.

@@ -1,4 +1,4 @@
-devtools::load_all()
+# devtools::load_all()
 set.seed(43213)
 n <- 100
 x <- data.frame(x = runif(n = n, min = 0, max = 2))

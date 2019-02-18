@@ -1,7 +1,6 @@
 #ifndef FORESTRYCPP_MULTILAYERRF_H
 #define FORESTRYCPP_MULTILAYERRF_H
 
-#include <RcppArmadillo.h>
 #include <iostream>
 #include <vector>
 #include <string>
@@ -11,6 +10,7 @@
 #include "forestry.h"
 #include "forestryTree.h"
 #include "utils.h"
+#include <RcppArmadillo.h>
 
 class multilayerForestry {
 

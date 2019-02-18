@@ -1,12 +1,11 @@
-#include <RcppArmadillo.h>
 #include "forestryTree.h"
+#include "utils.h"
+#include <RcppArmadillo.h>
 #include <math.h>
 #include <set>
 #include <map>
 #include <random>
 #include <sstream>
-#include <chrono>
-#include "utils.h"
 // [[Rcpp::plugins(cpp11)]]
 
 forestryTree::forestryTree():

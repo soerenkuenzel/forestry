@@ -1,11 +1,11 @@
 // [[Rcpp::plugins(cpp11)]]
-#include <RcppArmadillo.h>
 #include "DataFrame.h"
 #include "forestryTree.h"
 #include "RFNode.h"
 #include "forestry.h"
 #include "multilayerForestry.h"
 #include "utils.h"
+#include <RcppArmadillo.h>
 
 void freeforestry(
   SEXP ptr

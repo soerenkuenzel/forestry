@@ -1,5 +1,5 @@
-#include <RcppArmadillo.h>
 #include "RFNode.h"
+#include <RcppArmadillo.h>
 #include <mutex>
 #include <thread>
 #include "utils.h"
