@@ -56,11 +56,27 @@ test_that("Tests if ridgeRF works", {
       overfitPenalty = 1000
     )
   }
+  set.seed(231428176)
+  forest <- forestry(
+    x,
+    y,
+    ntree = 200,
+    replace = TRUE,
+    sample.fraction = .8,
+    mtry = 3,
+    nodesizeStrictSpl = 5,
+    nthread = 2,
+    splitrule = "variance",
+    splitratio = 1,
+    nodesizeStrictAvg = 5,
+    ridgeRF = TRUE,
+    overfitPenalty = 1000
+  )
   # Test predict
   y_pred <- predict(forest, x)
 
   # Mean Square Error
   sum((y_pred - y) ^ 2)
 
-  expect_equal(sum((y_pred - y) ^ 2), 5.006852, tolerance = 1e-2)
+  expect_equal(sum((y_pred - y) ^ 2), 2.998391, tolerance = 0.2)
 })
