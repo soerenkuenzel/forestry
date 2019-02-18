@@ -1,3 +1,4 @@
+library(testthat)
 test_that("Tests if variable importance works", {
   context('Tests Rf Variable Importance')
 
@@ -10,5 +11,6 @@ test_that("Tests if variable importance works", {
 
   vi <- getVI(forest)
 
-  expect_equal(unlist(vi), c(.199, 1.229, 0.613, 0.456), tolerance = 5e-2)
+  expect_equal(unlist(vi), c(0.1850195, 1.1332576, 0.5532491, 0.4080045),
+               tolerance = 5e-2)
 })
