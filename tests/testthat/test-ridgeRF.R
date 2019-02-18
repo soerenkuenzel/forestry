@@ -15,7 +15,7 @@ test_that("Tests if ridgeRF works", {
   forest <- forestry(
     x,
     y,
-    ntree = 1,
+    ntree = 200,
     replace = TRUE,
     sample.fraction = .8,
     mtry = 3,
@@ -34,7 +34,7 @@ test_that("Tests if ridgeRF works", {
   # Mean Square Error
   sum((y_pred - y) ^ 2)
 
-  expect_equal(sum((y_pred - y) ^ 2), 5.131799, tolerance = 1e-2)
+  expect_equal(sum((y_pred - y) ^ 2), 9.799489, tolerance = 0.5)
 
   for (seed in 270:275) {
     set.seed(seed)
