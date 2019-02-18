@@ -1,11 +1,11 @@
 #include "multilayerForestry.h"
-#include <RcppArmadillo.h>
 #include <random>
 #include <thread>
 #include <mutex>
 #include "DataFrame.h"
 #include "forestry.h"
 #include "utils.h"
+#include <RcppArmadillo.h>
 
 multilayerForestry::multilayerForestry():
   _multilayerForests(nullptr), _gammas(0) {}

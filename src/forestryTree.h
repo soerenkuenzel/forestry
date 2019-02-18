@@ -1,7 +1,6 @@
 #ifndef HTECPP_RFTREE_H
 #define HTECPP_RFTREE_H
 
-#include <RcppArmadillo.h>
 #include <iostream>
 #include <vector>
 #include <string>
@@ -10,6 +9,7 @@
 #include "DataFrame.h"
 #include "RFNode.h"
 #include "utils.h"
+#include <RcppArmadillo.h>
 
 class forestryTree {
 
