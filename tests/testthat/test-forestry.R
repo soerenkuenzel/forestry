@@ -24,5 +24,6 @@ test_that("Tests that random forest is working correctly", {
   y_pred <- predict(forest, x)
 
   # Mean Square Error
+  sum((y_pred - y) ^ 2)
   expect_equal(sum((y_pred - y) ^ 2), 9.68, tolerance = 1e-2)
 })
