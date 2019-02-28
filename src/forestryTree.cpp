@@ -1979,13 +1979,15 @@ std::unique_ptr<tree_info> forestryTree::getTreeInfo(
   return treeInfo;
 }
 
-void forestryTree::reconstruct_tree(
+void forestryTree:: reconstruct_tree(
     size_t mtry,
     size_t minNodeSizeSpt,
     size_t minNodeSizeAvg,
     size_t minNodeSizeToSplitSpt,
     size_t minNodeSizeToSplitAvg,
     size_t maxDepth,
+    bool ridgeRF,
+    float overfitPenalty,
     std::vector<size_t> categoricalFeatureColsRcpp,
     std::vector<int> var_ids,
     std::vector<double> split_vals,
@@ -2001,6 +2003,8 @@ void forestryTree::reconstruct_tree(
   _minNodeSizeToSplitSpt = minNodeSizeToSplitSpt;
   _minNodeSizeToSplitAvg = minNodeSizeToSplitAvg;
   _maxDepth = maxDepth;
+  _ridgeRF = ridgeRF;
+  _overfitPenalty = overfitPenalty;
 
   _averagingSampleIndex = std::unique_ptr< std::vector<size_t> > (
     new std::vector<size_t>

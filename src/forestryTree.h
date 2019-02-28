@@ -66,6 +66,8 @@ public:
       size_t minNodeSizeToSplitSpt,
       size_t minNodeSizeToSplitAvg,
       size_t maxDepth,
+      bool ridgeRF,
+      float overfitPenalty,
       std::vector<size_t> categoricalFeatureColsRcpp,
       std::vector<int> var_ids,
       std::vector<double> split_vals,
@@ -204,6 +206,7 @@ private:
   std::unique_ptr< std::vector<size_t> > _averagingSampleIndex;
   std::unique_ptr< std::vector<size_t> > _splittingSampleIndex;
   std::unique_ptr< RFNode > _root;
+  bool _ridgeRF;
   float _overfitPenalty;
   std::vector<double>* _benchmark;
 };

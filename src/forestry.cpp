@@ -309,7 +309,6 @@ std::unique_ptr< std::vector<float> > forestry::predict(
   for (size_t j=0; j<numObservations; j++) {
     prediction.push_back(0);
   }
-
   #if DOPARELLEL
   size_t nthreadToUse = getNthread();
   if (getNthread() == 0) {
@@ -665,6 +664,8 @@ void forestry::reconstructTrees(
                 getMinNodeSizeToSplitSpt(),
                 getMinNodeSizeToSplitAvg(),
                 getMaxDepth(),
+                getRidgeRF(),
+                getOverfitPenalty(),
                 (*categoricalFeatureColsRcpp),
                 (*var_ids)[i],
                 (*split_vals)[i],

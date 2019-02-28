@@ -699,7 +699,7 @@ Rcpp::List rcpp_reconstructree(
     (bool) middleSplit,
     (int) maxObs,
     (bool) ridgeRF,
-    (double) overfitPenalty,
+    (float) overfitPenalty,
     doubleTree
   );
 
