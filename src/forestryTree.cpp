@@ -1979,7 +1979,7 @@ std::unique_ptr<tree_info> forestryTree::getTreeInfo(
   return treeInfo;
 }
 
-void forestryTree:: reconstruct_tree(
+void forestryTree::reconstruct_tree(
     size_t mtry,
     size_t minNodeSizeSpt,
     size_t minNodeSizeAvg,
