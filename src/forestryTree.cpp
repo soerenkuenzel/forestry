@@ -14,6 +14,7 @@ forestryTree::forestryTree():
   _minNodeSizeAvg(0),
   _minNodeSizeToSplitSpt(0),
   _minNodeSizeToSplitAvg(0),
+  _minSplitGain(0),
   _maxDepth(0),
   _averagingSampleIndex(nullptr),
   _splittingSampleIndex(nullptr),
@@ -28,6 +29,7 @@ forestryTree::forestryTree(
   size_t minNodeSizeAvg,
   size_t minNodeSizeToSplitSpt,
   size_t minNodeSizeToSplitAvg,
+  float minSplitGain,
   size_t maxDepth,
   std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
   std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
@@ -45,6 +47,7 @@ forestryTree::forestryTree(
   * @param minNodeSizeAvg    Minimum averaging size of leaf node
   * @param minNodeSizeToSplitSpt    Minimum splitting size of a splitting node
   * @param minNodeSizeToSplitAvg    Minimum averaging size of a splitting node
+  * @param minSplitGain    Minimum loss reduction to split a node.
   * @param maxDepth    Max depth of a tree
   * @param splittingSampleIndex    A vector with index of splitting samples
   * @param averagingSampleIndex    A vector with index of averaging samples
@@ -106,6 +109,7 @@ forestryTree::forestryTree(
   this->_minNodeSizeSpt = minNodeSizeSpt;
   this->_minNodeSizeToSplitAvg = minNodeSizeToSplitAvg;
   this->_minNodeSizeToSplitSpt = minNodeSizeToSplitSpt;
+  this->_minSplitGain = minSplitGain;
   this->_maxDepth = maxDepth;
   this->_averagingSampleIndex = std::move(averagingSampleIndex);
   this->_splittingSampleIndex = std::move(splittingSampleIndex);
@@ -166,6 +170,7 @@ void forestryTree::setDummyTree(
     size_t minNodeSizeAvg,
     size_t minNodeSizeToSplitSpt,
     size_t minNodeSizeToSplitAvg,
+    float minSplitGain,
     size_t maxDepth,
     std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
     std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
@@ -176,6 +181,7 @@ void forestryTree::setDummyTree(
   this->_minNodeSizeSpt = minNodeSizeSpt;
   this->_minNodeSizeToSplitAvg = minNodeSizeToSplitAvg;
   this->_minNodeSizeToSplitSpt = minNodeSizeToSplitSpt;
+  this->_minSplitGain = minSplitGain;
   this->_maxDepth = maxDepth;
   this->_averagingSampleIndex = std::move(averagingSampleIndex);
   this->_splittingSampleIndex = std::move(splittingSampleIndex);
@@ -1985,6 +1991,7 @@ void forestryTree::reconstruct_tree(
     size_t minNodeSizeAvg,
     size_t minNodeSizeToSplitSpt,
     size_t minNodeSizeToSplitAvg,
+    float minSplitGain,
     size_t maxDepth,
     bool ridgeRF,
     float overfitPenalty,
@@ -2002,6 +2009,7 @@ void forestryTree::reconstruct_tree(
   _minNodeSizeAvg = minNodeSizeAvg;
   _minNodeSizeToSplitSpt = minNodeSizeToSplitSpt;
   _minNodeSizeToSplitAvg = minNodeSizeToSplitAvg;
+  _minSplitGain = minSplitGain;
   _maxDepth = maxDepth;
   _ridgeRF = ridgeRF;
   _overfitPenalty = overfitPenalty;
