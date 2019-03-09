@@ -341,8 +341,6 @@ void forestryTree::recursivePartition(
     arma::Mat<double> gTotal,
     arma::Mat<double> sTotal
 ){
-
-
   if ((*averagingSampleIndex).size() < getMinNodeSizeAvg() ||
       (*splittingSampleIndex).size() < getMinNodeSizeSpt() ||
       (depth == getMaxDepth())) {
@@ -442,6 +440,137 @@ void forestryTree::recursivePartition(
         bestSplitFeature
       ) != categorialCols.end()
     );
+
+    if (getMinSplitGain() > 0) {
+      // 1. Find ridge solutions
+      // ridge_parent = ((XtX + lambdaI)^-1)(XtY) using x, y of parent node
+      size_t parent_dimension = (trainingData->getLinObsData((*averagingSampleIndex)[0])).size();
+      arma::Mat<double> x_parent(averagingSampleIndex->size(),
+                                 parent_dimension + 1);
+      arma::Mat<double> identity_parent(parent_dimension + 1,
+                                 parent_dimension + 1);
+      identity_parent.eye();
+      //Don't penalize intercept
+      identity_parent(parent_dimension, parent_dimension) = 0.0;
+      std::vector<float> parentOutcomePoints;
+      std::vector<float> currentObservation;
+      //Contruct X and outcome vector
+      for (size_t i = 0; i < averagingSampleIndex->size(); i++) {
+        currentObservation = trainingData->getLinObsData((*averagingSampleIndex)[i]);
+        currentObservation.push_back(1.0);
+        x_parent.row(i) = arma::conv_to<arma::Row<double> >::from(currentObservation);
+        parentOutcomePoints.push_back(trainingData->getOutcomePoint((*averagingSampleIndex)[i]));
+      }
+      arma::Mat<double> y_parent(parentOutcomePoints.size(), 1);
+      y_parent.col(0) = arma::conv_to<arma::Col<double> >::from(parentOutcomePoints);
+      //Compute XtX + lambda * I * Y = C
+      arma::Mat<double> parent_coefficents = (x_parent.t() * x_parent +
+        identity_parent * overfitPenalty).i() * x_parent.t() * y_parent;
+      arma::Mat<double> parentPredictions = x_parent * parent_coefficents;
+
+      // ridge_left = ((XtX + lambdaI)^-1)(XtY) using x, y of left node
+      size_t left_dimension = (trainingData->getLinObsData((averagingLeftPartitionIndex)[0])).size();
+      arma::Mat<double> x_left(averagingLeftPartitionIndex.size(),
+                               left_dimension + 1);
+      arma::Mat<double> identity_left(left_dimension + 1,
+                                      left_dimension + 1);
+      identity_left.eye();
+      //Don't penalize intercept
+      identity_left(left_dimension, left_dimension) = 0.0;
+      std::vector<float> leftOutcomePoints;
+      //Contruct X and outcome vector
+      for (size_t i = 0; i < averagingLeftPartitionIndex.size(); i++) {
+        currentObservation = trainingData->getLinObsData((averagingLeftPartitionIndex)[i]);
+        currentObservation.push_back(1.0);
+        x_left.row(i) = arma::conv_to<arma::Row<double> >::from(currentObservation);
+        leftOutcomePoints.push_back(trainingData->getOutcomePoint((averagingLeftPartitionIndex)[i]));
+      }
+      arma::Mat<double> y_left(leftOutcomePoints.size(), 1);
+      y_left.col(0) = arma::conv_to<arma::Col<double> >::from(leftOutcomePoints);
+      //Compute XtX + lambda * I * Y = C
+      arma::Mat<double> left_coefficents = (x_left.t() * x_left +
+        identity_left * overfitPenalty).i() * x_left.t() * y_left;
+      arma::Mat<double> leftPredictions = x_left * left_coefficents;
+
+      // ridge_right = ((XtX + lambdaI)^-1)(XtY) using x, y of left node
+      size_t right_dimension = (trainingData->getLinObsData((averagingRightPartitionIndex)[0])).size();
+      arma::Mat<double> x_right(averagingRightPartitionIndex.size(),
+                               right_dimension + 1);
+      arma::Mat<double> identity_right(right_dimension + 1,
+                                      right_dimension + 1);
+      identity_right.eye();
+      //Don't penalize intercept
+      identity_right(right_dimension, right_dimension) = 0.0;
+      std::vector<float> rightOutcomePoints;
+      //Contruct X and outcome vector
+      for (size_t i = 0; i < averagingRightPartitionIndex.size(); i++) {
+        currentObservation = trainingData->getLinObsData((averagingRightPartitionIndex)[i]);
+        currentObservation.push_back(1.0);
+        x_right.row(i) = arma::conv_to<arma::Row<double> >::from(currentObservation);
+        rightOutcomePoints.push_back(trainingData->getOutcomePoint((averagingRightPartitionIndex)[i]));
+      }
+      arma::Mat<double> y_right(rightOutcomePoints.size(), 1);
+      y_left.col(0) = arma::conv_to<arma::Col<double> >::from(leftOutcomePoints);
+      //Compute XtX + lambda * I * Y = C
+      arma::Mat<double> right_coefficents = (x_right.t() * x_right +
+        identity_right * overfitPenalty).i() * x_right.t() * y_right;
+      arma::Mat<double> rightPredictions = x_right * right_coefficents;
+
+
+      // 2. Calculate r^2 pre and post split
+      float parentTotal = 0;
+      for (size_t i = 0; i < parentPredictions.size(); i++) {
+        parentTotal += parentPredictions(i, 0);
+      }
+      float parentMean = parentTotal/(parentPredictions.size());
+
+      float residualParent;
+      float totalSumSquares = 0;
+      for (size_t i = 0; i < parentPredictions.size(); i++) {
+        residualParent = y_parent(i, 0) - parentMean;
+        totalSumSquares += residualParent * residualParent;
+      };
+
+      float rssParent = 0;
+      float rssChildren = 0;
+
+      float residualLeft;
+      for (size_t i = 0; i < leftPredictions.size(); i ++) {
+        residualLeft = y_left(i, 0) - leftPredictions(i, 0);
+        rssChildren += residualLeft * residualLeft;
+
+        arma::Mat<double> t = x_left(i) * parent_coefficents;
+        residualParent = y_parent(i, 0) - t(0,0);
+        rssParent = residualParent * residualParent;
+      }
+
+      float residualRight;
+      for (size_t i = 0; i < rightPredictions.size(); i ++) {
+        residualRight = y_right(i, 0) - rightPredictions(i, 0);
+        rssChildren += residualRight * residualRight;
+
+        arma::Mat<double> t = x_right(i) * parent_coefficents;
+        residualParent = y_parent(i, 0) - t(0,0);
+        rssParent = residualParent * residualParent;
+      }
+
+      float r_square_parent = (1 - (rssParent/totalSumSquares));
+      float r_square_children = (1- (rssChildren/totalSumSquares));
+
+      if ((r_square_children - r_square_parent) < getMinSplitGain()) {
+        std::unique_ptr<std::vector<size_t> > averagingSampleIndex_(
+            new std::vector<size_t>(*averagingSampleIndex)
+        );
+        std::unique_ptr<std::vector<size_t> > splittingSampleIndex_(
+            new std::vector<size_t>(*splittingSampleIndex)
+        );
+        (*rootNode).setLeafNode(
+            std::move(averagingSampleIndex_),
+            std::move(splittingSampleIndex_)
+        );
+      }
+    }
+
     // Update sample index for both left and right partitions
     // Recursively grow the tree
     std::unique_ptr< RFNode > leftChild ( new RFNode() );
@@ -709,6 +838,12 @@ float computeRSSArmadillo(
           as_scalar((S_r.t() * A_r) * (G_r * (A_r * S_r))) -
           as_scalar(2.0 * S_l.t() * (A_l * S_l)) -
           as_scalar(2.0 * S_r.t() * (A_r * S_r)));
+}
+
+float computeRSSArmadillo2(
+    float x
+){
+  return (x);
 }
 
 void updateRSSComponents(
