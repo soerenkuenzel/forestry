@@ -364,7 +364,7 @@ std::tuple <arma::Mat<double>, arma::Mat<double>, arma::Mat<double>, arma::Mat<d
   return std::make_tuple(x, y, coefficients, predictions);
 }
 
-float applsplitRSquaredGain (
+std::pair<float, float> splitRSquaredGain (
     DataFrame* trainingData,
     std::vector<size_t>* splittingSampleIndex,
     std::vector<size_t>* splittingLeftPartitionIndex,
@@ -434,12 +434,43 @@ float applsplitRSquaredGain (
   float rSquaredParent = (1 - (rssParent/totalSumSquares));
   float rSquaredChildren = (1 - (rssChildren/totalSumSquares));
 
-  // std::cout << "r^2 parent: " << r_squared_parent << std::endl;
-  // std::cout << "r^2 children: " << r_squared_children << std::endl;
+  // std::cout << "r^2 parent: " << rSquaredParent << std::endl;
+  // std::cout << "r^2 children: " << rSquaredChildren << std::endl;
   // std::cout << "\n" << std::endl;
 
-  return rSquaredChildren - rSquaredParent;
+  return std::make_pair(rSquaredParent, rSquaredChildren);
 }
+
+float crossValidatedRSquared (
+    DataFrame* trainingData,
+    std::vector<size_t>* splittingSampleIndex,
+    std::vector<size_t>* splittingLeftPartitionIndex,
+    std::vector<size_t>* splittingRightPartitionIndex,
+    float overfitPenalty,
+    size_t numTimesCV
+) {
+  // Apply 5 times 10-fold cross-validation
+  float rSquaredParent, rSquaredChildren;
+  float totalRSquaredParent = 0;
+  float totalRSquaredChildren = 0;
+  for (size_t i=0; i < numTimesCV; i++) {
+    std::tie(rSquaredParent, rSquaredChildren) =
+      splitRSquaredGain(
+        trainingData,
+        splittingSampleIndex,
+        splittingLeftPartitionIndex,
+        splittingRightPartitionIndex,
+        overfitPenalty
+      );
+    totalRSquaredParent += rSquaredParent;
+    totalRSquaredChildren += rSquaredChildren;
+  }
+  return (totalRSquaredParent/numTimesCV) - (totalRSquaredChildren/numTimesCV);
+}
+
+
+
+
 
 void forestryTree::recursivePartition(
     RFNode* rootNode,
@@ -557,7 +588,8 @@ void forestryTree::recursivePartition(
     );
 
     if (getMinSplitGain() > 0) {
-      float rSquaredGain = splitRSquaredGain(
+      float rSquaredParent, rSquaredChildren;
+      std::tie(rSquaredParent, rSquaredChildren) = splitRSquaredGain(
         trainingData,
         splittingSampleIndex,
         &splittingLeftPartitionIndex,
@@ -565,7 +597,7 @@ void forestryTree::recursivePartition(
         overfitPenalty
       );
 
-      if (rSquaredGain < getMinSplitGain()) {
+      if ((rSquaredParent - rSquaredChildren) < getMinSplitGain()) {
         std::unique_ptr<std::vector<size_t> > averagingSampleIndex_(
             new std::vector<size_t>(*averagingSampleIndex)
         );
