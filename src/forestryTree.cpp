@@ -326,118 +326,136 @@ void splitData(
   );
 }
 
-std::tuple <arma::Mat<double>, arma::Mat<double>, arma::Mat<double>, arma::Mat<double> > calculateRidgeSolution(
+float calculateRSS(
     DataFrame* trainingData,
     std::vector<size_t>* splittingSampleIndex,
-    float overfitPenalty
+    float overfitPenalty,
+    bool isParent
 ) {
-  //Number of linear features in training data
-  size_t dimension = (trainingData->getLinObsData((*splittingSampleIndex)[0])).size();
-
-  arma::Mat<double> x(splittingSampleIndex->size(), dimension + 1);
-  arma::Mat<double> identity(dimension + 1, dimension + 1);
-  identity.eye();
-
-  //Don't penalize intercept
-  identity(dimension, dimension) = 0.0;
-
-  std::vector<float> outcomePoints;
-  std::vector<float> currentObservation;
-
-  //Contruct X and outcome vector
-  for (size_t i = 0; i < splittingSampleIndex->size(); i++) {
-    currentObservation = trainingData->getLinObsData((*splittingSampleIndex)[i]);
-    currentObservation.push_back(1.0);
-    x.row(i) = arma::conv_to<arma::Row<double> >::from(currentObservation);
-    outcomePoints.push_back(trainingData->getOutcomePoint((*splittingSampleIndex)[i]));
+  // Get cross validation folds
+  std::vector< std::vector< size_t > > folds(10);
+  if (splittingSampleIndex->size() >= 10) {
+    std::random_shuffle(splittingSampleIndex->begin(), splittingSampleIndex->end());
+    size_t foldIndex = 0;
+    for (size_t sampleIndex : *splittingSampleIndex) {
+      folds.at(foldIndex).push_back(sampleIndex);
+      foldIndex++;
+      foldIndex = foldIndex % 10;
+    }
   }
 
-  arma::Mat<double> y(outcomePoints.size(), 1);
-  y.col(0) = arma::conv_to<arma::Col<double> >::from(outcomePoints);
+  // To-do: Implement case where fold < 10
+  float residualSumSquares = 0;
+  std::vector<size_t> trainIndex;
+  std::vector<size_t> testIndex;
 
-  //Compute XtX + lambda * I * Y = C
-  arma::Mat<double> coefficients = (x.t() * x +
-    identity * overfitPenalty).i() * x.t() * y;
+  size_t numFolds = folds.size();
+  if (splittingSampleIndex->size() < 10) {
+    numFolds = 1;
+  }
 
-  arma::Mat<double> predictions = x * coefficients;
+  for (size_t i = 0; i < folds.size(); i++) {
 
-  return std::make_tuple(x, y, coefficients, predictions);
+    if (splittingSampleIndex->size() < 10) {
+      trainIndex = *splittingSampleIndex;
+      testIndex = *splittingSampleIndex;
+    }
+
+    for (size_t j = 0; j < testIndex.size(); i++) {
+      if (j == i) {
+        testIndex = folds.at(j);
+      } else{
+        trainIndex.insert(trainIndex.end(), folds.at(j).begin(), folds.at(j).end());
+      }
+    }
+
+    //Number of linear features in training data
+    size_t dimension = (trainingData->getLinObsData(trainIndex[0])).size();
+    arma::Mat<double> identity(dimension + 1, dimension + 1);
+    identity.eye();
+
+    arma::Mat<double> x(trainIndex.size(), dimension + 1);
+
+    //Don't penalize intercept
+    identity(dimension, dimension) = 0.0;
+
+    std::vector<float> outcomePoints;
+    std::vector<float> currentObservation;
+
+    // Contruct X and outcome vector
+    for (size_t i = 0; i < trainIndex.size(); i++) {
+      currentObservation = trainingData->getLinObsData((trainIndex)[i]);
+      currentObservation.push_back(1.0);
+      x.row(i) = arma::conv_to<arma::Row<double> >::from(currentObservation);
+      outcomePoints.push_back(trainingData->getOutcomePoint((trainIndex)[i]));
+    }
+
+    arma::Mat<double> y(outcomePoints.size(), 1);
+    y.col(0) = arma::conv_to<arma::Col<double> >::from(outcomePoints);
+
+    // Compute XtX + lambda * I * Y = C
+    arma::Mat<double> coefficients = (x.t() * x +
+      identity * overfitPenalty).i() * x.t() * y;
+
+    // Compute test matrix
+    arma::Mat<double> xTest(testIndex.size(), dimension + 1);
+    for (size_t i = 0; i < testIndex.size(); i++) {
+      currentObservation = trainingData->getLinObsData((testIndex)[i]);
+      x.row(i) = arma::conv_to<arma::Row<double> >::from(currentObservation);
+    }
+
+    arma::Mat<double> predictions = xTest * coefficients;
+
+    for (size_t i = 0; i < predictions.size(); i++) {
+      float residual = (trainingData->getOutcomePoint((trainIndex)[i])) - predictions(i, 0);
+      residualSumSquares += residual * residual;
+    }
+  }
+
+  return residualSumSquares;
 }
 
-std::pair<float, float> splitRSquaredGain (
+
+std::pair<float, float> calculateRSquaredSplit (
     DataFrame* trainingData,
     std::vector<size_t>* splittingSampleIndex,
     std::vector<size_t>* splittingLeftPartitionIndex,
     std::vector<size_t>* splittingRightPartitionIndex,
     float overfitPenalty
 ) {
-  // 1. Find ridge solutions
-  // ridge_parent = ((XtX + lambdaI)^-1)(XtY) using x, y of parent node
-  arma::Mat<double> parentX, parentY, parentCoefficients, parentPredictions;
-  std::tie(parentX, parentY, parentCoefficients, parentPredictions) = calculateRidgeSolution(
-    trainingData,
-    splittingSampleIndex,
-    overfitPenalty
-  );
-
-  arma::Mat<double> leftX, leftY, leftCoefficients, leftPredictions;
-  std::tie(leftX, leftY, leftCoefficients, leftPredictions) = calculateRidgeSolution(
-    trainingData,
-    splittingLeftPartitionIndex,
-    overfitPenalty
-  );
-
-  arma::Mat<double> rightX, rightY, rightCoefficients, rightPredictions;
-  std::tie(rightX, rightY, rightCoefficients, rightPredictions) = calculateRidgeSolution(
-    trainingData,
-    splittingRightPartitionIndex,
-    overfitPenalty
-  );
+  // Get residual sum of squares for parent, left child, and right child nodes
+  float rssParent, rssLeft, rssRight;
+  rssParent = calculateRSS(trainingData,
+                                  splittingSampleIndex,
+                                  overfitPenalty,
+                                  true);
+  rssLeft = calculateRSS(trainingData,
+                                splittingLeftPartitionIndex,
+                                overfitPenalty,
+                                false);
+  rssRight = calculateRSS(trainingData,
+                                splittingRightPartitionIndex,
+                                overfitPenalty,
+                                false);
 
   // Calculate total sum of squares
-  float parentTotal = 0;
-  for (size_t i = 0; i < parentPredictions.n_rows; i++) {
-    parentTotal += parentPredictions(i, 0);
+  float outcomeSum = 0;
+  for (size_t i = 0; i < splittingSampleIndex->size(); i++) {
+    outcomeSum += trainingData->getOutcomePoint((*splittingSampleIndex)[i]);
   }
-  float parentMean = parentTotal/(parentPredictions.size());
+  float outcomeMean = outcomeSum/(splittingSampleIndex->size());
 
-  float residualParent;
   float totalSumSquares = 0;
-  for (size_t i = 0; i < parentY.n_rows; i++) {
-    residualParent = parentY(i, 0) - parentMean;
-    totalSumSquares += residualParent * residualParent;
-  };
-
-  // Calculate residual sum of squares for parent and children
-  float rssParent = 0;
-  float rssChildren = 0;
-  float residualChildren;
-
-  for (size_t i = 0; i < leftX.n_rows; i ++) {
-    residualChildren = leftY(i, 0) - leftPredictions(i, 0);
-    rssChildren += residualChildren * residualChildren;
-
-    arma::Mat<double> leftParentPrediction = leftX.row(i) * parentCoefficients;
-    residualParent = leftY(i, 0) - leftParentPrediction(0,0);
-    rssParent += residualParent * residualParent;
+  float meanDifference;
+  for (size_t i = 0; i < splittingSampleIndex->size(); i++) {
+    meanDifference =
+      (trainingData->getOutcomePoint((*splittingSampleIndex)[i]) - outcomeMean);
+    totalSumSquares += meanDifference + meanDifference;
   }
 
-  for (size_t i = 0; i < rightPredictions.size(); i ++) {
-    residualChildren = rightY(i, 0) - rightPredictions(i, 0);
-    rssChildren += residualChildren * residualChildren;
-
-    arma::Mat<double> rightParentPrediction = rightX.row(i) * parentCoefficients;
-    residualParent = rightY(i, 0) - rightParentPrediction(0,0);
-    rssParent += residualParent * residualParent;
-  }
-
+  // Use TSS and RSS to calculate r^2 values for parent and children
   float rSquaredParent = (1 - (rssParent/totalSumSquares));
-  float rSquaredChildren = (1 - (rssChildren/totalSumSquares));
-
-  // std::cout << "r^2 parent: " << rSquaredParent << std::endl;
-  // std::cout << "r^2 children: " << rSquaredChildren << std::endl;
-  // std::cout << "\n" << std::endl;
-
+  float rSquaredChildren = (1 - ((rssLeft + rssRight)/totalSumSquares));
   return std::make_pair(rSquaredParent, rSquaredChildren);
 }
 
@@ -455,7 +473,7 @@ float crossValidatedRSquared (
   float totalRSquaredChildren = 0;
   for (size_t i=0; i < numTimesCV; i++) {
     std::tie(rSquaredParent, rSquaredChildren) =
-      splitRSquaredGain(
+      calculateRSquaredSplit(
         trainingData,
         splittingSampleIndex,
         splittingLeftPartitionIndex,
@@ -467,9 +485,6 @@ float crossValidatedRSquared (
   }
   return (totalRSquaredParent/numTimesCV) - (totalRSquaredChildren/numTimesCV);
 }
-
-
-
 
 
 void forestryTree::recursivePartition(
@@ -589,7 +604,7 @@ void forestryTree::recursivePartition(
 
     if (getMinSplitGain() > 0) {
       float rSquaredParent, rSquaredChildren;
-      std::tie(rSquaredParent, rSquaredChildren) = splitRSquaredGain(
+      std::tie(rSquaredParent, rSquaredChildren) = calculateRSquaredSplit(
         trainingData,
         splittingSampleIndex,
         &splittingLeftPartitionIndex,
