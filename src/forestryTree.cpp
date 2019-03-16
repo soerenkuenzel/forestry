@@ -329,8 +329,7 @@ void splitData(
 float calculateRSS(
     DataFrame* trainingData,
     std::vector<size_t>* splittingSampleIndex,
-    float overfitPenalty,
-    bool isParent
+    float overfitPenalty
 ) {
   // Get cross validation folds
   std::vector< std::vector< size_t > > folds(10);
@@ -344,27 +343,26 @@ float calculateRSS(
     }
   }
 
-  // To-do: Implement case where fold < 10
   float residualSumSquares = 0;
-  std::vector<size_t> trainIndex;
-  std::vector<size_t> testIndex;
-
   size_t numFolds = folds.size();
   if (splittingSampleIndex->size() < 10) {
     numFolds = 1;
   }
 
-  for (size_t i = 0; i < folds.size(); i++) {
+
+  float numPred = 0;
+  for (size_t i = 0; i < numFolds; i++) {
+    std::vector<size_t> trainIndex;
+    std::vector<size_t> testIndex;
 
     if (splittingSampleIndex->size() < 10) {
       trainIndex = *splittingSampleIndex;
       testIndex = *splittingSampleIndex;
     }
-
-    for (size_t j = 0; j < testIndex.size(); i++) {
+    for (size_t j = 0; j < numFolds; j++) {
       if (j == i) {
         testIndex = folds.at(j);
-      } else{
+      } else {
         trainIndex.insert(trainIndex.end(), folds.at(j).begin(), folds.at(j).end());
       }
     }
@@ -373,7 +371,6 @@ float calculateRSS(
     size_t dimension = (trainingData->getLinObsData(trainIndex[0])).size();
     arma::Mat<double> identity(dimension + 1, dimension + 1);
     identity.eye();
-
     arma::Mat<double> x(trainIndex.size(), dimension + 1);
 
     //Don't penalize intercept
@@ -399,19 +396,20 @@ float calculateRSS(
 
     // Compute test matrix
     arma::Mat<double> xTest(testIndex.size(), dimension + 1);
+
     for (size_t i = 0; i < testIndex.size(); i++) {
       currentObservation = trainingData->getLinObsData((testIndex)[i]);
-      x.row(i) = arma::conv_to<arma::Row<double> >::from(currentObservation);
+      currentObservation.push_back(1.0);
+      xTest.row(i) = arma::conv_to<arma::Row<double> >::from(currentObservation);
     }
 
     arma::Mat<double> predictions = xTest * coefficients;
-
     for (size_t i = 0; i < predictions.size(); i++) {
-      float residual = (trainingData->getOutcomePoint((trainIndex)[i])) - predictions(i, 0);
+      float residual = (trainingData->getOutcomePoint((testIndex)[i])) - predictions(i, 0);
       residualSumSquares += residual * residual;
+      numPred += 1;
     }
   }
-
   return residualSumSquares;
 }
 
@@ -426,17 +424,14 @@ std::pair<float, float> calculateRSquaredSplit (
   // Get residual sum of squares for parent, left child, and right child nodes
   float rssParent, rssLeft, rssRight;
   rssParent = calculateRSS(trainingData,
-                                  splittingSampleIndex,
-                                  overfitPenalty,
-                                  true);
+                           splittingSampleIndex,
+                           overfitPenalty);
   rssLeft = calculateRSS(trainingData,
-                                splittingLeftPartitionIndex,
-                                overfitPenalty,
-                                false);
+                         splittingLeftPartitionIndex,
+                         overfitPenalty);
   rssRight = calculateRSS(trainingData,
-                                splittingRightPartitionIndex,
-                                overfitPenalty,
-                                false);
+                          splittingRightPartitionIndex,
+                          overfitPenalty);
 
   // Calculate total sum of squares
   float outcomeSum = 0;
@@ -446,11 +441,13 @@ std::pair<float, float> calculateRSquaredSplit (
   float outcomeMean = outcomeSum/(splittingSampleIndex->size());
 
   float totalSumSquares = 0;
+  size_t numMean = 0;
   float meanDifference;
   for (size_t i = 0; i < splittingSampleIndex->size(); i++) {
     meanDifference =
       (trainingData->getOutcomePoint((*splittingSampleIndex)[i]) - outcomeMean);
-    totalSumSquares += meanDifference + meanDifference;
+    totalSumSquares += meanDifference * meanDifference;
+    numMean += 1;
   }
 
   // Use TSS and RSS to calculate r^2 values for parent and children
@@ -471,6 +468,7 @@ float crossValidatedRSquared (
   float rSquaredParent, rSquaredChildren;
   float totalRSquaredParent = 0;
   float totalRSquaredChildren = 0;
+
   for (size_t i=0; i < numTimesCV; i++) {
     std::tie(rSquaredParent, rSquaredChildren) =
       calculateRSquaredSplit(
@@ -483,6 +481,11 @@ float crossValidatedRSquared (
     totalRSquaredParent += rSquaredParent;
     totalRSquaredChildren += rSquaredChildren;
   }
+
+  // std::cout << "r^2 parent: " << totalRSquaredParent/numTimesCV << std::endl;
+  // std::cout << "r^2 children: " << totalRSquaredChildren/numTimesCV << std::endl;
+  // std::cout << "\n" << std::endl;
+
   return (totalRSquaredParent/numTimesCV) - (totalRSquaredChildren/numTimesCV);
 }
 
@@ -602,17 +605,18 @@ void forestryTree::recursivePartition(
       ) != categorialCols.end()
     );
 
+    // Stopping-criteria
     if (getMinSplitGain() > 0) {
-      float rSquaredParent, rSquaredChildren;
-      std::tie(rSquaredParent, rSquaredChildren) = calculateRSquaredSplit(
+      float rSquaredGain = crossValidatedRSquared(
         trainingData,
         splittingSampleIndex,
         &splittingLeftPartitionIndex,
         &splittingRightPartitionIndex,
-        overfitPenalty
+        overfitPenalty,
+        1
       );
 
-      if ((rSquaredParent - rSquaredChildren) < getMinSplitGain()) {
+      if (rSquaredGain < getMinSplitGain()) {
         std::unique_ptr<std::vector<size_t> > averagingSampleIndex_(
             new std::vector<size_t>(*averagingSampleIndex)
         );
@@ -623,6 +627,7 @@ void forestryTree::recursivePartition(
             std::move(averagingSampleIndex_),
             std::move(splittingSampleIndex_)
         );
+        return;
       }
     }
 
