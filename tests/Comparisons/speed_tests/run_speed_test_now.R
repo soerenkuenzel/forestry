@@ -4,6 +4,7 @@ devtools::load_all()
 library(microbenchmark)
 set.seed(292315)
 library(forestry)
+current_version <- packageVersion("forestry")
 current_commit <- system("git rev-parse HEAD", intern = TRUE)
 current_date <- Sys.Date()
 current_time <- Sys.time()
@@ -64,6 +65,29 @@ train_ridge <- function() forestry(
 )
 predict_ridge <- function() predict(rf_ridge, x)
 
+# Setup ridge RF with min split gain -------------------------------------------
+rf_ridge_minSplitGain <- forestry(
+  x,
+  y,
+  ntree = 10,
+  replace = TRUE,
+  nodesizeStrictSpl = 5,
+  nodesizeStrictAvg = 5,
+  minSplitGain = .1,
+  ridgeRF = TRUE
+)
+
+train_ridge_minSplitGain <- function() forestry(
+  x,
+  y,
+  ntree = 10,
+  replace = TRUE,
+  nodesizeStrictSpl = 5,
+  nodesizeStrictAvg = 5,
+  minSplitGain = .1,
+  ridgeRF = TRUE
+)
+predict_ridge_minSplitGain <- function() predict(rf_ridge_minSplitGain, x)
 
 
 # XXX run everything -----------------------------------------------------------
@@ -71,17 +95,22 @@ predict_ridge <- function() predict(rf_ridge, x)
 mcb <- microbenchmark(forestry_iris(),
                weightmatrix_iris(),
                predict_iris(),
-               train_ridge(),
-               predict_ridge(),
                forestry_large(),
                weightmatrix_large(),
                predict_large(),
-               times = 10,
+               train_ridge(),
+               predict_ridge(),
+               train_ridge_minSplitGain(),
+               predict_ridge_minSplitGain(),
+               times = 25,
                unit = "s")
 
 mcb_s <- summary(mcb)
 
-write.table(x = cbind(current_time, current_commit, mcb_s),
+write.table(x = cbind(current_version = as.character(current_version),
+                      current_time,
+                      current_commit,
+                      mcb_s),
           file = "tests/Comparisons/speed_tests/speed_snapshots.csv",
           sep = ",",
           append = TRUE)
