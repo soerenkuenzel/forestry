@@ -32,3 +32,4 @@ Collate:
     'RcppExports.R'
     'forestry.R'
     'backwards_compatible.R'
+    'compute_rf_lp.R'
