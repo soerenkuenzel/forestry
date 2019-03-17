@@ -26,7 +26,8 @@ training_data_checker <- function(x,
                                   nthread,
                                   middleSplit,
                                   doubleTree,
-                                  linFeats) {
+                                  linFeats,
+                                  ridgeRF) {
   x <- as.data.frame(x)
   nfeatures <- ncol(x)
 
@@ -89,6 +90,9 @@ training_data_checker <- function(x,
   }
   if (minSplitGain < 0) {
     stop("minSplitGain must be greater than or equal to 0.")
+  }
+  if (minSplitGain > 0 && !ridgeRF) {
+    stop("minSplitGain cannot be set without setting ridgeRF to be true.")
   }
   if (maxDepth <= 0 || maxDepth %% 1 != 0) {
     stop("maxDepth must be a positive integer.")
@@ -422,7 +426,8 @@ forestry <- function(x,
       nthread = nthread,
       middleSplit = middleSplit,
       doubleTree = doubleTree,
-      linFeats = linFeats)
+      linFeats = linFeats,
+      ridgeRF = ridgeRF)
 
   for (variable in names(updated_variables)) {
     assign(x = variable, value = updated_variables[[variable]],

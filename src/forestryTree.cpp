@@ -88,6 +88,9 @@ forestryTree::forestryTree(
   if (maxDepth == 0) {
     throw std::runtime_error("maxDepth cannot be set to 0.");
   }
+  if (minSplitGain != 0 && !ridgeRF) {
+    throw std::runtime_error("minSplitGain cannot be set without setting ridgeRF to be true.");
+  }
   if ((*averagingSampleIndex).size() == 0) {
     throw std::runtime_error("averagingSampleIndex size cannot be set to 0.");
   }
@@ -332,25 +335,23 @@ float calculateRSS(
     float overfitPenalty
 ) {
   // Get cross validation folds
-  std::vector< std::vector< size_t > > folds(10);
+  std::vector< std::vector< size_t > > cvFolds(10);
   if (splittingSampleIndex->size() >= 10) {
     std::random_shuffle(splittingSampleIndex->begin(), splittingSampleIndex->end());
     size_t foldIndex = 0;
     for (size_t sampleIndex : *splittingSampleIndex) {
-      folds.at(foldIndex).push_back(sampleIndex);
+      cvFolds.at(foldIndex).push_back(sampleIndex);
       foldIndex++;
       foldIndex = foldIndex % 10;
     }
   }
 
   float residualSumSquares = 0;
-  size_t numFolds = folds.size();
+  size_t numFolds = cvFolds.size();
   if (splittingSampleIndex->size() < 10) {
     numFolds = 1;
   }
 
-
-  float numPred = 0;
   for (size_t i = 0; i < numFolds; i++) {
     std::vector<size_t> trainIndex;
     std::vector<size_t> testIndex;
@@ -361,9 +362,9 @@ float calculateRSS(
     }
     for (size_t j = 0; j < numFolds; j++) {
       if (j == i) {
-        testIndex = folds.at(j);
+        testIndex = cvFolds.at(j);
       } else {
-        trainIndex.insert(trainIndex.end(), folds.at(j).begin(), folds.at(j).end());
+        trainIndex.insert(trainIndex.end(), cvFolds.at(j).begin(), cvFolds.at(j).end());
       }
     }
 
@@ -371,7 +372,7 @@ float calculateRSS(
     size_t dimension = (trainingData->getLinObsData(trainIndex[0])).size();
     arma::Mat<double> identity(dimension + 1, dimension + 1);
     identity.eye();
-    arma::Mat<double> x(trainIndex.size(), dimension + 1);
+    arma::Mat<double> xTrain(trainIndex.size(), dimension + 1);
 
     //Don't penalize intercept
     identity(dimension, dimension) = 0.0;
@@ -383,7 +384,7 @@ float calculateRSS(
     for (size_t i = 0; i < trainIndex.size(); i++) {
       currentObservation = trainingData->getLinObsData((trainIndex)[i]);
       currentObservation.push_back(1.0);
-      x.row(i) = arma::conv_to<arma::Row<double> >::from(currentObservation);
+      xTrain.row(i) = arma::conv_to<arma::Row<double> >::from(currentObservation);
       outcomePoints.push_back(trainingData->getOutcomePoint((trainIndex)[i]));
     }
 
@@ -391,8 +392,8 @@ float calculateRSS(
     y.col(0) = arma::conv_to<arma::Col<double> >::from(outcomePoints);
 
     // Compute XtX + lambda * I * Y = C
-    arma::Mat<double> coefficients = (x.t() * x +
-      identity * overfitPenalty).i() * x.t() * y;
+    arma::Mat<double> coefficients = (xTrain.t() * xTrain +
+      identity * overfitPenalty).i() * xTrain.t() * y;
 
     // Compute test matrix
     arma::Mat<double> xTest(testIndex.size(), dimension + 1);
@@ -407,7 +408,6 @@ float calculateRSS(
     for (size_t i = 0; i < predictions.size(); i++) {
       float residual = (trainingData->getOutcomePoint((testIndex)[i])) - predictions(i, 0);
       residualSumSquares += residual * residual;
-      numPred += 1;
     }
   }
   return residualSumSquares;
@@ -441,13 +441,11 @@ std::pair<float, float> calculateRSquaredSplit (
   float outcomeMean = outcomeSum/(splittingSampleIndex->size());
 
   float totalSumSquares = 0;
-  size_t numMean = 0;
   float meanDifference;
   for (size_t i = 0; i < splittingSampleIndex->size(); i++) {
     meanDifference =
       (trainingData->getOutcomePoint((*splittingSampleIndex)[i]) - outcomeMean);
     totalSumSquares += meanDifference * meanDifference;
-    numMean += 1;
   }
 
   // Use TSS and RSS to calculate r^2 values for parent and children
@@ -469,7 +467,7 @@ float crossValidatedRSquared (
   float totalRSquaredParent = 0;
   float totalRSquaredChildren = 0;
 
-  for (size_t i=0; i < numTimesCV; i++) {
+  for (size_t i = 0; i < numTimesCV; i++) {
     std::tie(rSquaredParent, rSquaredChildren) =
       calculateRSquaredSplit(
         trainingData,
@@ -482,11 +480,7 @@ float crossValidatedRSquared (
     totalRSquaredChildren += rSquaredChildren;
   }
 
-  // std::cout << "r^2 parent: " << totalRSquaredParent/numTimesCV << std::endl;
-  // std::cout << "r^2 children: " << totalRSquaredChildren/numTimesCV << std::endl;
-  // std::cout << "\n" << std::endl;
-
-  return (totalRSquaredParent/numTimesCV) - (totalRSquaredChildren/numTimesCV);
+  return (totalRSquaredChildren/numTimesCV) - (totalRSquaredParent/numTimesCV);
 }
 
 
@@ -607,7 +601,7 @@ void forestryTree::recursivePartition(
 
     // Stopping-criteria
     if (getMinSplitGain() > 0) {
-      float rSquaredGain = crossValidatedRSquared(
+      float rSquaredDifference = crossValidatedRSquared(
         trainingData,
         splittingSampleIndex,
         &splittingLeftPartitionIndex,
@@ -616,7 +610,7 @@ void forestryTree::recursivePartition(
         1
       );
 
-      if (rSquaredGain < getMinSplitGain()) {
+      if (rSquaredDifference < getMinSplitGain()) {
         std::unique_ptr<std::vector<size_t> > averagingSampleIndex_(
             new std::vector<size_t>(*averagingSampleIndex)
         );
