@@ -33,7 +33,7 @@ rf_large <- forestry(x = feat_large, y = y_large)
 
 forestry_large <- function() forestry(x = feat_large, y = y_large)
 weightmatrix_large <- function() predict(rf_large, feat_large,
-                                        aggregation = "weightMatrix")
+                                         aggregation = "weightMatrix")
 predict_large <- function() predict(rf_large, feat_large)
 
 
@@ -89,7 +89,6 @@ train_ridge_minSplitGain <- function() forestry(
 )
 predict_ridge_minSplitGain <- function() predict(rf_ridge_minSplitGain, x)
 
-
 # XXX run everything -----------------------------------------------------------
 
 mcb <- microbenchmark(forestry_iris(),
@@ -111,9 +110,9 @@ write.table(x = cbind(current_version = as.character(current_version),
                       current_time,
                       current_commit,
                       mcb_s),
-          file = "tests/Comparisons/speed_tests/speed_snapshots.csv",
-          sep = ",",
-          append = TRUE)
+            file = "tests/Comparisons/speed_tests/speed_snapshots.csv",
+            sep = ",",
+            append = TRUE)
 
 
 
