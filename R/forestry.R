@@ -20,12 +20,14 @@ training_data_checker <- function(x,
                                   nodesizeAvg,
                                   nodesizeStrictSpl,
                                   nodesizeStrictAvg,
+                                  minSplitGain,
                                   maxDepth,
                                   splitratio,
                                   nthread,
                                   middleSplit,
                                   doubleTree,
-                                  linFeats) {
+                                  linFeats,
+                                  ridgeRF) {
   x <- as.data.frame(x)
   nfeatures <- ncol(x)
 
@@ -86,7 +88,12 @@ training_data_checker <- function(x,
   if (nodesizeStrictAvg <= 0 || nodesizeStrictAvg %% 1 != 0) {
     stop("nodesizeStrictAvg must be a positive integer.")
   }
-
+  if (minSplitGain < 0) {
+    stop("minSplitGain must be greater than or equal to 0.")
+  }
+  if (minSplitGain > 0 && !ridgeRF) {
+    stop("minSplitGain cannot be set without setting ridgeRF to be true.")
+  }
   if (maxDepth <= 0 || maxDepth %% 1 != 0) {
     stop("maxDepth must be a positive integer.")
   }
@@ -183,6 +190,7 @@ training_data_checker <- function(x,
               "nodesizeAvg" = nodesizeAvg,
               "nodesizeStrictSpl" = nodesizeStrictSpl,
               "nodesizeStrictAvg" = nodesizeStrictAvg,
+              "minSplitGain" = minSplitGain,
               "maxDepth" = maxDepth,
               "splitratio" = splitratio,
               "nthread" = nthread,
@@ -220,6 +228,7 @@ setClass(
     nodesizeAvg = "numeric",
     nodesizeStrictSpl = "numeric",
     nodesizeStrictAvg = "numeric",
+    minSplitGain = "numeric",
     maxDepth = "numeric",
     splitratio = "numeric",
     middleSplit = "logical",
@@ -251,6 +260,7 @@ setClass(
     nodesizeAvg = "numeric",
     nodesizeStrictSpl = "numeric",
     nodesizeStrictAvg = "numeric",
+    minSplitGain = "numeric",
     maxDepth = "numeric",
     splitratio = "numeric",
     middleSplit = "logical",
@@ -290,6 +300,7 @@ setClass(
 #'   nodes. The default value is 1.
 #' @param nodesizeStrictAvg Minimum size of terminal nodes for averaging dataset
 #'   to follow strictly. The default value is 1.
+#' @param minSplitGain Minimum loss reduction to split a node further in a tree.
 #' @param maxDepth Maximum depth of a tree. The default value is 99.
 #' @param splitratio Proportion of the training data used as the splitting
 #'   dataset. It is a ratio between 0 and 1. If the ratio is 1, then essentially
@@ -374,6 +385,7 @@ forestry <- function(x,
                      nodesizeAvg = 3,
                      nodesizeStrictSpl = 1,
                      nodesizeStrictAvg = 1,
+                     minSplitGain = 0,
                      maxDepth = round(nrow(x) / 2) + 1,
                      splitratio = 1,
                      seed = as.integer(runif(1) * 1000),
@@ -408,12 +420,14 @@ forestry <- function(x,
       nodesizeAvg = nodesizeAvg,
       nodesizeStrictSpl = nodesizeStrictSpl,
       nodesizeStrictAvg = nodesizeStrictAvg,
+      minSplitGain = minSplitGain,
       maxDepth = maxDepth,
       splitratio = splitratio,
       nthread = nthread,
       middleSplit = middleSplit,
       doubleTree = doubleTree,
-      linFeats = linFeats)
+      linFeats = linFeats,
+      ridgeRF = ridgeRF)
 
   for (variable in names(updated_variables)) {
     assign(x = variable, value = updated_variables[[variable]],
@@ -465,6 +479,7 @@ forestry <- function(x,
         nodesizeAvg,
         nodesizeStrictSpl,
         nodesizeStrictAvg,
+        minSplitGain,
         maxDepth,
         seed,
         nthread,
@@ -504,6 +519,7 @@ forestry <- function(x,
           nodesizeAvg = nodesizeAvg,
           nodesizeStrictSpl = nodesizeStrictSpl,
           nodesizeStrictAvg = nodesizeStrictAvg,
+          minSplitGain = minSplitGain,
           maxDepth = maxDepth,
           splitratio = splitratio,
           middleSplit = middleSplit,
@@ -551,6 +567,7 @@ forestry <- function(x,
         nodesizeAvg,
         nodesizeStrictSpl,
         nodesizeStrictAvg,
+        minSplitGain,
         maxDepth,
         seed,
         nthread,
@@ -581,6 +598,7 @@ forestry <- function(x,
           nodesizeAvg = nodesizeAvg,
           nodesizeStrictSpl = nodesizeStrictSpl,
           nodesizeStrictAvg = nodesizeStrictAvg,
+          minSplitGain = minSplitGain,
           maxDepth = maxDepth,
           splitratio = splitratio,
           middleSplit = middleSplit,
@@ -624,6 +642,7 @@ multilayerForestry <- function(x,
                      nodesizeAvg = 3,
                      nodesizeStrictSpl = max(round(nrow(x)/128), 1),
                      nodesizeStrictAvg = max(round(nrow(x)/128), 1),
+                     minSplitGain = 0,
                      maxDepth = 99,
                      splitratio = 1,
                      seed = as.integer(runif(1) * 1000),
@@ -647,8 +666,8 @@ multilayerForestry <- function(x,
   # Preprocess the data
   training_data_checker(x, y, ntree,replace, sampsize, mtry, nodesizeSpl,
                         nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg,
-                        maxDepth, splitratio, nthread, middleSplit, doubleTree,
-                        linFeats)
+                        minSplitGain, maxDepth, splitratio, nthread, middleSplit,
+                        doubleTree, linFeats)
   # Total number of obervations
   nObservations <- length(y)
   numColumns <- ncol(x)
@@ -696,6 +715,7 @@ multilayerForestry <- function(x,
         nodesizeAvg,
         nodesizeStrictSpl,
         nodesizeStrictAvg,
+        minSplitGain,
         maxDepth,
         seed,
         nthread,
@@ -737,6 +757,7 @@ multilayerForestry <- function(x,
           nodesizeAvg = nodesizeAvg,
           nodesizeStrictSpl = nodesizeStrictSpl,
           nodesizeStrictAvg = nodesizeStrictAvg,
+          minSplitGain = minSplitGain,
           maxDepth = maxDepth,
           splitratio = splitratio,
           middleSplit = middleSplit,
@@ -786,6 +807,7 @@ multilayerForestry <- function(x,
         nodesizeAvg,
         nodesizeStrictSpl,
         nodesizeStrictAvg,
+        minSplitGain,
         maxDepth,
         seed,
         nthread,
@@ -816,6 +838,7 @@ multilayerForestry <- function(x,
           nodesizeAvg = nodesizeAvg,
           nodesizeStrictSpl = nodesizeStrictSpl,
           nodesizeStrictAvg = nodesizeStrictAvg,
+          minSplitGain = minSplitGain,
           maxDepth = maxDepth,
           splitratio = splitratio,
           middleSplit = middleSplit,
@@ -1269,6 +1292,7 @@ relinkCPP_prt <- function(object) {
         nodesizeAvg = object@nodesizeAvg,
         nodesizeStrictSpl = object@nodesizeStrictSpl,
         nodesizeStrictAvg = object@nodesizeStrictAvg,
+        minSplitGain = object@minSplitGain,
         maxDepth = object@maxDepth,
         seed = sample(.Machine$integer.max, 1),
         nthread = 0, # will use all threads available.

@@ -5,8 +5,9 @@
 \title{Training data check}
 \usage{
 training_data_checker(x, y, ntree, replace, sampsize, mtry, nodesizeSpl,
-  nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, maxDepth, splitratio,
-  nthread, middleSplit, doubleTree, linFeats)
+  nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, minSplitGain,
+  maxDepth, splitratio, nthread, middleSplit, doubleTree, linFeats,
+  ridgeRF)
 }
 \arguments{
 \item{x}{A data frame of all training predictors.}
@@ -40,6 +41,8 @@ nodes. The default value is 1.}
 \item{nodesizeStrictAvg}{Minimum size of terminal nodes for averaging dataset
 to follow strictly. The default value is 1.}
 
+\item{minSplitGain}{Minimum loss reduction to split a node further in a tree.}
+
 \item{maxDepth}{Maximum depth of a tree. The default value is 99.}
 
 \item{splitratio}{Proportion of the training data used as the splitting
@@ -61,6 +64,8 @@ data can be exchanged to create decorrelated trees. (Default = FALSE)}
 
 \item{linFeats}{Specify which features to split linearly on when using
 ridgeRF (defaults to use all numerical features)}
+
+\item{ridgeRF}{Fit the model with a ridge regression or not}
 }
 \description{
 Check the input to forestry constructor

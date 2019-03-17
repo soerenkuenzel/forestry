@@ -7,7 +7,7 @@
 forestry(x, y, ntree = 500, replace = TRUE, sampsize = if (replace)
   nrow(x) else ceiling(0.632 * nrow(x)), sample.fraction = NULL,
   mtry = max(floor(ncol(x)/3), 1), nodesizeSpl = 3, nodesizeAvg = 3,
-  nodesizeStrictSpl = 1, nodesizeStrictAvg = 1,
+  nodesizeStrictSpl = 1, nodesizeStrictAvg = 1, minSplitGain = 0,
   maxDepth = round(nrow(x)/2) + 1, splitratio = 1,
   seed = as.integer(runif(1) * 1000), verbose = FALSE, nthread = 0,
   splitrule = "variance", middleSplit = FALSE, maxObs = length(y),
@@ -49,6 +49,8 @@ nodes. The default value is 1.}
 
 \item{nodesizeStrictAvg}{Minimum size of terminal nodes for averaging dataset
 to follow strictly. The default value is 1.}
+
+\item{minSplitGain}{Minimum loss reduction to split a node further in a tree.}
 
 \item{maxDepth}{Maximum depth of a tree. The default value is 99.}
 

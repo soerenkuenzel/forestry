@@ -25,6 +25,7 @@ multilayerForestry::multilayerForestry(
   size_t minNodeSizeAvg,
   size_t minNodeSizeToSplitSpt,
   size_t minNodeSizeToSplitAvg,
+  float minSplitGain,
   size_t maxDepth,
   unsigned int seed,
   size_t nthread,
@@ -47,6 +48,7 @@ multilayerForestry::multilayerForestry(
   this->_minNodeSizeSpt = minNodeSizeSpt;
   this->_minNodeSizeToSplitAvg = minNodeSizeToSplitAvg;
   this->_minNodeSizeToSplitSpt = minNodeSizeToSplitSpt;
+  this->_minSplitGain = minSplitGain;
   this->_maxDepth = maxDepth;
   this->_seed = seed;
   this->_nthread = nthread;
@@ -114,6 +116,7 @@ void multilayerForestry::addForests(size_t ntree) {
       _minNodeSizeAvg,
       _minNodeSizeToSplitSpt,
       _minNodeSizeToSplitAvg,
+      _minSplitGain,
       _maxDepth,
       _seed,
       _nthread,

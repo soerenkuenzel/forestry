@@ -9,8 +9,8 @@ multilayerForestry(x, y, ntree = 500, nrounds = 1, eta = 0.3,
   replace = FALSE, sampsize = nrow(x), sample.fraction = NULL,
   mtry = ncol(x), nodesizeSpl = 3, nodesizeAvg = 3,
   nodesizeStrictSpl = max(round(nrow(x)/128), 1),
-  nodesizeStrictAvg = max(round(nrow(x)/128), 1), maxDepth = 99,
-  splitratio = 1, seed = as.integer(runif(1) * 1000),
+  nodesizeStrictAvg = max(round(nrow(x)/128), 1), minSplitGain = 0,
+  maxDepth = 99, splitratio = 1, seed = as.integer(runif(1) * 1000),
   verbose = FALSE, nthread = 0, splitrule = "variance",
   middleSplit = TRUE, maxObs = length(y), ridgeRF = FALSE,
   linFeats = 0:(ncol(x) - 1), overfitPenalty = 1, doubleTree = FALSE,
@@ -55,6 +55,8 @@ nodes. The default value is 1.}
 
 \item{nodesizeStrictAvg}{Minimum size of terminal nodes for averaging dataset
 to follow strictly. The default value is 1.}
+
+\item{minSplitGain}{Minimum loss reduction to split a node further in a tree.}
 
 \item{maxDepth}{Maximum depth of a tree. The default value is 99.}
 

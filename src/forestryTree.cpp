@@ -6,6 +6,7 @@
 #include <map>
 #include <random>
 #include <sstream>
+#include <tuple>
 // [[Rcpp::plugins(cpp11)]]
 
 forestryTree::forestryTree():
@@ -14,6 +15,7 @@ forestryTree::forestryTree():
   _minNodeSizeAvg(0),
   _minNodeSizeToSplitSpt(0),
   _minNodeSizeToSplitAvg(0),
+  _minSplitGain(0),
   _maxDepth(0),
   _averagingSampleIndex(nullptr),
   _splittingSampleIndex(nullptr),
@@ -28,6 +30,7 @@ forestryTree::forestryTree(
   size_t minNodeSizeAvg,
   size_t minNodeSizeToSplitSpt,
   size_t minNodeSizeToSplitAvg,
+  float minSplitGain,
   size_t maxDepth,
   std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
   std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
@@ -45,6 +48,7 @@ forestryTree::forestryTree(
   * @param minNodeSizeAvg    Minimum averaging size of leaf node
   * @param minNodeSizeToSplitSpt    Minimum splitting size of a splitting node
   * @param minNodeSizeToSplitAvg    Minimum averaging size of a splitting node
+  * @param minSplitGain    Minimum loss reduction to split a node.
   * @param maxDepth    Max depth of a tree
   * @param splittingSampleIndex    A vector with index of splitting samples
   * @param averagingSampleIndex    A vector with index of averaging samples
@@ -84,6 +88,9 @@ forestryTree::forestryTree(
   if (maxDepth == 0) {
     throw std::runtime_error("maxDepth cannot be set to 0.");
   }
+  if (minSplitGain != 0 && !ridgeRF) {
+    throw std::runtime_error("minSplitGain cannot be set without setting ridgeRF to be true.");
+  }
   if ((*averagingSampleIndex).size() == 0) {
     throw std::runtime_error("averagingSampleIndex size cannot be set to 0.");
   }
@@ -106,6 +113,7 @@ forestryTree::forestryTree(
   this->_minNodeSizeSpt = minNodeSizeSpt;
   this->_minNodeSizeToSplitAvg = minNodeSizeToSplitAvg;
   this->_minNodeSizeToSplitSpt = minNodeSizeToSplitSpt;
+  this->_minSplitGain = minSplitGain;
   this->_maxDepth = maxDepth;
   this->_averagingSampleIndex = std::move(averagingSampleIndex);
   this->_splittingSampleIndex = std::move(splittingSampleIndex);
@@ -166,6 +174,7 @@ void forestryTree::setDummyTree(
     size_t minNodeSizeAvg,
     size_t minNodeSizeToSplitSpt,
     size_t minNodeSizeToSplitAvg,
+    float minSplitGain,
     size_t maxDepth,
     std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
     std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
@@ -176,6 +185,7 @@ void forestryTree::setDummyTree(
   this->_minNodeSizeSpt = minNodeSizeSpt;
   this->_minNodeSizeToSplitAvg = minNodeSizeToSplitAvg;
   this->_minNodeSizeToSplitSpt = minNodeSizeToSplitSpt;
+  this->_minSplitGain = minSplitGain;
   this->_maxDepth = maxDepth;
   this->_averagingSampleIndex = std::move(averagingSampleIndex);
   this->_splittingSampleIndex = std::move(splittingSampleIndex);
@@ -319,6 +329,160 @@ void splitData(
   );
 }
 
+float calculateRSS(
+    DataFrame* trainingData,
+    std::vector<size_t>* splittingSampleIndex,
+    float overfitPenalty
+) {
+  // Get cross validation folds
+  std::vector< std::vector< size_t > > cvFolds(10);
+  if (splittingSampleIndex->size() >= 10) {
+    std::random_shuffle(splittingSampleIndex->begin(), splittingSampleIndex->end());
+    size_t foldIndex = 0;
+    for (size_t sampleIndex : *splittingSampleIndex) {
+      cvFolds.at(foldIndex).push_back(sampleIndex);
+      foldIndex++;
+      foldIndex = foldIndex % 10;
+    }
+  }
+
+  float residualSumSquares = 0;
+  size_t numFolds = cvFolds.size();
+  if (splittingSampleIndex->size() < 10) {
+    numFolds = 1;
+  }
+
+  for (size_t i = 0; i < numFolds; i++) {
+    std::vector<size_t> trainIndex;
+    std::vector<size_t> testIndex;
+
+    if (splittingSampleIndex->size() < 10) {
+      trainIndex = *splittingSampleIndex;
+      testIndex = *splittingSampleIndex;
+    }
+    for (size_t j = 0; j < numFolds; j++) {
+      if (j == i) {
+        testIndex = cvFolds.at(j);
+      } else {
+        trainIndex.insert(trainIndex.end(), cvFolds.at(j).begin(), cvFolds.at(j).end());
+      }
+    }
+
+    //Number of linear features in training data
+    size_t dimension = (trainingData->getLinObsData(trainIndex[0])).size();
+    arma::Mat<double> identity(dimension + 1, dimension + 1);
+    identity.eye();
+    arma::Mat<double> xTrain(trainIndex.size(), dimension + 1);
+
+    //Don't penalize intercept
+    identity(dimension, dimension) = 0.0;
+
+    std::vector<float> outcomePoints;
+    std::vector<float> currentObservation;
+
+    // Contruct X and outcome vector
+    for (size_t i = 0; i < trainIndex.size(); i++) {
+      currentObservation = trainingData->getLinObsData((trainIndex)[i]);
+      currentObservation.push_back(1.0);
+      xTrain.row(i) = arma::conv_to<arma::Row<double> >::from(currentObservation);
+      outcomePoints.push_back(trainingData->getOutcomePoint((trainIndex)[i]));
+    }
+
+    arma::Mat<double> y(outcomePoints.size(), 1);
+    y.col(0) = arma::conv_to<arma::Col<double> >::from(outcomePoints);
+
+    // Compute XtX + lambda * I * Y = C
+    arma::Mat<double> coefficients = (xTrain.t() * xTrain +
+      identity * overfitPenalty).i() * xTrain.t() * y;
+
+    // Compute test matrix
+    arma::Mat<double> xTest(testIndex.size(), dimension + 1);
+
+    for (size_t i = 0; i < testIndex.size(); i++) {
+      currentObservation = trainingData->getLinObsData((testIndex)[i]);
+      currentObservation.push_back(1.0);
+      xTest.row(i) = arma::conv_to<arma::Row<double> >::from(currentObservation);
+    }
+
+    arma::Mat<double> predictions = xTest * coefficients;
+    for (size_t i = 0; i < predictions.size(); i++) {
+      float residual = (trainingData->getOutcomePoint((testIndex)[i])) - predictions(i, 0);
+      residualSumSquares += residual * residual;
+    }
+  }
+  return residualSumSquares;
+}
+
+
+std::pair<float, float> calculateRSquaredSplit (
+    DataFrame* trainingData,
+    std::vector<size_t>* splittingSampleIndex,
+    std::vector<size_t>* splittingLeftPartitionIndex,
+    std::vector<size_t>* splittingRightPartitionIndex,
+    float overfitPenalty
+) {
+  // Get residual sum of squares for parent, left child, and right child nodes
+  float rssParent, rssLeft, rssRight;
+  rssParent = calculateRSS(trainingData,
+                           splittingSampleIndex,
+                           overfitPenalty);
+  rssLeft = calculateRSS(trainingData,
+                         splittingLeftPartitionIndex,
+                         overfitPenalty);
+  rssRight = calculateRSS(trainingData,
+                          splittingRightPartitionIndex,
+                          overfitPenalty);
+
+  // Calculate total sum of squares
+  float outcomeSum = 0;
+  for (size_t i = 0; i < splittingSampleIndex->size(); i++) {
+    outcomeSum += trainingData->getOutcomePoint((*splittingSampleIndex)[i]);
+  }
+  float outcomeMean = outcomeSum/(splittingSampleIndex->size());
+
+  float totalSumSquares = 0;
+  float meanDifference;
+  for (size_t i = 0; i < splittingSampleIndex->size(); i++) {
+    meanDifference =
+      (trainingData->getOutcomePoint((*splittingSampleIndex)[i]) - outcomeMean);
+    totalSumSquares += meanDifference * meanDifference;
+  }
+
+  // Use TSS and RSS to calculate r^2 values for parent and children
+  float rSquaredParent = (1 - (rssParent/totalSumSquares));
+  float rSquaredChildren = (1 - ((rssLeft + rssRight)/totalSumSquares));
+  return std::make_pair(rSquaredParent, rSquaredChildren);
+}
+
+float crossValidatedRSquared (
+    DataFrame* trainingData,
+    std::vector<size_t>* splittingSampleIndex,
+    std::vector<size_t>* splittingLeftPartitionIndex,
+    std::vector<size_t>* splittingRightPartitionIndex,
+    float overfitPenalty,
+    size_t numTimesCV
+) {
+  // Apply 5 times 10-fold cross-validation
+  float rSquaredParent, rSquaredChildren;
+  float totalRSquaredParent = 0;
+  float totalRSquaredChildren = 0;
+
+  for (size_t i = 0; i < numTimesCV; i++) {
+    std::tie(rSquaredParent, rSquaredChildren) =
+      calculateRSquaredSplit(
+        trainingData,
+        splittingSampleIndex,
+        splittingLeftPartitionIndex,
+        splittingRightPartitionIndex,
+        overfitPenalty
+      );
+    totalRSquaredParent += rSquaredParent;
+    totalRSquaredChildren += rSquaredChildren;
+  }
+
+  return (totalRSquaredChildren/numTimesCV) - (totalRSquaredParent/numTimesCV);
+}
+
 
 void forestryTree::recursivePartition(
     RFNode* rootNode,
@@ -335,8 +499,6 @@ void forestryTree::recursivePartition(
     arma::Mat<double> gTotal,
     arma::Mat<double> sTotal
 ){
-
-
   if ((*averagingSampleIndex).size() < getMinNodeSizeAvg() ||
       (*splittingSampleIndex).size() < getMinNodeSizeSpt() ||
       (depth == getMaxDepth())) {
@@ -436,6 +598,33 @@ void forestryTree::recursivePartition(
         bestSplitFeature
       ) != categorialCols.end()
     );
+
+    // Stopping-criteria
+    if (getMinSplitGain() > 0) {
+      float rSquaredDifference = crossValidatedRSquared(
+        trainingData,
+        splittingSampleIndex,
+        &splittingLeftPartitionIndex,
+        &splittingRightPartitionIndex,
+        overfitPenalty,
+        1
+      );
+
+      if (rSquaredDifference < getMinSplitGain()) {
+        std::unique_ptr<std::vector<size_t> > averagingSampleIndex_(
+            new std::vector<size_t>(*averagingSampleIndex)
+        );
+        std::unique_ptr<std::vector<size_t> > splittingSampleIndex_(
+            new std::vector<size_t>(*splittingSampleIndex)
+        );
+        (*rootNode).setLeafNode(
+            std::move(averagingSampleIndex_),
+            std::move(splittingSampleIndex_)
+        );
+        return;
+      }
+    }
+
     // Update sample index for both left and right partitions
     // Recursively grow the tree
     std::unique_ptr< RFNode > leftChild ( new RFNode() );
@@ -703,6 +892,12 @@ float computeRSSArmadillo(
           as_scalar((S_r.t() * A_r) * (G_r * (A_r * S_r))) -
           as_scalar(2.0 * S_l.t() * (A_l * S_l)) -
           as_scalar(2.0 * S_r.t() * (A_r * S_r)));
+}
+
+float computeRSSArmadillo2(
+    float x
+){
+  return (x);
 }
 
 void updateRSSComponents(
@@ -1985,6 +2180,7 @@ void forestryTree::reconstruct_tree(
     size_t minNodeSizeAvg,
     size_t minNodeSizeToSplitSpt,
     size_t minNodeSizeToSplitAvg,
+    float minSplitGain,
     size_t maxDepth,
     bool ridgeRF,
     float overfitPenalty,
@@ -2002,6 +2198,7 @@ void forestryTree::reconstruct_tree(
   _minNodeSizeAvg = minNodeSizeAvg;
   _minNodeSizeToSplitSpt = minNodeSizeToSplitSpt;
   _minNodeSizeToSplitAvg = minNodeSizeToSplitAvg;
+  _minSplitGain = minSplitGain;
   _maxDepth = maxDepth;
   _ridgeRF = ridgeRF;
   _overfitPenalty = overfitPenalty;
