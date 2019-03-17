@@ -71,12 +71,12 @@ predict_ridge <- function() predict(rf_ridge, x)
 mcb <- microbenchmark(forestry_iris(),
                weightmatrix_iris(),
                predict_iris(),
-               train_ridge(),
-               predict_ridge(),
                forestry_large(),
                weightmatrix_large(),
                predict_large(),
-               times = 10,
+               train_ridge(),
+               predict_ridge(),
+               times = 25,
                unit = "s")
 
 mcb_s <- summary(mcb)
