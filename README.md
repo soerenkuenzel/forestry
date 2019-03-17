@@ -40,13 +40,6 @@ predict(rf, x_test)
 
 A fast implementation of random forests using ridge penalized splitting and ridge regression for predictions.
 
-Must be install package from branch "RidgeArmadillo" to use Ridge Random Forest
-
-```R
-if (!require("devtools")) install.packages("devtools")
-devtools::install_github("soerenkuenzel/forestry", ref = "RidgeArmadillo")
-```
-
 Example:
 
 ```R
