@@ -15,13 +15,13 @@ test_that("Tests that compute the lp distances works correctly", {
   rf <- forestry(x = x_train, y = y_train)
   predict(rf, x_test)
 
-  # Apply compute the l1 distances in the "Species" dimension
+  # Compute the l1 distances in the "Species" dimension
   distances_1 <- compute_lp(object = rf,
                          test = x_test,
                          feature = "Species",
                          p = 1)
 
-  # Apply compute the l2 distances in the "Petal.Length" dimension
+  # Compute the l2 distances in the "Petal.Length" dimension
   distances_2 <- compute_lp(object = rf,
                             test = x_test,
                             feature = "Petal.Length",
