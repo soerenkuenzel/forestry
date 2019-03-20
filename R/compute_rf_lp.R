@@ -3,8 +3,9 @@
 
 # ---Computing lp distances-----------------------------------------------------
 #' comptute_lp
-#' @name compute_lp
-#' @rdname compute_lp
+#' @name compute_lp-forestry
+#' @title compute lp distances
+#' @rdname compute_lp-forestry
 #' @description return lp ditances of selected test observations.
 #' @param object A `forestry` object.
 #' @param test_set A data frame of testing predictors.
@@ -13,11 +14,10 @@
 #' @param ... additional arguments.
 #' @return A vector lp distances.
 #' @export
-
 compute_lp <- function(object, test_set, feature, p){
 
   # Check the object is a "forestry" object
-  #TO DO
+  # TODO
 
   # Extract the training data from the forest
   train_set <- slot(object, "processed_dta")$processed_x
@@ -26,15 +26,15 @@ compute_lp <- function(object, test_set, feature, p){
                        aggregation = "weightMatrix")$weightMatrix
 
   # Check that the test observations have correct features
-  # TO DO
+  # TODO
 
   if (is.factor(as.data.frame(test_set)[1, feature])) {
 
     # Get categorical feature mapping
-    mapping <-slot(object, "categoricalFeatureMapping")
+    mapping <- slot(object, "categoricalFeatureMapping")
 
     # replace the test_set categories with appropriate numbers
-    # TO DO
+    # TODO
 
     diff_mat <- matrix(as.data.frame(test_set)[,feature],
                        nrow = nrow(test_set),
