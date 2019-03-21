@@ -5,18 +5,16 @@
 \alias{compute_lp}
 \title{compute lp distances}
 \usage{
-compute_lp(object, test_set, feature, p)
+compute_lp(object, feature.new, feature, p)
 }
 \arguments{
 \item{object}{A `forestry` object.}
 
-\item{test_set}{A data frame of testing predictors.}
+\item{feature.new}{A data frame of testing predictors.}
 
 \item{feature}{A string denoting the dimension for computing lp distances.}
 
 \item{p}{A positive real number determining the norm p-norm used.}
-
-\item{...}{additional arguments.}
 }
 \value{
 A vector lp distances.

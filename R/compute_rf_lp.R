@@ -1,4 +1,3 @@
-
 #' @include forestry.R
 
 # ---Computing lp distances-----------------------------------------------------
@@ -8,10 +7,9 @@
 #' @rdname compute_lp-forestry
 #' @description return lp ditances of selected test observations.
 #' @param object A `forestry` object.
-#' @param test_set A data frame of testing predictors.
+#' @param feature.new A data frame of testing predictors.
 #' @param feature A string denoting the dimension for computing lp distances.
 #' @param p A positive real number determining the norm p-norm used.
-#' @param ... additional arguments.
 #' @return A vector lp distances.
 #' @examples
 #'
@@ -33,73 +31,73 @@
 #'                           feature = "Petal.Length",
 #'                           p = 2)
 #' @export
+compute_lp <- function(object, feature.new, feature, p){
 
-
-
-compute_lp <- function(object, test_set, feature, p){
-
-  # Check the object is a "forestry" object
-  if(class(object)!="forestry"){
+  # Checks and parsing:
+  if (class(object) != "forestry") {
     stop("The object submitted is not a forestry random forest")
   }
-
-  # Ensure the test set is a data frame
-  test_set = as.data.frame(test_set)
-
-  # Extract the training data from the forest
+  feature.new <- as.data.frame(feature.new)
   train_set <- slot(object, "processed_dta")$processed_x
 
-  # Check the submitted feature is in the set of possible features
-  if(!(feature %in% colnames(train_set))){
+  if (!(feature %in% colnames(train_set))) {
     stop("The submitted feature is not in the set of possible features")
   }
 
+  # Compute distances
   y_weights <- predict(object = object,
-                       feature.new = test_set,
+                       feature.new = feature.new,
                        aggregation = "weightMatrix")$weightMatrix
 
-  if (is.factor(test_set[1, feature])) {
-
+  if (is.factor(feature.new[1, feature])) {
     # Get categorical feature mapping
-    mapping <-slot(object, "categoricalFeatureMapping")
+    mapping <- slot(object, "categoricalFeatureMapping")
 
     # Change factor values to corresponding integer levels
-    factor_vals = mapping[[1]][2][[1]]
-    map <- function(x) {return(which(factor_vals == x)[1])}
-    test_set[,feature] <- unlist(lapply(test_set[,feature], map))
+    #TODO(Rowan): This is specific for the iris data sets.
+    # * Run it on data set with several factor valued covariates
+    # * Implement a test with a data set with two factor-valued column
+    # * Try to use:
+    # processed_x <- preprocess_testing(feature.new,
+    #                                   object@categoricalFeatureCols,
+    #                                   object@categoricalFeatureMapping)
+    factor_vals <- mapping[[1]][2][[1]]
+    map <- function(x) {
+      return(which(factor_vals == x)[1])
+    }
+    feature.new[ ,feature] <- unlist(lapply(feature.new[,feature], map))
 
-    diff_mat <- matrix(test_set[,feature],
-                       nrow = nrow(test_set),
+    diff_mat <- matrix(feature.new[,feature],
+                       nrow = nrow(feature.new),
                        ncol = nrow(train_set),
                        byrow = TRUE) !=
                 matrix(train_set[,feature],
-                       nrow = nrow(test_set),
+                       nrow = nrow(feature.new),
                        ncol = nrow(train_set),
                        byrow = FALSE)
     diff_mat[diff_mat] <- 1
-  }
-  else{
-
-    diff_mat <- matrix(test_set[,feature],
-                       nrow = nrow(test_set),
+  } else {
+    diff_mat <- matrix(feature.new[,feature],
+                       nrow = nrow(feature.new),
                        ncol = nrow(train_set),
                        byrow = TRUE) -
                 matrix(train_set[,feature],
-                       nrow = nrow(test_set),
+                       nrow = nrow(feature.new),
                        ncol = nrow(train_set),
                        byrow = FALSE)
   }
 
   # Raise absoulte differences to the pth power
-  diff_mat <- abs(diff_mat)^(p)
+  diff_mat <- abs(diff_mat) ^ p
 
   # Compute final Lp distances
-  distances <- apply(y_weights * diff_mat, 1, sum)^(1/p)
+  distances <- apply(y_weights * diff_mat, 1, sum) ^ (1 / p)
 
   # Ensure that the Lp distances for a factor are between 0 and 1
-  if(is.factor(test_set[1, feature])){
-    f <- function(x){if (x>1){x = 1} else if (x<0){x = 0} else{}}
-    distances = apply(distances,f)}
+  if (is.factor(feature.new[1, feature])) {
+    distances[distances < 0] <- 0
+    distances[distances > 1] <- 1
+  }
 
   return(distances)
 }
