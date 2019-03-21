@@ -1,5 +1,4 @@
 test_that("Tests that compute the lp distances works correctly", {
-
   context('Test lp distances')
 
   # Set seed for reproductivity
@@ -17,9 +16,9 @@ test_that("Tests that compute the lp distances works correctly", {
 
   # Compute the l1 distances in the "Species" dimension
   distances_1 <- compute_lp(object = rf,
-                         test = x_test,
-                         feature = "Species",
-                         p = 1)
+                            test = x_test,
+                            feature = "Species",
+                            p = 1)
 
   # Compute the l2 distances in the "Petal.Length" dimension
   distances_2 <- compute_lp(object = rf,
@@ -27,8 +26,12 @@ test_that("Tests that compute the lp distances works correctly", {
                             feature = "Petal.Length",
                             p = 2)
 
-  # What else can we expect?
-  expect_equal(length(distances_1), nrow(x_test), tolerance = 1e-2)
-  expect_equal(length(distances_2), nrow(x_test), tolerance = 1e-2)
+  expect_identical(length(distances_1), nrow(x_test))
+  expect_identical(length(distances_2), nrow(x_test))
+
+  #set tolerance
+  tol = 1e-2
+  expect_gte(sum(distances_1), 0 - tol)
+  expect_lte(sum(distances_1), length(test_idx) + tol)
 })
 
