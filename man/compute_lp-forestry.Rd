@@ -24,3 +24,23 @@ A vector lp distances.
 \description{
 return lp ditances of selected test observations.
 }
+\examples{
+
+# Set seed for reproductivity
+set.seed(292313)
+
+# Use Iris Data
+test_idx <- sample(nrow(iris), 11)
+x_train <- iris[-test_idx, -1]
+y_train <- iris[-test_idx, 1]
+x_test <- iris[test_idx, -1]
+
+rf <- forestry(x = x_train, y = y_train)
+predict(rf, x_test)
+
+# Compute the l2 distances in the "Petal.Length" dimension
+distances_2 <- compute_lp(object = rf,
+                          test = x_test,
+                          feature = "Petal.Length",
+                          p = 2)
+}

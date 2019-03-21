@@ -13,7 +13,28 @@
 #' @param p A positive real number determining the norm p-norm used.
 #' @param ... additional arguments.
 #' @return A vector lp distances.
+#' @examples
+#'
+#' # Set seed for reproductivity
+#' set.seed(292313)
+#'
+#' # Use Iris Data
+#' test_idx <- sample(nrow(iris), 11)
+#' x_train <- iris[-test_idx, -1]
+#' y_train <- iris[-test_idx, 1]
+#' x_test <- iris[test_idx, -1]
+#'
+#' rf <- forestry(x = x_train, y = y_train)
+#' predict(rf, x_test)
+#'
+#' # Compute the l2 distances in the "Petal.Length" dimension
+#' distances_2 <- compute_lp(object = rf,
+#'                           test = x_test,
+#'                           feature = "Petal.Length",
+#'                           p = 2)
 #' @export
+
+
 
 compute_lp <- function(object, test_set, feature, p){
 
@@ -75,6 +96,10 @@ compute_lp <- function(object, test_set, feature, p){
   # Compute final Lp distances
   distances <- apply(y_weights * diff_mat, 1, sum)^(1/p)
 
+  # Ensure that the Lp distances for a factor are between 0 and 1
+  if(is.factor(test_set[1, feature])){
+    f <- function(x){if (x>1){x = 1} else if (x<0){x = 0} else{}}
+    distances = apply(distances,f)}
 
   return(distances)
 }

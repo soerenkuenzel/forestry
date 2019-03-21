@@ -1,6 +1,5 @@
 test_that("Tests that compute the lp distances works correctly", {
 
-
   context('Test lp distances')
 
   # Set seed for reproductivity
