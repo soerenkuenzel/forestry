@@ -3,8 +3,9 @@
 
 # ---Computing lp distances-----------------------------------------------------
 #' comptute_lp
-#' @name compute_lp
-#' @rdname compute_lp
+#' @name compute_lp-forestry
+#' @title compute lp distances
+#' @rdname compute_lp-forestry
 #' @description return lp ditances of selected test observations.
 #' @param object A `forestry` object.
 #' @param test_set A data frame of testing predictors.
@@ -57,14 +58,15 @@ compute_lp <- function(object, test_set, feature, p){
     diff_mat[diff_mat] <- 1
   }
   else{
+
     diff_mat <- matrix(test_set[,feature],
-                      nrow = nrow(test_set),
-                      ncol = nrow(train_set),
-                      byrow = TRUE) -
+                       nrow = nrow(test_set),
+                       ncol = nrow(train_set),
+                       byrow = TRUE) -
                 matrix(train_set[,feature],
-                      nrow = nrow(test_set),
-                      ncol = nrow(train_set),
-                      byrow = FALSE)
+                       nrow = nrow(test_set),
+                       ncol = nrow(train_set),
+                       byrow = FALSE)
   }
 
   # Raise absoulte differences to the pth power
@@ -72,6 +74,7 @@ compute_lp <- function(object, test_set, feature, p){
 
   # Compute final Lp distances
   distances <- apply(y_weights * diff_mat, 1, sum)^(1/p)
+
 
   return(distances)
 }

@@ -1,4 +1,6 @@
 test_that("Tests that compute the lp distances works correctly", {
+
+
   context('Test lp distances')
 
   # Set seed for reproductivity
@@ -33,5 +35,9 @@ test_that("Tests that compute the lp distances works correctly", {
   tol = 1e-2
   expect_gte(sum(distances_1), 0 - tol)
   expect_lte(sum(distances_1), length(test_idx) + tol)
+  expect_equal(distances_2,
+               c(2.628971, 2.360160, 2.177702, 2.574676, 2.404899,
+                 2.212701, 2.091241, 2.622013, 2.276196, 2.465682, 2.801573),
+               tolerance = tol)
 })
 
