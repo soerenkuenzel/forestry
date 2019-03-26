@@ -6,6 +6,10 @@ test_that("Tests that compute the lp distances works correctly", {
   set.seed(292313)
 
   # Use Iris Data
+  # Add a location column to iris dataset
+  iris$location <- as.factor(sample(c("north", "south", "east", "west"),
+                                    nrow(iris),
+                                    replace = TRUE))
   test_idx <- sample(nrow(iris), 11)
   x_train <- iris[-test_idx, -1]
   y_train <- iris[-test_idx, 1]
@@ -26,18 +30,14 @@ test_that("Tests that compute the lp distances works correctly", {
                             feature = "Petal.Length",
                             p = 2)
 
-  expect_identical(length(distances_1), nrow(x_test))
-  expect_identical(length(distances_2), nrow(x_test))
-
-  #set tolerance
   expect_equal(distances_1,
-               c(0.6757558, 0.5375544, 0.6937144, 0.6265924, 0.5884993,
-                 0.6233176, 0.5467013, 0.8047591, 0.7466187, 0.6254624,
-                 0.8397300),
+               c(0.5713034, 0.3983406, 0.8628993, 0.5934071, 0.6393168,
+                 0.6590699, 0.8023141, 0.7427544, 0.7753897, 0.6775414,
+                 0.8607893),
                tolerance = 1e-2)
   expect_equal(distances_2,
-               c(2.628971, 2.360160, 2.177702, 2.574676, 2.404899,
-                 2.212701, 2.091241, 2.622013, 2.276196, 2.465682, 2.801573),
+               c(1.951685, 1.921449, 2.345230, 2.279486, 2.396665, 1.959820,
+                 2.199482, 2.391815, 2.266701, 2.422162, 2.553033),
                tolerance = 1e-2)
 })
 

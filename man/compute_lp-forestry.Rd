@@ -17,7 +17,7 @@ compute_lp(object, feature.new, feature, p)
 \item{p}{A positive real number determining the norm p-norm used.}
 }
 \value{
-A vector lp distances.
+A vector of lp distances.
 }
 \description{
 return lp ditances of selected test observations.
