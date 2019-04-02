@@ -1,9 +1,9 @@
 #' @include compute_rf_lp.R
 
 #' comptute_lp
-#' @name compute_lp-forestry
-#' @title compute lp distances
-#' @rdname compute_lp-forestry
+#' @name get_quantiles-forestry
+#' @title compute quantiles
+#' @rdname get_quantiles-forestry
 #' @description return lp ditances of selected test observations.
 #' @inheritParams compute_lp
 #' @param quantiles quantiles to be computed at each x

@@ -33,3 +33,4 @@ Collate:
     'forestry.R'
     'backwards_compatible.R'
     'compute_rf_lp.R'
+    'quantileForest.R'
