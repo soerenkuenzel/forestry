@@ -10,7 +10,7 @@
 #' @return A vector of lp distances.
 #' @export
 get_quantiles <- function(object, feature.new,
-                          quantiles = c(.05, 50, .95)) {
+                          quantiles = c(.05, .5, .95)) {
 
   # Checks and parsing:
   if (class(object) != "forestry") {
