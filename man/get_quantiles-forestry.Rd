@@ -5,7 +5,7 @@
 \alias{get_quantiles}
 \title{compute quantiles}
 \usage{
-get_quantiles(object, feature.new, quantiles = c(0.05, 50, 0.95))
+get_quantiles(object, feature.new, quantiles = c(0.05, 0.5, 0.95))
 }
 \arguments{
 \item{quantiles}{quantiles to be computed at each x}

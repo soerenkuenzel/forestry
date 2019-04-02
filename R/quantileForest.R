@@ -47,8 +47,9 @@ get_quantiles <- function(object, feature.new,
       quantile[sum_total < quantile_prop] <-
         (train_y[ord] + train_y[order_of_y[i]]) / 2
     }
-    quants[, as.character(quantile_prop)] <- paste0("q", quantile)
+    quants[, as.character(quantile_prop)] <- quantile
   }
-
+  quants <- as.data.frame(quants)
+  colnames(quants) <- paste0("q", colnames(quants))
   return(quants)
 }
