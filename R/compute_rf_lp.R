@@ -59,21 +59,21 @@ compute_lp <- function(object, feature.new, feature, p){
     diff_mat <- matrix(feature.new[,feature],
                        nrow = nrow(feature.new),
                        ncol = nrow(train_set),
-                       byrow = TRUE) !=
+                       byrow = FALSE) !=
                 matrix(train_set[,feature],
                        nrow = nrow(feature.new),
                        ncol = nrow(train_set),
-                       byrow = FALSE)
+                       byrow = TRUE)
     diff_mat[diff_mat] <- 1
   } else {
     diff_mat <- matrix(feature.new[,feature],
                        nrow = nrow(feature.new),
                        ncol = nrow(train_set),
-                       byrow = TRUE) -
+                       byrow = FALSE) -
                 matrix(train_set[,feature],
                        nrow = nrow(feature.new),
                        ncol = nrow(train_set),
-                       byrow = FALSE)
+                       byrow = TRUE)
   }
 
   # Raise absoulte differences to the pth power
