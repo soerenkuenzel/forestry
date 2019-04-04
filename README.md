@@ -1,5 +1,8 @@
 [![Travis-CI Build Status](https://travis-ci.org/soerenkuenzel/forestry.svg?branch=master)](https://travis-ci.org/soerenkuenzel/forestry)
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2629366.svg)](https://doi.org/10.5281/zenodo.2629366)
+
+
 ## forestry: Provides Functions for Fast Random Forests
 
 Sören Künzel, Edward Liu, Theo Saarinen, Allen Tang, Jasjeet Sekhon
