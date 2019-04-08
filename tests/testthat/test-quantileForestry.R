@@ -21,10 +21,10 @@ test_that("Tests that quantile forest is working correctly", {
     nodesizeStrictAvg = 5
   )
 
-  quantiles <- get_quantiles(
+  quantiles <- get_conditional_quantiles(
     object = forest,
     feature.new = x[1:3, ],
-    quantiles = c(0, .05, .6, .5, .8, .95, 1)
+    probs = c(0, .05, .6, .5, .8, .95, 1)
   )
 
   expect_equal(as.numeric(quantiles[1,5]), 5.2, tolerance = 1e-2)
@@ -33,3 +33,7 @@ test_that("Tests that quantile forest is working correctly", {
   expect_equal(as.numeric(quantiles[2,6]), 5, tolerance = 1e-2)
   expect_equal(as.numeric(quantiles[1,2]), 4.6, tolerance = 1e-2)
 })
+
+
+
+

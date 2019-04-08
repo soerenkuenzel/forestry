@@ -10,7 +10,7 @@ test_that("Tests that compute the lp distances works correctly", {
   iris$location <- as.factor(sample(c("north", "south", "east", "west"),
                                     nrow(iris),
                                     replace = TRUE))
-  test_idx <- sample(nrow(iris), 11)
+  test_idx <- sample(nrow(iris), 10)
   x_train <- iris[-test_idx, -1]
   y_train <- iris[-test_idx, 1]
   x_test <- iris[test_idx, -1]
@@ -31,13 +31,16 @@ test_that("Tests that compute the lp distances works correctly", {
                             p = 2)
 
   expect_equal(distances_1,
-               c(0.5713034, 0.3983406, 0.8628993, 0.5934071, 0.6393168,
-                 0.6590699, 0.8023141, 0.7427544, 0.7753897, 0.6775414,
-                 0.8607893),
+               c(0.02586165, 0.08362668, 0.04007290, 0.04278755, 0.16482126,
+                 0.04179358, 0.04066656, 0.05106356, 0.06894505, 0.14341744),
                tolerance = 1e-2)
   expect_equal(distances_2,
-               c(1.951685, 1.921449, 2.345230, 2.279486, 2.396665, 1.959820,
-                 2.199482, 2.391815, 2.266701, 2.422162, 2.553033),
+               c(0.5735928, 0.5648549, 0.6683935, 0.6109477, 0.5571071,
+                 0.6334010, 0.4082906, 0.5991195, 0.6761388, 0.5996498),
                tolerance = 1e-2)
+
+
+
+
 })
 
