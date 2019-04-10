@@ -3,7 +3,7 @@
 \name{get_conditional_quantiles-forestry}
 \alias{get_conditional_quantiles-forestry}
 \alias{get_conditional_quantiles}
-\title{compute probs}
+\title{compute conditional quantiles}
 \usage{
 get_conditional_quantiles(object, feature.new, probs)
 }
