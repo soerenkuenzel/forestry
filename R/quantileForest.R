@@ -77,7 +77,7 @@ get_conditional_quantiles <- function(object,
 
 #' get_conditional_distribution
 #' @name get_conditional_distribution-forestry
-#' @title compute probs
+#' @title compute conditional distribution
 #' @rdname get_conditional_distribution-forestry
 #' @description Computes and returns the condidtional distributions.
 #' @inheritParams compute_lp

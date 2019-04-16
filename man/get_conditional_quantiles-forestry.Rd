@@ -23,7 +23,7 @@ Computes and returns the condidtional quantiles for a random
 forest.
 }
 \examples{
-#'# Set seed for reproductivity
+# Set seed for reproductivity
 set.seed(292313)
 # Use Iris Data
 test_idx <- sample(nrow(iris), 10)

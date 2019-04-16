@@ -3,7 +3,7 @@
 \name{get_conditional_distribution-forestry}
 \alias{get_conditional_distribution-forestry}
 \alias{get_conditional_distribution}
-\title{compute probs}
+\title{compute conditional distribution}
 \usage{
 get_conditional_distribution(object, feature.new, vals)
 }

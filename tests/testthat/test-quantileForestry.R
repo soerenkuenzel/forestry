@@ -40,7 +40,7 @@ test_that("Tests that quantile forest is working correctly", {
 
 
   # Tests for quantile function
-  expect_equal(dim(quantiles), c(10,7))
+  expect_equal(dim(quantiles), c(10, 7))
   expect_equal(as.numeric(quantiles[1,5]), 5.0, tolerance = 1e-2)
   expect_equal(as.numeric(quantiles[2,1]), 4.9, tolerance = 1e-2)
   expect_equal(as.numeric(quantiles[5,3]), 4.8, tolerance = 1e-2)

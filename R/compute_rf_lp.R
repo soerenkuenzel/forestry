@@ -88,7 +88,6 @@ compute_lp <- function(object, feature.new, feature, p){
     distances[distances > 1] <- 1
   }
 
-
   return(distances)
 }
 
