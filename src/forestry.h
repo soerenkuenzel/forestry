@@ -65,6 +65,12 @@ public:
 
   void calculateVariableImportance();
 
+  void calculateLocalVariableImportance(
+    std::vector< std::vector<float> >* xNew,
+    arma::Mat<float>* weightMatrix,
+    std::vector<float> prediction
+  );
+
   std::vector<float> getVariableImportance() {
     calculateVariableImportance();
     calculateOOBError();

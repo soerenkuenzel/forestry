@@ -3,6 +3,8 @@
 #include <random>
 #include <thread>
 #include <mutex>
+#include <algorithm>
+#include <functional>
 #include <RcppArmadillo.h>
 #define DOPARELLEL true
 
@@ -405,6 +407,15 @@ std::unique_ptr< std::vector<float> > forestry::predict(
     }
   }
 
+  bool localVariableImportance = false;
+  if (localVariableImportance) {
+    calculateLocalVariableImportance(
+      xNew,
+      weightMatrix,
+      prediction
+    );
+  }
+
   return prediction_;
 }
 
@@ -513,6 +524,108 @@ void forestry::calculateVariableImportance() {
   // Populate forest's variable importance with all shuffled MSE's
   this-> _variableImportance = std::move(variableImportances_);
 }
+
+
+void forestry::calculateLocalVariableImportance(
+    std::vector< std::vector<float> >* xNew,
+    arma::Mat<float>* weightMatrix,
+    std::vector<float> prediction
+  ) {
+  // Declare local VI matrix to be numNewObservations x numFeatures
+  size_t numNewObs = xNew->size();
+  size_t numFeatures = getTrainingData()->getNumColumns();
+  std::vector< std::vector<float> >
+    localVariableImportances(numNewObs, std::vector<float>(numFeatures, 0));
+
+
+  // Get actual and predicted outcomes for training data
+  std::vector<float> outcomeData = *(getTrainingData()->getOutcomeData());
+  size_t numTrainingObs = getTrainingData()->getNumRows();
+  std::vector<float> outputTrainingPrediction(numTrainingObs);
+  std::vector<size_t> outputTrainingCount(numTrainingObs);
+
+  // Predicted outcome
+  for(int treeIndex = 0; treeIndex < ((int) getNtree()); treeIndex++ ) {
+    try {
+      std::vector<float> outputTrainingPrediction_iteration(numTrainingObs);
+      std::vector<size_t> outputTrainingCount_iteration(numTrainingObs);
+      for (size_t trainingObsIndex = 0; trainingObsIndex < numTrainingObs; trainingObsIndex++) {
+        outputTrainingPrediction_iteration[trainingObsIndex] = 0;
+        outputTrainingCount_iteration[trainingObsIndex] = 0;
+      }
+      forestryTree *currentTree = (*getForest())[treeIndex].get();
+      (*currentTree).getOOBPrediction(
+          outputTrainingPrediction_iteration,
+          outputTrainingCount_iteration,
+          getTrainingData()
+      );
+      for (size_t i = 0; i < numTrainingObs; i++) {
+        outputTrainingPrediction[i] += outputTrainingPrediction_iteration[i];
+        outputTrainingCount[i] += outputTrainingCount_iteration[i];
+      }
+    } catch (std::runtime_error &err) {
+      // Rcpp::Rcerr << err.what() << std::endl;
+    }
+  }
+
+  // Loop over all observations
+  for (size_t observationIndex = 0; observationIndex < numNewObs; observationIndex++) {
+    std::vector<float> observationWeight =
+      arma::conv_to< std::vector<float> >::from(weightMatrix->row(observationIndex));
+
+    // 1. Calculate weighted OOB MSE and weighted variance
+    float weightedMSE = 0;
+    float weightedVariance = 0;
+
+    for (size_t i = 0; i < outputTrainingPrediction.size(); i++) {
+      if (outputTrainingCount[i] != 0) {
+        float trueOutcome = getTrainingData()->getOutcomePoint(i);
+        weightedMSE += observationWeight[i]
+            *pow(trueOutcome - outputTrainingPrediction[i] / outputTrainingCount[i], 2);
+        weightedVariance += observationWeight[i]
+            *pow(trueOutcome - (observationWeight[i] * trueOutcome), 2);
+      }
+    }
+
+    std::vector<float> outputTrainingPrediction(numTrainingObs);
+    std::vector<size_t> outputTrainingCount(numTrainingObs);
+
+    // Loop over all features
+    for (size_t featNum = 0; featNum < getTrainingData()->getNumColumns(); featNum++) {
+      for (int i = 0; i < ((int) getNtree()); i++) {
+        try {
+          std::vector<float> outputOOBPrediction_iteration(numTrainingObs, 0);
+          std::vector<size_t> outputOOBCount_iteration(numTrainingObs, 0);
+          forestryTree *currentTree = (*getForest())[i].get();
+          (*currentTree).getShuffledOOBPrediction(
+              outputOOBPrediction_iteration,
+              outputOOBCount_iteration,
+              getTrainingData(),
+              featNum
+          );
+          for (size_t j=0; j < numTrainingObs; j++) {
+            outputTrainingPrediction[j] += outputOOBPrediction_iteration[j];
+            outputTrainingCount[j] += outputOOBCount_iteration[j];
+          }
+        } catch (std::runtime_error &err) {
+          Rcpp::Rcerr << err.what() << std::endl;
+        }
+      }
+
+      float weightedPermutedMSE = 0;
+      for (size_t i = 0; i < outputTrainingPrediction.size(); i++) {
+        if (outputTrainingCount[i] != 0) {
+          float trueOutcome = getTrainingData()->getOutcomePoint(i);
+          weightedPermutedMSE += observationWeight[i]
+            *pow(trueOutcome - outputTrainingPrediction[i], 2);
+        }
+      }
+      localVariableImportances[observationIndex][featNum] =
+        ((weightedPermutedMSE-weightedMSE)/weightedVariance);
+    }
+  }
+}
+
 
 void forestry::calculateOOBError() {
 
