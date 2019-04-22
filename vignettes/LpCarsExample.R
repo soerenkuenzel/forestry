@@ -37,15 +37,14 @@ pred <- predict(rf_forestry,
                 feature.new = cars_test_sample %>% select(-y))
 
 y_true <- cars_test_sample$y
-eval <- cbind(test_ids,
-              trust,
+eval <- cbind(trust,
               data.frame(cars_test_sample$DateOfRegistration),
-              data.frame(cars_test_sample$DateOfRegistration),
+              data.frame(cars_test_sample$powerPS),
               pred,
               y_true,
               abs(y_true-pred))
 
-colnames(eval)[c(2,3,4,5,8)] <- c("DoR_prob","power_prob","DateOfRegistration",
+colnames(eval)[c(1,2,3,4,7)] <- c("DoR_prob","power_prob","DateOfRegistration",
                                   "powerPS", "abs_error")
 
 # trust data under the condition that registration and power are < 0.95
