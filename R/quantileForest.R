@@ -60,12 +60,14 @@ get_conditional_quantiles <- function(object,
   for (quantile_prop in probs) {
     sum_total <- rep(0, nrow(feature.new))
     quantiles <- rep(-Inf, nrow(feature.new))
+
     for (i in 1:length(train_y)) {
       # For training observation i, get its rank in y
       ord <- order_of_y[i]
       sum_total <- sum_total + y_weights[ ,ord]
       quantiles[sum_total <= quantile_prop] <- train_y[ord]
     }
+
     quants[, as.character(quantile_prop)] <- quantiles
   }
 

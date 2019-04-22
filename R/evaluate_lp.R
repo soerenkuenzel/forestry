@@ -25,7 +25,7 @@
 #' x_test <- iris[test_idx, -index]
 #' rf <- forestry(x = x_train, y = y_train)
 #'
-#' features <- c("Sepal.Width", "Petal.Length", "Petal.Width")
+#' features <- c("Sepal.Width", "Petal.Length", "Petal.Width", "Species")
 #'
 #' # Evaluate the test observations' lp distances
 #' trust <- evaluate_lp(object = rf,
@@ -57,10 +57,10 @@ evaluate_lp <- function(object, feature.new, feature, p = 1){
                                p = p)
     # Set seed for reproductivity
     set.seed(24750371)
-    # Compute lp distance for the training data using OOB observations:
+    # Compute lp distances for the training data using OOB observations:
     k_CV <- 10
     folds <- caret::createFolds(y_train, k = k_CV, list = TRUE,
-                               returnTrain = FALSE)
+                                returnTrain = FALSE)
     # Create a vector of lp distances for training observations to be filled
     x_train_lp <- rep(NA, nrow(x_train))
 

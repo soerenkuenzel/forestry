@@ -35,4 +35,3 @@ Collate:
     'compute_rf_lp.R'
     'quantileForest.R'
     'evaluate_lp.R'
-    'flags.R'
