@@ -6,7 +6,7 @@
 \title{predict-forestry}
 \usage{
 \method{predict}{forestry}(object, feature.new, aggregation = "average",
-  ...)
+  localVariableImportance = FALSE, ...)
 }
 \arguments{
 \item{object}{A `forestry` object.}

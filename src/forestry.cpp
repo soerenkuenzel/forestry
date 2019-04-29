@@ -306,7 +306,8 @@ void forestry::addTrees(size_t ntree) {
 
 std::unique_ptr< std::vector<float> > forestry::predict(
   std::vector< std::vector<float> >* xNew,
-  arma::Mat<float>* weightMatrix
+  arma::Mat<float>* weightMatrix,
+  bool localVariableImportance
 ){
   std::vector<float> prediction;
   size_t numObservations = (*xNew)[0].size();
@@ -391,10 +392,8 @@ std::unique_ptr< std::vector<float> > forestry::predict(
     new std::vector<float>(prediction)
   );
 
-
   // If we also update the weight matrix, we now have to divide every entry
   // by the number of trees:
-
   if (weightMatrix) {
     size_t nrow = (*xNew)[0].size(); // number of features to be predicted
     size_t ncol = getNtrain(); // number of train data
@@ -405,7 +404,6 @@ std::unique_ptr< std::vector<float> > forestry::predict(
     }
   }
 
-  bool localVariableImportance = false;
   if (localVariableImportance) {
     calculateLocalVariableImportance(
       xNew,
@@ -568,8 +566,6 @@ void forestry::calculateLocalVariableImportance(
   for (size_t observationIndex = 0; observationIndex < numNewObs; observationIndex++) {
     std::vector<float> observationWeight =
       arma::conv_to< std::vector<float> >::from(weightMatrix->row(observationIndex));
-
-
 
     // 1. Calculate weightedMSE and weightedVariance
     float weightedMSE = 0;

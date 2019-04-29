@@ -324,7 +324,8 @@ SEXP rcpp_cppMultilayerBuildInterface(
 Rcpp::List rcpp_cppPredictInterface(
   SEXP forest,
   Rcpp::List x,
-  std::string aggregation
+  std::string aggregation,
+  bool localVariableImportance
 ){
   try {
 
@@ -345,7 +346,8 @@ Rcpp::List rcpp_cppPredictInterface(
 
       // The idea is that, if the weightMatrix is point to NULL it won't be
       // be updated, but otherwise it will be updated:
-      testForestPrediction = (*testFullForest).predict(&featureData, &weightMatrix);
+      testForestPrediction = (*testFullForest).predict(&featureData, &weightMatrix,
+                                                       localVariableImportance);
     } else {
       testForestPrediction = (*testFullForest).predict(&featureData, NULL);
     }

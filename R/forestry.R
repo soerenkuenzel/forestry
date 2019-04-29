@@ -873,7 +873,8 @@ multilayerForestry <- function(x,
 #' @export
 predict.forestry <- function(object,
                              feature.new,
-                             aggregation = "average", ...) {
+                             aggregation = "average",
+                             localVariableImportance = FALSE,...) {
   # Preprocess the data
   testing_data_checker(feature.new)
 
@@ -882,7 +883,7 @@ predict.forestry <- function(object,
                                     object@categoricalFeatureMapping)
 
   rcppPrediction <- tryCatch({
-    rcpp_cppPredictInterface(object@forest, processed_x, aggregation)
+    rcpp_cppPredictInterface(object@forest, processed_x, aggregation, localVariableImportance)
   }, error = function(err) {
     print(err)
     return(NULL)
