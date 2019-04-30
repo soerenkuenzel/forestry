@@ -1,10 +1,10 @@
 #' @include forestry.R
 
 # ---visulizes a tree ----------------------------------------------------------
-#' vistree
-#' @name vistree-forestry
+#' plot
+#' @name plot-forestry
 #' @title visualize a tree
-#' @rdname vistree-forestry
+#' @rdname plot-forestry
 #' @description visulizes a tree in the forest.
 #' @param object A forestry object.
 #' @param tree.id Specifies the tree number that should be visulaized.
@@ -18,10 +18,10 @@
 #'
 #' rf <- forestry(x = x_train, y = y_train)
 #'
-#' vistree(rf)
+#' plot(rf)
 #' @export
 #' @import visNetwork
-vistree <- function(object, tree.id = 1, printmeta_dta = FALSE) {
+plot.forestry <- function(object, tree.id = 1, print.meta_dta = FALSE) {
   if (class(object)[[1]] != "forestry") {
     stop("Object must be a forestry object")
   }
@@ -109,9 +109,27 @@ vistree <- function(object, tree.id = 1, printmeta_dta = FALSE) {
     }
   }
 
+  # Save more information about the splits -------------------------------------
+  feat_names <- colnames(forestry_tree@processed_dta$processed_x)
+  node_info$feat_nm <- feat_names[node_info$split_feat]
+  cat_feats <- names(forestry_tree@processed_dta$categoricalFeatureCols_cpp)
+  node_info$is_cat_feat <- node_info$feat_nm %in% cat_feats
+  node_info$cat_split_value <- as.character(node_info$split_val)
+
+  cat_feat_map <- forestry_tree@categoricalFeatureMapping
+  if (length(cat_feat_map) > 0) {
+    for (i in 1:length(cat_feat_map)) {
+      # i <- 1
+      nodes_with_this_split <-
+        node_info$split_feat == cat_feat_map[[i]]$categoricalFeatureCol &
+        (!is.na(node_info$split_feat))
+
+      node_info$cat_split_value[nodes_with_this_split] <-
+        as.character(cat_feat_map[[i]]$uniqueFeatureValues[
+          node_info$split_val[nodes_with_this_split]])
+    }
+  }
   node_info
-
-
   # Prepare data for VisNetwork ------------------------------------------------
 
   nodes <- data.frame(
@@ -143,8 +161,8 @@ vistree <- function(object, tree.id = 1, printmeta_dta = FALSE) {
       floor(node_info$split_val[edges$from]) == node_info$split_val[edges$from],
       ifelse(
         node_info$left_child[edges$from] == edges$to,
-        paste0(" = ", round(node_info$split_val[edges$from], digits = 2)),
-        paste0(" != ", round(node_info$split_val[edges$from], digits = 2))
+        paste0(" = ", node_info$cat_split_value[edges$from]),
+        paste0(" != ", node_info$cat_split_value[edges$from])
       ),
       ifelse(
         node_info$left_child[edges$from] == edges$to,
@@ -167,6 +185,6 @@ vistree <- function(object, tree.id = 1, printmeta_dta = FALSE) {
     visEdges(arrows = "to") %>%
     visHierarchicalLayout() %>% visExport(type = "pdf", name = "ridge_tree")
 
-  print(p1)
-  return(node_info)
+  if (print.meta_dta) print(node_info)
+  return(p1)
 }
