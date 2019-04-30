@@ -1,11 +1,11 @@
 #' @include forestry.R
 
-# ---visulizes a tree ----------------------------------------------------------
+# ---plots a tree ----------------------------------------------------------
 #' plot
 #' @name plot-forestry
 #' @title visualize a tree
 #' @rdname plot-forestry
-#' @description visulizes a tree in the forest.
+#' @description plots a tree in the forest.
 #' @param x A forestry x.
 #' @param tree.id Specifies the tree number that should be visulaized.
 #' @param print.meta_dta Should the data for the plot be printed?
