@@ -6,8 +6,10 @@
 #' @title visualize a tree
 #' @rdname plot-forestry
 #' @description visulizes a tree in the forest.
-#' @param object A forestry object.
+#' @param x A forestry x.
 #' @param tree.id Specifies the tree number that should be visulaized.
+#' @param print.meta_dta Should the data for the plot be printed?
+#' @param ... additional arguments that are not used.
 #' @examples
 #' set.seed(292315)
 #' library(forestry)
@@ -21,15 +23,15 @@
 #' plot(rf)
 #' @export
 #' @import visNetwork
-plot.forestry <- function(object, tree.id = 1, print.meta_dta = FALSE) {
-  if (class(object)[[1]] != "forestry") {
-    stop("Object must be a forestry object")
+plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE, ...) {
+  if (class(x)[[1]] != "forestry") {
+    stop("x must be a forestry x")
   }
-  if (object@ntree < tree.id | 1 > tree.id) {
+  if (x@ntree < tree.id | 1 > tree.id) {
     stop("tree.id is too large or too small.")
   }
 
-  forestry_tree <- make_savable(object)
+  forestry_tree <- make_savable(x)
 
   feat_names <- colnames(forestry_tree@processed_dta$processed_x)
   split_feat <- forestry_tree@R_forest[[tree.id]]$var_id

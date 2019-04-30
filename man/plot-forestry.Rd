@@ -5,12 +5,16 @@
 \alias{plot.forestry}
 \title{visualize a tree}
 \usage{
-\method{plot}{forestry}(object, tree.id = 1, print.meta_dta = FALSE)
+\method{plot}{forestry}(x, tree.id = 1, print.meta_dta = FALSE, ...)
 }
 \arguments{
-\item{object}{A forestry object.}
+\item{x}{A forestry x.}
 
 \item{tree.id}{Specifies the tree number that should be visulaized.}
+
+\item{print.meta_dta}{Should the data for the plot be printed?}
+
+\item{...}{additional arguments that are not used.}
 }
 \description{
 visulizes a tree in the forest.
