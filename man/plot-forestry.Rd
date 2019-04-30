@@ -22,12 +22,12 @@ visulizes a tree in the forest.
 \examples{
 set.seed(292315)
 library(forestry)
-test_idx <- sample(nrow(iris), 3)
-x_train <- iris[-test_idx, -1]
-y_train <- iris[-test_idx, 1]
-x_test <- iris[test_idx, -1]
-
-rf <- forestry(x = x_train, y = y_train)
+rf <- forestry(x = iris[, -1],
+               y = iris[, 1])
 
 plot(rf)
+plot(rf, tree.id = 2)
+plot(rf, tree.id = 4)
+
+
 }

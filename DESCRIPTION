@@ -18,7 +18,8 @@ Imports:
     MASS (>= 7.3.0),
     rBayesianOptimization,
     methods,
-    visNetwork
+    visNetwork, 
+    glmnet
 LinkingTo: Rcpp,
   RcppArmadillo
 RoxygenNote: 6.1.1
