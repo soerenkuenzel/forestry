@@ -19,7 +19,8 @@ Imports:
     rBayesianOptimization,
     methods,
     visNetwork, 
-    glmnet
+    glmnet, 
+    grDevices
 LinkingTo: Rcpp,
   RcppArmadillo
 RoxygenNote: 6.1.1

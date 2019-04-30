@@ -222,8 +222,6 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
   edges$width = node_info$num_averaging[edges$to] /
     (node_info$num_averaging[1] / 4)
 
-
-  #########
   # collect data for leaves ----------------------------------------------------
   nodes$label <- as.character(nodes$label)
 
@@ -260,8 +258,17 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
                                      round(mean(dta_y[leaf_idx[[leaf_id]]]), 5))
     }
   }
-  ########
 
+  # defines a colors -----------------------------------------------------------
+  split_vals <- node_info$split_feat
+  split_vals <- ifelse(is.na(split_vals), 0, split_vals)
+  split_vals <- factor(split_vals)
+  color_code <- grDevices::terrain.colors(n = length(levels(split_vals)),
+                                          alpha = .7)
+  names(color_code) <- levels(split_vals)
+  nodes$color <- color_code[split_vals]
+
+  # Plot the actual node -------------------------------------------------------
   (p1 <-
     visNetwork(
       nodes,
