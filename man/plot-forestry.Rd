@@ -28,8 +28,9 @@ set.seed(292315)
 rf <- forestry(x = iris[,-1],
                y = iris[, 1])
 
-plot(x = ridge_rf)
-plot(x = ridge_rf, tree.id = 2)
+plot(x = rf)
+plot(x = rf, tree.id = 2)
+plot(x = rf, tree.id = 500)
 
 ridge_rf <- forestry(
   x = iris[,-1],
@@ -37,7 +38,7 @@ ridge_rf <- forestry(
   replace = FALSE,
   nodesizeStrictSpl = 10,
   mtry = 4,
-  ntree = 20,
+  ntree = 1000,
   minSplitGain = .004,
   ridgeRF = TRUE,
   overfitPenalty = 1.65,
@@ -45,5 +46,6 @@ ridge_rf <- forestry(
 
 plot(x = ridge_rf)
 plot(x = ridge_rf, tree.id = 2)
+plot(x = ridge_rf, tree.id = 1000)
 
 }
