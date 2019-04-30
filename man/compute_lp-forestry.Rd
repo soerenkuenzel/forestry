@@ -38,7 +38,7 @@ predict(rf, x_test)
 
 # Compute the l2 distances in the "Petal.Length" dimension
 distances_2 <- compute_lp(object = rf,
-                          test = x_test,
+                          feature.new = x_test,
                           feature = "Petal.Length",
                           p = 2)
 }
