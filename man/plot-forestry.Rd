@@ -6,7 +6,7 @@
 \title{visualize a tree}
 \usage{
 \method{plot}{forestry}(x, tree.id = 1, print.meta_dta = FALSE,
-  beta.char.len = 6, ...)
+  beta.char.len = 30, ...)
 }
 \arguments{
 \item{x}{A forestry x.}

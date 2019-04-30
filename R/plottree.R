@@ -41,7 +41,7 @@
 #' @export
 #' @import visNetwork
 plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
-                          beta.char.len = 6, ...) {
+                          beta.char.len = 30, ...) {
   if (x@ntree < tree.id | 1 > tree.id) {
     stop("tree.id is too large or too small.")
   }
@@ -224,6 +224,8 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
 
   # collect data for leaves ----------------------------------------------------
   nodes$label <- as.character(nodes$label)
+  nodes$title <- as.character(nodes$label)
+
 
   dta_x <- forestry_tree@processed_dta$processed_x
   dta_y <- forestry_tree@processed_dta$y
@@ -233,23 +235,36 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
     # ridge forest
     for (leaf_id in node_info$node_id[node_info$is_leaf]) {
       # leaf_id = 5
-      plm <- glmnet::glmnet(x = as.matrix(dta_x[leaf_idx[[leaf_id]],
-                                                forestry_tree@linFeats + 1]),
+      ###
+      this_ds <- dta_x[leaf_idx[[leaf_id]],
+                       forestry_tree@linFeats + 1]
+      encoder <- onehot::onehot(this_ds)
+      remat <- predict(encoder, this_ds)
+      ###
+      plm <- glmnet::glmnet(x = remat,
                             y = dta_y[leaf_idx[[leaf_id]]],
                             lambda = forestry_tree@overfitPenalty,
                             alpha	= 0)
 
       plm_pred <- predict(plm, type = "coef")
-      plm_pred_names <- c("interc", colnames(dta_x))
+      plm_pred_names <- c("interc", colnames(remat))
 
       return_char <- character()
       for (i in 1:length(plm_pred)) {
         return_char <- paste0(return_char,
                               substr(plm_pred_names[i], 1, beta.char.len), " ",
-                              round(plm_pred[i], 2), "\n")
+                              round(plm_pred[i], 2), "<br>")
       }
-      nodes$label[leaf_id] <- paste0(nodes$label[leaf_id], "\n========\n",
+      nodes$title[leaf_id] <- paste0(nodes$label[leaf_id],
+                                     "<br> R2 = ",
+                                     plm$dev.ratio,
+                                     "<br>========<br>",
                                      return_char)
+      nodes$label[leaf_id] <- paste0(nodes$label[leaf_id],
+                                     "\n R2 = ",
+                                     round(plm$dev.ratio, 3),
+                                     "\n=======\nm = ",
+                                     round(mean(dta_y[leaf_idx[[leaf_id]]]), 5))
     }
   } else {
     # not ridge forest

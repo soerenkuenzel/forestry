@@ -20,7 +20,8 @@ Imports:
     methods,
     visNetwork, 
     glmnet, 
-    grDevices
+    grDevices,
+    onehot
 LinkingTo: Rcpp,
   RcppArmadillo
 RoxygenNote: 6.1.1
