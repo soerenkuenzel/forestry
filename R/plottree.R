@@ -15,14 +15,26 @@
 #' @import glmnet
 #' @examples
 #' set.seed(292315)
-#' library(forestry)
-#' rf <- forestry(x = iris[, -1],
+#' rf <- forestry(x = iris[,-1],
 #'                y = iris[, 1])
 #'
-#' plot(rf)
-#' plot(rf, tree.id = 2)
-#' plot(rf, tree.id = 4)
+#' plot(x = ridge_rf)
+#' plot(x = ridge_rf, tree.id = 2)
 #'
+#' ridge_rf <- forestry(
+#'   x = iris[,-1],
+#'   y = iris[, 1],
+#'   replace = FALSE,
+#'   nodesizeStrictSpl = 10,
+#'   mtry = 4,
+#'   ntree = 20,
+#'   minSplitGain = .004,
+#'   ridgeRF = TRUE,
+#'   overfitPenalty = 1.65,
+#'   linFeats = 1:2)
+#'
+#' plot(x = ridge_rf)
+#' plot(x = ridge_rf, tree.id = 2)
 #'
 #' @export
 #' @import visNetwork
