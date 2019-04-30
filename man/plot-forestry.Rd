@@ -5,7 +5,8 @@
 \alias{plot.forestry}
 \title{visualize a tree}
 \usage{
-\method{plot}{forestry}(x, tree.id = 1, print.meta_dta = FALSE, ...)
+\method{plot}{forestry}(x, tree.id = 1, print.meta_dta = FALSE,
+  beta.char.len = 6, ...)
 }
 \arguments{
 \item{x}{A forestry x.}
@@ -13,6 +14,9 @@
 \item{tree.id}{Specifies the tree number that should be visulaized.}
 
 \item{print.meta_dta}{Should the data for the plot be printed?}
+
+\item{beta.char.len}{The length of the beta values in leaf node
+representation.}
 
 \item{...}{additional arguments that are not used.}
 }

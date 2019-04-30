@@ -9,6 +9,8 @@
 #' @param x A forestry x.
 #' @param tree.id Specifies the tree number that should be visulaized.
 #' @param print.meta_dta Should the data for the plot be printed?
+#' @param beta.char.len The length of the beta values in leaf node
+#' representation.
 #' @param ... additional arguments that are not used.
 #' @import glmnet
 #' @examples
@@ -24,7 +26,8 @@
 #'
 #' @export
 #' @import visNetwork
-plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE, ...) {
+plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
+                          beta.char.len = 6, ...) {
   if (x@ntree < tree.id | 1 > tree.id) {
     stop("tree.id is too large or too small.")
   }
@@ -213,11 +216,13 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE, ...) {
   dta_x <- forestry_tree@processed_dta$processed_x
   dta_y <- forestry_tree@processed_dta$y
 
+
   if (forestry_tree@ridgeRF) {
     # ridge forest
     for (leaf_id in node_info$node_id[node_info$is_leaf]) {
-      # leaf_id = 4
-      plm <- glmnet::glmnet(x = as.matrix(dta_x[leaf_idx[[leaf_id]], ]),
+      # leaf_id = 5
+      plm <- glmnet::glmnet(x = as.matrix(dta_x[leaf_idx[[leaf_id]],
+                                                forestry_tree@linFeats + 1]),
                             y = dta_y[leaf_idx[[leaf_id]]],
                             lambda = forestry_tree@overfitPenalty,
                             alpha	= 0)
@@ -227,7 +232,8 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE, ...) {
 
       return_char <- character()
       for (i in 1:length(plm_pred)) {
-        return_char <- paste0(return_char, substr(plm_pred_names[i], 1, 6), " ",
+        return_char <- paste0(return_char,
+                              substr(plm_pred_names[i], 1, beta.char.len), " ",
                               round(plm_pred[i], 2), "\n")
       }
       nodes$label[leaf_id] <- paste0(nodes$label[leaf_id], "\n========\n",
