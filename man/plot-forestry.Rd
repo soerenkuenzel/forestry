@@ -21,7 +21,7 @@ representation.}
 \item{...}{additional arguments that are not used.}
 }
 \description{
-visulizes a tree in the forest.
+plots a tree in the forest.
 }
 \examples{
 set.seed(292315)
