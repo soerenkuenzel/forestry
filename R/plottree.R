@@ -278,9 +278,9 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
   split_vals <- node_info$split_feat
   split_vals <- ifelse(is.na(split_vals), 0, split_vals)
   split_vals <- factor(split_vals)
-  color_code <- grDevices::terrain.colors(n = length(levels(split_vals)),
+  color_code <- grDevices::terrain.colors(n = length(feat_names) + 1,
                                           alpha = .7)
-  names(color_code) <- levels(split_vals)
+  names(color_code) <- as.character(0:(length(feat_names)))
   nodes$color <- color_code[split_vals]
 
   # Plot the actual node -------------------------------------------------------
