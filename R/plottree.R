@@ -241,12 +241,20 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
       encoder <- onehot::onehot(this_ds)
       remat <- predict(encoder, this_ds)
       ###
-      plm <- glmnet::glmnet(x = remat,
-                            y = dta_y[leaf_idx[[leaf_id]]],
-                            lambda = forestry_tree@overfitPenalty,
-                            alpha	= 0)
+      dta_y_leaf <- dta_y[leaf_idx[[leaf_id]]]
+      if (length(unique(dta_y_leaf)) == 1) {
+        plm_pred <- c(dta_y_leaf[1], rep(0, ncol(remat)))
+        r_squared = 1
+      } else {
+        plm <- glmnet::glmnet(x = remat,
+                              y = dta_y_leaf,
+                              lambda = forestry_tree@overfitPenalty,
+                              alpha	= 0)
 
-      plm_pred <- predict(plm, type = "coef")
+        plm_pred <- predict(plm, type = "coef")
+        r_squared = plm$dev.ratio
+      }
+
       plm_pred_names <- c("interc", colnames(remat))
 
       return_char <- character()
@@ -257,12 +265,12 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
       }
       nodes$title[leaf_id] <- paste0(nodes$label[leaf_id],
                                      "<br> R2 = ",
-                                     plm$dev.ratio,
+                                     r_squared,
                                      "<br>========<br>",
                                      return_char)
       nodes$label[leaf_id] <- paste0(nodes$label[leaf_id],
                                      "\n R2 = ",
-                                     round(plm$dev.ratio, 3),
+                                     round(r_squared, 3),
                                      "\n=======\nm = ",
                                      round(mean(dta_y[leaf_idx[[leaf_id]]]), 5))
     }
