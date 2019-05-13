@@ -56,8 +56,8 @@ training_data_checker <- function(x,
     stop("sampsize must be a positive integer.")
   }
 
-  if (max(linFeats) >= nfeatures || any(linFeats < 0)) {
-    stop("linFeats must be a positive integer less than ncol(x).")
+  if (max(linFeats) > nfeatures || any(linFeats < 1)) {
+    stop("linFeats must be a positive integer less than or equal to ncol(x).")
   }
 
   if (!replace && sampsize > nrow(x)) {
@@ -395,7 +395,7 @@ forestry <- function(x,
                      middleSplit = FALSE,
                      maxObs = length(y),
                      ridgeRF = FALSE,
-                     linFeats = 0:(ncol(x)-1),
+                     linFeats = 1:(ncol(x)),
                      overfitPenalty = 1,
                      doubleTree = FALSE,
                      reuseforestry = NULL,
@@ -437,6 +437,8 @@ forestry <- function(x,
   # Total number of obervations
   nObservations <- length(y)
   numColumns <- ncol(x)
+  # Update linear features to be zero-indexed
+  linFeats = linFeats - 1
 
   if (is.null(reuseforestry)) {
     preprocessedData <- preprocess_training(x, y)
@@ -652,7 +654,7 @@ multilayerForestry <- function(x,
                      middleSplit = TRUE,
                      maxObs = length(y),
                      ridgeRF = FALSE,
-                     linFeats = 0:(ncol(x)-1),
+                     linFeats = 1:(ncol(x)),
                      overfitPenalty = 1,
                      doubleTree = FALSE,
                      reuseforestry = NULL,
@@ -671,6 +673,8 @@ multilayerForestry <- function(x,
   # Total number of obervations
   nObservations <- length(y)
   numColumns <- ncol(x)
+  # Update linear features to be zero-indexed
+  linFeats = linFeats - 1
 
   if (is.null(reuseforestry)) {
     preprocessedData <- preprocess_training(x, y)
