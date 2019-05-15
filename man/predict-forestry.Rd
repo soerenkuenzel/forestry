@@ -6,7 +6,7 @@
 \title{predict-forestry}
 \usage{
 \method{predict}{forestry}(object, feature.new, aggregation = "average",
-  ...)
+  localVariableImportance = FALSE, ...)
 }
 \arguments{
 \item{object}{A `forestry` object.}
@@ -15,6 +15,9 @@
 
 \item{aggregation}{How shall the leaf be aggregated. The default is to return
 the mean of the leave `average`. Other options are `weightMatrix`.}
+
+\item{localVariableImportance}{Returns a matrix providing local variable
+importance for each prediction.}
 
 \item{...}{additional arguments.}
 }

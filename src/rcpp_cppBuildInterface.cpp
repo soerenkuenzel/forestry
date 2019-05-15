@@ -324,7 +324,8 @@ SEXP rcpp_cppMultilayerBuildInterface(
 Rcpp::List rcpp_cppPredictInterface(
   SEXP forest,
   Rcpp::List x,
-  std::string aggregation
+  std::string aggregation,
+  bool localVariableImportance
 ){
   try {
 
@@ -337,17 +338,27 @@ Rcpp::List rcpp_cppPredictInterface(
     // We always initialize the weightMatrix. If the aggregation is weightMatrix
     // then we inialize the empty weight matrix
     arma::Mat<float> weightMatrix;
-    if(aggregation == "weightMatrix") {
+    arma::Mat<float> localVIMatrix;
+    if (aggregation == "weightMatrix") {
       size_t nrow = featureData[0].size(); // number of features to be predicted
       size_t ncol = (*testFullForest).getNtrain(); // number of train data
       weightMatrix.resize(nrow, ncol); // initialize the space for the matrix
       weightMatrix.zeros(nrow, ncol);// set it all to 0
 
+      if (localVariableImportance) {
+        localVIMatrix.resize(nrow, featureData.size());
+        localVIMatrix.zeros(nrow, featureData.size());
+        testForestPrediction = (*testFullForest).predict(&featureData, &weightMatrix,
+                                &localVIMatrix);
+      } else {
+        testForestPrediction = (*testFullForest).predict(&featureData, &weightMatrix,
+                                NULL);
+      }
       // The idea is that, if the weightMatrix is point to NULL it won't be
       // be updated, but otherwise it will be updated:
-      testForestPrediction = (*testFullForest).predict(&featureData, &weightMatrix);
+
     } else {
-      testForestPrediction = (*testFullForest).predict(&featureData, NULL);
+      testForestPrediction = (*testFullForest).predict(&featureData, NULL, NULL);
     }
 
     std::vector<float>* testForestPrediction_ =
@@ -356,7 +367,8 @@ Rcpp::List rcpp_cppPredictInterface(
     Rcpp::NumericVector predictions = Rcpp::wrap(*testForestPrediction_);
 
     return Rcpp::List::create(Rcpp::Named("predictions") = predictions,
-                              Rcpp::Named("weightMatrix") = weightMatrix);
+                              Rcpp::Named("weightMatrix") = weightMatrix,
+                              Rcpp::Named("localVIMatrix") = localVIMatrix);
 
     // return output;
 

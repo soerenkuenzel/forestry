@@ -99,15 +99,16 @@ BEGIN_RCPP
 END_RCPP
 }
 // rcpp_cppPredictInterface
-Rcpp::List rcpp_cppPredictInterface(SEXP forest, Rcpp::List x, std::string aggregation);
-RcppExport SEXP _forestry_rcpp_cppPredictInterface(SEXP forestSEXP, SEXP xSEXP, SEXP aggregationSEXP) {
+Rcpp::List rcpp_cppPredictInterface(SEXP forest, Rcpp::List x, std::string aggregation, bool localVariableImportance);
+RcppExport SEXP _forestry_rcpp_cppPredictInterface(SEXP forestSEXP, SEXP xSEXP, SEXP aggregationSEXP, SEXP localVariableImportanceSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type forest(forestSEXP);
     Rcpp::traits::input_parameter< Rcpp::List >::type x(xSEXP);
     Rcpp::traits::input_parameter< std::string >::type aggregation(aggregationSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_cppPredictInterface(forest, x, aggregation));
+    Rcpp::traits::input_parameter< bool >::type localVariableImportance(localVariableImportanceSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_cppPredictInterface(forest, x, aggregation, localVariableImportance));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -219,7 +220,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_forestry_rcpp_cppDataFrameInterface", (DL_FUNC) &_forestry_rcpp_cppDataFrameInterface, 6},
     {"_forestry_rcpp_cppBuildInterface", (DL_FUNC) &_forestry_rcpp_cppBuildInterface, 27},
     {"_forestry_rcpp_cppMultilayerBuildInterface", (DL_FUNC) &_forestry_rcpp_cppMultilayerBuildInterface, 29},
-    {"_forestry_rcpp_cppPredictInterface", (DL_FUNC) &_forestry_rcpp_cppPredictInterface, 3},
+    {"_forestry_rcpp_cppPredictInterface", (DL_FUNC) &_forestry_rcpp_cppPredictInterface, 4},
     {"_forestry_rcpp_cppMultilayerPredictInterface", (DL_FUNC) &_forestry_rcpp_cppMultilayerPredictInterface, 3},
     {"_forestry_rcpp_OBBPredictInterface", (DL_FUNC) &_forestry_rcpp_OBBPredictInterface, 1},
     {"_forestry_rcpp_VariableImportanceInterface", (DL_FUNC) &_forestry_rcpp_VariableImportanceInterface, 1},
