@@ -13,7 +13,7 @@ multilayerForestry(x, y, ntree = 500, nrounds = 1, eta = 0.3,
   maxDepth = 99, splitratio = 1, seed = as.integer(runif(1) * 1000),
   verbose = FALSE, nthread = 0, splitrule = "variance",
   middleSplit = TRUE, maxObs = length(y), ridgeRF = FALSE,
-  linFeats = 0:(ncol(x) - 1), overfitPenalty = 1, doubleTree = FALSE,
+  linFeats = 1:(ncol(x)), overfitPenalty = 1, doubleTree = FALSE,
   reuseforestry = NULL, saveable = TRUE)
 }
 \arguments{
