@@ -32,6 +32,9 @@ preprocess_training <- function(x, y) {
   # Track all categorical features (both factors and characters)
   featureFactorCols <- which(sapply(x, is.factor) == TRUE)
   featureCharacterCols <- which(sapply(x, is.character) == TRUE)
+  if (length(featureCharacterCols) != 0) {
+    stop("Character value features must be cast to factors.")
+  }
   categoricalFeatureCols <-
     c(featureFactorCols, featureCharacterCols)
   if (length(categoricalFeatureCols) == 0) {

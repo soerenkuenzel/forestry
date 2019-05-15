@@ -4,7 +4,7 @@
 \alias{getVI}
 \title{getVI-forestry}
 \usage{
-getVI(object, noWarning)
+getVI(object, noWarning = FALSE)
 }
 \arguments{
 \item{object}{A `forestry` object.}
