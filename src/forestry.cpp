@@ -307,7 +307,7 @@ void forestry::addTrees(size_t ntree) {
 std::unique_ptr< std::vector<float> > forestry::predict(
   std::vector< std::vector<float> >* xNew,
   arma::Mat<float>* weightMatrix,
-  bool localVariableImportance
+  arma::Mat<float>* localVIMatrix
 ){
   std::vector<float> prediction;
   size_t numObservations = (*xNew)[0].size();
@@ -402,15 +402,17 @@ std::unique_ptr< std::vector<float> > forestry::predict(
         (*weightMatrix)(i,j) = (*weightMatrix)(i,j) / _ntree;
       }
     }
+    if (localVIMatrix) {
+      calculateLocalVariableImportance(
+        xNew,
+        weightMatrix,
+        localVIMatrix,
+        prediction
+      );
+    }
   }
 
-  if (localVariableImportance) {
-    calculateLocalVariableImportance(
-      xNew,
-      weightMatrix,
-      prediction
-    );
-  }
+
 
   return prediction_;
 }
@@ -525,15 +527,11 @@ void forestry::calculateVariableImportance() {
 void forestry::calculateLocalVariableImportance(
     std::vector< std::vector<float> >* xNew,
     arma::Mat<float>* weightMatrix,
+    arma::Mat<float>* localVIMatrix,
     std::vector<float> prediction
   ) {
-  // Initialize local VI matrix to be numNewObservations x numFeatures
-  size_t numNewObs = (*xNew)[0].size();
-  size_t numFeatures = getTrainingData()->getNumColumns();
-  std::vector< std::vector<float> >
-    localVariableImportances(numNewObs, std::vector<float>(numFeatures, 0));
-
   // Get predicted outcomes for training data
+  size_t numNewObs = (*xNew)[0].size();
   size_t numTrainingObs = getTrainingData()->getNumRows();
   std::vector<float> predictedTrainingOutcome(numTrainingObs, 0);
   std::vector<size_t> predictedTrainingCount(numTrainingObs, 0);
@@ -613,17 +611,9 @@ void forestry::calculateLocalVariableImportance(
             *pow(trueOutcome - (outputTrainingPrediction[i]/outputTrainingCount[i]), 2);
         }
       }
-      localVariableImportances[observationIndex][featNum] =
+      (*localVIMatrix)(observationIndex, featNum) =
         ((weightedPermutedMSE-weightedMSE)/weightedVariance);
     }
-  }
-
-  // Print out matrix
-  for (size_t i = 0; i < localVariableImportances.size(); i++) {
-    for (size_t j = 0; j < localVariableImportances[i].size(); j++){
-      std::cout << localVariableImportances[i][j] << ' ';
-    }
-    std::cout << std::endl;
   }
 }
 
