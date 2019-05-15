@@ -980,7 +980,8 @@ getOOB <- function(object,
 #' @param noWarning flag to not display warnings
 #' @export
 getVI <- function(object,
-                           noWarning) {
+                  noWarning = FALSE) {
+
     # Keep warning for small sample size
     if (!object@replace &&
         object@ntree * (rcpp_getObservationSizeInterface(object@dataframe) -
@@ -993,9 +994,10 @@ getVI <- function(object,
       }
       return(NA)
     }
-
     rcppVI <- tryCatch({
-      return(rcpp_VariableImportanceInterface(object@forest))
+      VI <- rcpp_VariableImportanceInterface(object@forest)[[1]]
+      names(VI) <- colnames(object@processed_dta$processed_x)
+      return(VI)
     }, error = function(err) {
       print(err)
       return(NA)
