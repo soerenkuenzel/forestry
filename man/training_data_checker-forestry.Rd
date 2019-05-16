@@ -7,7 +7,7 @@
 training_data_checker(x, y, ntree, replace, sampsize, mtry, nodesizeSpl,
   nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, minSplitGain,
   maxDepth, splitratio, nthread, middleSplit, doubleTree, linFeats,
-  ridgeRF)
+  ridgeRF, feat.smpl.whts)
 }
 \arguments{
 \item{x}{A data frame of all training predictors.}
@@ -66,6 +66,14 @@ data can be exchanged to create decorrelated trees. (Default = FALSE)}
 ridgeRF (defaults to use all numerical features)}
 
 \item{ridgeRF}{Fit the model with a ridge regression or not}
+
+\item{feat.smpl.whts}{If NULL (default), then \code{mtry} many features are
+sampled uniformly at random.
+If a positive vector of the same length as the number of features, the the
+sampling probabilities for the features will be proportional to the
+specified weights.
+If it is "adaptive" then the sampling weights will be adapted throughout
+the training process.}
 }
 \description{
 Check the input to forestry constructor

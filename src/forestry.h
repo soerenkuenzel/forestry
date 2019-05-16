@@ -38,7 +38,8 @@ public:
     size_t maxObs,
     bool ridgeRF,
     float overfitPenalty,
-    bool doubleTree
+    bool doubleTree,
+    std::vector<float> featureSampleWeights = std::vector<float>(1)
   );
 
   std::unique_ptr< std::vector<float> > predict(
@@ -76,6 +77,11 @@ public:
       OOBPercentages[i] = ((*_variableImportance)[i] / OOB) - 1;
     }
     return OOBPercentages;
+  }
+
+  std::vector<float> getfeatureSampleWeights() {
+
+    return _featureSampleWeights;
   }
 
   float getOOBError() {
@@ -194,6 +200,8 @@ private:
   bool _ridgeRF;
   float _overfitPenalty;
   bool _doubleTree;
+  std::vector<float> _featureSampleWeights;
+
 };
 
 #endif //HTECPP_RF_H

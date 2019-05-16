@@ -12,7 +12,8 @@ forestry(x, y, ntree = 500, replace = TRUE, sampsize = if (replace)
   seed = as.integer(runif(1) * 1000), verbose = FALSE, nthread = 0,
   splitrule = "variance", middleSplit = FALSE, maxObs = length(y),
   ridgeRF = FALSE, linFeats = 1:(ncol(x)), overfitPenalty = 1,
-  doubleTree = FALSE, reuseforestry = NULL, saveable = TRUE)
+  doubleTree = FALSE, reuseforestry = NULL, saveable = TRUE,
+  feat.smpl.whts = rep(1, ncol(x)))
 }
 \arguments{
 \item{x}{A data frame of all training predictors.}
@@ -98,6 +99,14 @@ saved and loaded using save(...) and load(...). Setting it to TRUE
 (default) will, however, take longer and it will use more memory. When
 training many RF, it makes a lot of sense to set this to FALSE to save
 time and memory.}
+
+\item{feat.smpl.whts}{If NULL (default), then \code{mtry} many features are
+sampled uniformly at random.
+If a positive vector of the same length as the number of features, the the
+sampling probabilities for the features will be proportional to the
+specified weights.
+If it is "adaptive" then the sampling weights will be adapted throughout
+the training process.}
 }
 \value{
 A `forestry` object.

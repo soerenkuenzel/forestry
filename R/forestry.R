@@ -27,7 +27,8 @@ training_data_checker <- function(x,
                                   middleSplit,
                                   doubleTree,
                                   linFeats,
-                                  ridgeRF) {
+                                  ridgeRF,
+                                  feat.smpl.whts) {
   x <- as.data.frame(x)
   nfeatures <- ncol(x)
 
@@ -96,6 +97,20 @@ training_data_checker <- function(x,
   }
   if (maxDepth <= 0 || maxDepth %% 1 != 0) {
     stop("maxDepth must be a positive integer.")
+  }
+
+  feat.smpl.whts_correct <-
+    (feat.smpl.whts == "adaptive") ||
+    (length(feat.smpl.whts) == ncol(x) &&
+       all(feat.smpl.whts > 0))
+
+  if (!feat.smpl.whts_correct) {
+    stop(
+      paste(
+        "feat.smpl.whts must be NULL, `adaptive`, or a vector of",
+        "positive numbers of the same length as number of features."
+      )
+    )
   }
 
   # if the splitratio is 1, then we use adaptive rf and avgSampleSize is the
@@ -237,7 +252,8 @@ setClass(
     ridgeRF = "logical",
     linFeats = "numeric",
     overfitPenalty = "numeric",
-    doubleTree = "logical"
+    doubleTree = "logical",
+    feat.smpl.whts = "numeric"
   )
 )
 
@@ -269,7 +285,8 @@ setClass(
     ridgeRF = "logical",
     linFeats = "numeric",
     overfitPenalty = "numeric",
-    doubleTree = "logical"
+    doubleTree = "logical",
+    feat.smpl.whts = "numeric"
   )
 )
 
@@ -330,6 +347,13 @@ setClass(
 #'   training many RF, it makes a lot of sense to set this to FALSE to save
 #'   time and memory.
 #' @param ridgeRF Fit the model with a ridge regression or not
+#' @param feat.smpl.whts If NULL (default), then \code{mtry} many features are
+#'   sampled uniformly at random.
+#'   If a positive vector of the same length as the number of features, the the
+#'   sampling probabilities for the features will be proportional to the
+#'   specified weights.
+#'   If it is "adaptive" then the sampling weights will be adapted throughout
+#'   the training process.
 #' @param linFeats Specify which features to split linearly on when using
 #'   ridgeRF (defaults to use all numerical features)
 #' @param overfitPenalty Value to determine how much to penalize magnitude of
@@ -399,7 +423,8 @@ forestry <- function(x,
                      overfitPenalty = 1,
                      doubleTree = FALSE,
                      reuseforestry = NULL,
-                     saveable = TRUE) {
+                     saveable = TRUE,
+                     feat.smpl.whts = rep(1, ncol(x))) {
   # only if sample.fraction is given, update sampsize
   if (!is.null(sample.fraction))
     sampsize <- ceiling(sample.fraction * nrow(x))
@@ -427,7 +452,8 @@ forestry <- function(x,
       middleSplit = middleSplit,
       doubleTree = doubleTree,
       linFeats = linFeats,
-      ridgeRF = ridgeRF)
+      ridgeRF = ridgeRF,
+      feat.smpl.whts = feat.smpl.whts)
 
   for (variable in names(updated_variables)) {
     assign(x = variable, value = updated_variables[[variable]],
@@ -492,7 +518,8 @@ forestry <- function(x,
         overfitPenalty,
         doubleTree,
         TRUE,
-        rcppDataFrame
+        rcppDataFrame,
+        feat.smpl.whts
       )
       processed_dta <- list(
         "processed_x" = processed_x,
@@ -529,7 +556,8 @@ forestry <- function(x,
           ridgeRF = ridgeRF,
           linFeats = linFeats,
           overfitPenalty = overfitPenalty,
-          doubleTree = doubleTree
+          doubleTree = doubleTree,
+          feat.smpl.whts = feat.smpl.whts
         )
       )
     },
@@ -580,7 +608,8 @@ forestry <- function(x,
         overfitPenalty,
         doubleTree,
         TRUE,
-        reuseforestry@dataframe
+        reuseforestry@dataframe,
+        feat.smpl.whts
       )
 
       return(
@@ -608,7 +637,8 @@ forestry <- function(x,
           ridgeRF = ridgeRF,
           linFeats = linFeats,
           overfitPenalty = overfitPenalty,
-          doubleTree = doubleTree
+          doubleTree = doubleTree,
+          feat.smpl.whts = feat.smpl.whts
         )
       )
     }, error = function(err) {
@@ -658,7 +688,8 @@ multilayerForestry <- function(x,
                      overfitPenalty = 1,
                      doubleTree = FALSE,
                      reuseforestry = NULL,
-                     saveable = TRUE) {
+                     saveable = TRUE,
+                     feat.smpl.whts = rep(1, ncol(x))) {
   # only if sample.fraction is given, update sampsize
   if (!is.null(sample.fraction))
     sampsize <- ceiling(sample.fraction * nrow(x))
@@ -666,10 +697,27 @@ multilayerForestry <- function(x,
 
   x <- as.data.frame(x)
   # Preprocess the data
-  training_data_checker(x, y, ntree,replace, sampsize, mtry, nodesizeSpl,
-                        nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg,
-                        minSplitGain, maxDepth, splitratio, nthread, middleSplit,
-                        doubleTree, linFeats)
+  training_data_checker(
+    x = x,
+    y = y,
+    ntree = ntree,
+    replace = replace,
+    sampsize = sampsize,
+    mtry = mtry,
+    nodesizeSpl = nodesizeSpl,
+    nodesizeAvg = nodesizeAvg,
+    nodesizeStrictSpl = nodesizeStrictSpl,
+    nodesizeStrictAvg = nodesizeStrictAvg,
+    minSplitGain = minSplitGain,
+    maxDepth = maxDepth,
+    splitratio = splitratio,
+    nthread = nthread,
+    middleSplit = middleSplit,
+    doubleTree = doubleTree,
+    linFeats = linFeats,
+    ridgeRF = ridgeRF,
+    feat.smpl.whts = feat.smpl.whts
+  )
   # Total number of obervations
   nObservations <- length(y)
   numColumns <- ncol(x)
@@ -730,7 +778,8 @@ multilayerForestry <- function(x,
         overfitPenalty,
         doubleTree,
         TRUE,
-        rcppDataFrame
+        rcppDataFrame,
+        feat.smpl.whts
       )
       processed_dta <- list(
         "processed_x" = processed_x,
@@ -769,7 +818,8 @@ multilayerForestry <- function(x,
           ridgeRF = ridgeRF,
           linFeats = linFeats,
           overfitPenalty = overfitPenalty,
-          doubleTree = doubleTree
+          doubleTree = doubleTree,
+          feat.smpl.whts = feat.smpl.whts
         )
       )
     },
@@ -822,7 +872,8 @@ multilayerForestry <- function(x,
         overfitPenalty,
         doubleTree,
         TRUE,
-        reuseforestry@dataframe
+        reuseforestry@dataframe,
+        feat.smpl.whts
       )
 
       return(
@@ -850,7 +901,8 @@ multilayerForestry <- function(x,
           ridgeRF = ridgeRF,
           linFeats = linFeats,
           overfitPenalty = overfitPenalty,
-          doubleTree = doubleTree
+          doubleTree = doubleTree,
+          feat.smpl.whts = feat.smpl.whts
         )
       )
     }, error = function(err) {
@@ -1307,7 +1359,8 @@ relinkCPP_prt <- function(object) {
         maxObs = object@maxObs,
         ridgeRF = object@ridgeRF,
         overfitPenalty = object@overfitPenalty,
-        doubleTree = object@doubleTree)
+        doubleTree = object@doubleTree,
+        featsmplwhts = object@feat.smpl.whts)
 
       object@forest <- forest_and_df_ptr$forest_ptr
       object@dataframe <- forest_and_df_ptr$data_frame_ptr

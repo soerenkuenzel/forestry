@@ -42,7 +42,8 @@ forestry::forestry(
   size_t maxObs,
   bool ridgeRF,
   float overfitPenalty,
-  bool doubleTree
+  bool doubleTree,
+  std::vector<float> featureSampleWeights
 ){
   this->_trainingData = trainingData;
   this->_ntree = 0;
@@ -64,6 +65,7 @@ forestry::forestry(
   this->_ridgeRF = ridgeRF;
   this->_overfitPenalty = overfitPenalty;
   this->_doubleTree = doubleTree;
+  this->_featureSampleWeights = featureSampleWeights;
 
   if (splitRatio > 1 || splitRatio < 0) {
     throw std::runtime_error("splitRatio shoule be between 0 and 1.");

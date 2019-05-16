@@ -113,7 +113,8 @@ SEXP rcpp_cppBuildInterface(
   double overfitPenalty,
   bool doubleTree,
   bool existing_dataframe_flag,
-  SEXP existing_dataframe
+  SEXP existing_dataframe,
+  Rcpp::NumericVector featsmplwhts
 ){
 
   if (existing_dataframe_flag) {
@@ -141,7 +142,8 @@ SEXP rcpp_cppBuildInterface(
         (size_t) maxObs,
         ridgeRF,
         (float) overfitPenalty,
-        doubleTree
+        doubleTree,
+        Rcpp::as< std::vector<float> >(featsmplwhts)
       );
 
       // delete(testFullForest);
@@ -267,7 +269,8 @@ SEXP rcpp_cppMultilayerBuildInterface(
     double overfitPenalty,
     bool doubleTree,
     bool existing_dataframe_flag,
-    SEXP existing_dataframe
+    SEXP existing_dataframe,
+    Rcpp::NumericVector featsmplwhts
 ){
 
   if (existing_dataframe_flag) {
@@ -591,7 +594,8 @@ Rcpp::List rcpp_reconstructree(
   int maxObs,
   bool ridgeRF,
   double overfitPenalty,
-  bool doubleTree
+  bool doubleTree,
+  Rcpp::NumericVector featsmplwhts
 ){
 
   // Decode the R_forest data and create appropriate pointers to pointers:
