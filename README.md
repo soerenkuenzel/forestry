@@ -12,7 +12,7 @@ Sören Künzel, Edward Liu, Theo Saarinen, Allen Tang, Jasjeet Sekhon
 forestry is a fast implementation of Honest Random Forests. 
 
 ## How to install
-
+The GFortran compiler has to be up to date. GFortran Binaries can be found [here](https://gcc.gnu.org/wiki/GFortranBinaries).
 The latest development version can be installed directly from Github using [devtools](https://github.com/hadley/devtools):
 
 ```R
