@@ -306,7 +306,8 @@ void forestry::addTrees(size_t ntree) {
 
 std::unique_ptr< std::vector<float> > forestry::predict(
   std::vector< std::vector<float> >* xNew,
-  arma::Mat<float>* weightMatrix
+  arma::Mat<float>* weightMatrix,
+  arma::Mat<float>* localVIMatrix
 ){
   std::vector<float> prediction;
   size_t numObservations = (*xNew)[0].size();
@@ -391,10 +392,8 @@ std::unique_ptr< std::vector<float> > forestry::predict(
     new std::vector<float>(prediction)
   );
 
-
   // If we also update the weight matrix, we now have to divide every entry
   // by the number of trees:
-
   if (weightMatrix) {
     size_t nrow = (*xNew)[0].size(); // number of features to be predicted
     size_t ncol = getNtrain(); // number of train data
@@ -403,7 +402,17 @@ std::unique_ptr< std::vector<float> > forestry::predict(
         (*weightMatrix)(i,j) = (*weightMatrix)(i,j) / _ntree;
       }
     }
+    if (localVIMatrix) {
+      calculateLocalVariableImportance(
+        xNew,
+        weightMatrix,
+        localVIMatrix,
+        prediction
+      );
+    }
   }
+
+
 
   return prediction_;
 }
@@ -513,6 +522,101 @@ void forestry::calculateVariableImportance() {
   // Populate forest's variable importance with all shuffled MSE's
   this-> _variableImportance = std::move(variableImportances_);
 }
+
+
+void forestry::calculateLocalVariableImportance(
+    std::vector< std::vector<float> >* xNew,
+    arma::Mat<float>* weightMatrix,
+    arma::Mat<float>* localVIMatrix,
+    std::vector<float> prediction
+  ) {
+  // Get predicted outcomes for training data
+  size_t numNewObs = (*xNew)[0].size();
+  size_t numTrainingObs = getTrainingData()->getNumRows();
+  std::vector<float> predictedTrainingOutcome(numTrainingObs, 0);
+  std::vector<size_t> predictedTrainingCount(numTrainingObs, 0);
+  for (int treeIndex = 0; treeIndex < ((int) getNtree()); treeIndex++ ) {
+    try {
+      std::vector<float> predictedTrainingOutcome_iteration(numTrainingObs);
+      std::vector<size_t> predictedTrainingCount_iteration(numTrainingObs);
+      forestryTree *currentTree = (*getForest())[treeIndex].get();
+      (*currentTree).getOOBPrediction(
+          predictedTrainingOutcome_iteration,
+          predictedTrainingCount_iteration,
+          getTrainingData()
+      );
+      for (size_t obsIndex = 0; obsIndex < numTrainingObs; obsIndex++) {
+        predictedTrainingOutcome[obsIndex] += predictedTrainingOutcome_iteration[obsIndex];
+        predictedTrainingCount[obsIndex] += predictedTrainingCount_iteration[obsIndex];
+      }
+    } catch (std::runtime_error &err) {
+      // Rcpp::Rcerr << err.what() << std::endl;
+    }
+  }
+  std::vector<float> predictedTrainingY(predictedTrainingOutcome.size(), 0);
+  for (size_t i = 0; i < predictedTrainingOutcome.size(); i++ ) {
+    if (predictedTrainingCount[i] != 0 ) {
+      predictedTrainingY[i] = predictedTrainingOutcome[i] / predictedTrainingCount[i];
+    }
+  }
+
+  // Loop over all new observations
+  for (size_t observationIndex = 0; observationIndex < numNewObs; observationIndex++) {
+    std::vector<float> observationWeight =
+      arma::conv_to< std::vector<float> >::from(weightMatrix->row(observationIndex));
+
+    // 1. Calculate weightedMSE and weightedVariance
+    float weightedMSE = 0;
+    float weightedVariance = 0;
+    float weightedOutcome = std::inner_product(predictedTrainingY.begin(), predictedTrainingY.end(),
+                                               observationWeight.begin(), 0.0);
+    for (size_t i = 0; i < predictedTrainingOutcome.size(); i++) {
+      if (predictedTrainingCount[i] != 0) {
+        float trueOutcome = getTrainingData()->getOutcomePoint(i);
+        weightedMSE += observationWeight[i]*pow((trueOutcome - predictedTrainingY[i]), 2);
+        weightedVariance += observationWeight[i]*pow((trueOutcome - weightedOutcome), 2);
+      }
+    }
+
+    std::vector<float> outputTrainingPrediction(numTrainingObs);
+    std::vector<size_t> outputTrainingCount(numTrainingObs);
+
+    // Loop over all features
+    for (size_t featNum = 0; featNum < getTrainingData()->getNumColumns(); featNum++) {
+      for (int i = 0; i < ((int) getNtree()); i++) {
+        try {
+          std::vector<float> outputOOBPrediction_iteration(numTrainingObs, 0);
+          std::vector<size_t> outputOOBCount_iteration(numTrainingObs, 0);
+          forestryTree *currentTree = (*getForest())[i].get();
+          (*currentTree).getShuffledOOBPrediction(
+              outputOOBPrediction_iteration,
+              outputOOBCount_iteration,
+              getTrainingData(),
+              featNum
+          );
+          for (size_t j=0; j < numTrainingObs; j++) {
+            outputTrainingPrediction[j] += outputOOBPrediction_iteration[j];
+            outputTrainingCount[j] += outputOOBCount_iteration[j];
+          }
+        } catch (std::runtime_error &err) {
+          Rcpp::Rcerr << err.what() << std::endl;
+        }
+      }
+
+      float weightedPermutedMSE = 0;
+      for (size_t i = 0; i < outputTrainingPrediction.size(); i++) {
+        if (outputTrainingCount[i] != 0) {
+          float trueOutcome = getTrainingData()->getOutcomePoint(i);
+          weightedPermutedMSE += observationWeight[i]
+            *pow(trueOutcome - (outputTrainingPrediction[i]/outputTrainingCount[i]), 2);
+        }
+      }
+      (*localVIMatrix)(observationIndex, featNum) =
+        ((weightedPermutedMSE-weightedMSE)/weightedVariance);
+    }
+  }
+}
+
 
 void forestry::calculateOOBError() {
 
