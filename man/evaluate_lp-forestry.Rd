@@ -42,5 +42,4 @@ trust <- evaluate_lp(object = rf,
                      feature.new = x_test,
                      feature = features,
                      p = 1)
-#' @export
 }

@@ -32,7 +32,7 @@
 #'                      feature.new = x_test,
 #'                      feature = features,
 #'                      p = 1)
-#' #' @export
+#' @export
 evaluate_lp <- function(object, feature.new, feature, p = 1){
 
   # Checks and parsing:
@@ -55,6 +55,7 @@ evaluate_lp <- function(object, feature.new, feature, p = 1){
                                feature.new = feature.new,
                                feature = feat,
                                p = p)
+
     # Set seed for reproductivity
     set.seed(24750371)
     # Compute lp distances for the training data using OOB observations:
@@ -87,3 +88,8 @@ evaluate_lp <- function(object, feature.new, feature, p = 1){
   eval <- eval[ ,-1]
   return(eval)
 }
+
+
+
+
+
