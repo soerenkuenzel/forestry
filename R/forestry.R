@@ -924,12 +924,15 @@ multilayerForestry <- function(x,
 #' @param feature.new A data frame of testing predictors.
 #' @param aggregation How shall the leaf be aggregated. The default is to return
 #'   the mean of the leave `average`. Other options are `weightMatrix`.
+#' @param localVariableImportance Returns a matrix providing local variable
+#'   importance for each prediction.
 #' @param ... additional arguments.
 #' @return A vector of predicted responses.
 #' @export
 predict.forestry <- function(object,
                              feature.new,
-                             aggregation = "average", ...) {
+                             aggregation = "average",
+                             localVariableImportance = FALSE,...) {
   # Preprocess the data
   testing_data_checker(feature.new)
 
@@ -937,8 +940,12 @@ predict.forestry <- function(object,
                                     object@categoricalFeatureCols,
                                     object@categoricalFeatureMapping)
 
+  if (localVariableImportance && (aggregation != "weightMatrix")) {
+    stop("Aggregation must be set to weightMatrix if localVariableImportance is true.")
+  }
+
   rcppPrediction <- tryCatch({
-    rcpp_cppPredictInterface(object@forest, processed_x, aggregation)
+    rcpp_cppPredictInterface(object@forest, processed_x, aggregation, localVariableImportance)
   }, error = function(err) {
     print(err)
     return(NULL)
