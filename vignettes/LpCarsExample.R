@@ -29,7 +29,7 @@ importance <- data.frame(colnames(cars_train_sample)[-c(1)], var_imp_relative)
 #' important variables
 
 # Evaluate
-trust <- evaluate_lp(object = rf_forestry,
+trust <- evaluate_lp_alt(object = rf_forestry,
                      feature.new = cars_test_sample %>% select(-y),
                      c("DateOfRegistration", "powerPS"))
 

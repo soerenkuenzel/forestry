@@ -58,6 +58,7 @@ evaluate_lp <- function(object, feature.new, feature, p = 1){
 
     # Set seed for reproductivity
     set.seed(24750371)
+
     # Compute lp distances for the training data using OOB observations:
     k_CV <- 10
     folds <- caret::createFolds(y_train, k = k_CV, list = TRUE,
@@ -89,6 +90,72 @@ evaluate_lp <- function(object, feature.new, feature, p = 1){
   return(eval)
 }
 
+
+# Alternative evaluation function
+evaluate_lp_alt <- function(object, feature.new, feature, p = 1){
+
+  # Checks and parsing:
+  if (class(object) != "forestry") {
+    stop("The object submitted is not a forestry random forest")
+  }
+
+  feature.new <- as.data.frame(feature.new)
+  x_train <- slot(object, "processed_dta")$processed_x
+  y_train <- slot(object, "processed_dta")$y
+
+  feature.new <- preprocess_testing(feature.new,
+                                    object@categoricalFeatureCols,
+                                    object@categoricalFeatureMapping)
+
+  # Get appropropriate weight matrix
+  y_weights <- predict(object = object,
+                       feature.new = feature.new,
+                       aggregation = "weightMatrix")$weightMatrix
+
+
+  eval <- data.frame(1:nrow(feature.new))
+  for (feat in feature){
+    # Compute lp distances for new data
+    lp_distances <- compute_lp(object = object,
+                               feature.new = feature.new,
+                               feature = feat,
+                               p = p)
+
+    # Set seed for reproductivity
+    set.seed(24750371)
+
+    # Compute lp distances for the training data using OOB observations:
+    k_CV <- 10
+    folds <- caret::createFolds(y_train, k = k_CV, list = TRUE,
+                                returnTrain = FALSE)
+
+    # Create a vector of lp distances for training observations to be filled
+    x_train_lp <- rep(NA, nrow(x_train))
+
+    for(k in 1:k_CV){
+      fold_ids <- folds[[k]]
+      rf <- forestry(x = x_train[-fold_ids, ],
+                     y = y_train[-fold_ids])
+
+      x_train_lp[fold_ids] <- compute_lp(object = rf,
+                                         feature.new = x_train[fold_ids, ],
+                                         feature = feat,
+                                         p = p)
+    }
+
+    # Get conditional probabilities for new data
+    probs <- get_conditional_dist_bnd(y_weights = y_weights,
+                                      train_y = x_train_lp,
+                                      vals = lp_distances)
+    probs <- as.data.frame(probs)
+
+    colnames(probs)[1] <- feat
+    eval <- cbind(eval, probs)
+  }
+
+  eval <- eval[ ,-1]
+  return(eval)
+}
 
 
 

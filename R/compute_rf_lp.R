@@ -55,24 +55,35 @@ compute_lp <- function(object, feature.new, feature, p){
                        feature.new = feature.new,
                        aggregation = "weightMatrix")$weightMatrix
 
-  if (is.factor(feature.new[1, feature])) {
-    diff_mat <- matrix(feature.new[,feature],
-                       nrow = nrow(feature.new),
-                       ncol = nrow(train_set),
+  distances <- compute_lp_bnd(y_weights = y_weights,
+                              train_vec = train_set[,feature],
+                              test_vec = feature.new[,feature],
+                              p = p)
+  return(distances)
+}
+
+
+# Backend function for compute_lp
+compute_lp_bnd <- function(y_weights, train_vec, test_vec, p){
+  # get difference matrix
+  if (is.factor(test_vec)) {
+    diff_mat <- matrix(test_vec,
+                       nrow = length(test_vec),
+                       ncol = length(train_vec),
                        byrow = FALSE) !=
-                matrix(train_set[,feature],
-                       nrow = nrow(feature.new),
-                       ncol = nrow(train_set),
+                matrix(train_vec,
+                       nrow = length(test_vec),
+                       ncol = length(train_vec),
                        byrow = TRUE)
     diff_mat[diff_mat] <- 1
   } else {
-    diff_mat <- matrix(feature.new[,feature],
-                       nrow = nrow(feature.new),
-                       ncol = nrow(train_set),
+    diff_mat <- matrix(test_vec,
+                       nrow = length(test_vec),
+                       ncol = length(train_vec),
                        byrow = FALSE) -
-                matrix(train_set[,feature],
-                       nrow = nrow(feature.new),
-                       ncol = nrow(train_set),
+                matrix(train_vec,
+                       nrow = length(test_vec),
+                       ncol = length(train_vec),
                        byrow = TRUE)
   }
 
@@ -83,13 +94,17 @@ compute_lp <- function(object, feature.new, feature, p){
   distances <- apply(y_weights * diff_mat, 1, sum) ^ (1 / p)
 
   # Ensure that the Lp distances for a factor are between 0 and 1
-  if (is.factor(feature.new[1, feature])) {
+  if (is.factor(test_vec)) {
     distances[distances < 0] <- 0
     distances[distances > 1] <- 1
   }
-
   return(distances)
 }
+
+
+
+
+
 
 
 
