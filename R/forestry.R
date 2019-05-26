@@ -112,6 +112,10 @@ training_data_checker <- function(x,
       )
     )
   }
+  if (sum(feat.smpl.whts) <= 0) {
+    stop("feat.smpl.whts must add up to more than 0.")
+  }
+  feat.smpl.whts <- feat.smpl.whts / sum(feat.smpl.whts)
 
   # if the splitratio is 1, then we use adaptive rf and avgSampleSize is the
   # equal to the total sampsize
@@ -211,7 +215,8 @@ training_data_checker <- function(x,
               "nthread" = nthread,
               "middleSplit" = middleSplit,
               "doubleTree" = doubleTree,
-              "linFeats" = linFeats))
+              "linFeats" = linFeats,
+              "feat.smpl.whts" = feat.smpl.whts))
 }
 
 #' @title Test data check

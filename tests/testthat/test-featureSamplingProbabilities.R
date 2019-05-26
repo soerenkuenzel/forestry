@@ -1,4 +1,5 @@
 test_that("Tests that random forest is working correctly", {
+  library(testthat)
   x <- iris[, -1]
   y <- iris[, 1]
 
@@ -10,7 +11,7 @@ test_that("Tests that random forest is working correctly", {
   forest <- forestry(
     x,
     y,
-    ntree = 500,
+    ntree = 5,
     replace = TRUE,
     sample.fraction = .8,
     mtry = 3,
@@ -19,8 +20,24 @@ test_that("Tests that random forest is working correctly", {
     splitrule = "variance",
     splitratio = 1,
     nodesizeStrictAvg = 5,
-    feat.smpl.whts = rep(2, 4)
+    feat.smpl.whts = c(1,4,2,3),
+    verbose = TRUE
   )
+  forest <- forestry(
+    x,
+    y,
+    ntree = 5,
+    replace = TRUE,
+    sample.fraction = .8,
+    mtry = 3,
+    nodesizeStrictSpl = 5,
+    nthread = 2,
+    splitrule = "variance",
+    splitratio = 1,
+    nodesizeStrictAvg = 5,
+    verbose = TRUE
+  )
+
   # Test predict
   y_pred <- predict(forest, x)
 

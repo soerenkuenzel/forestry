@@ -67,6 +67,18 @@ forestry::forestry(
   this->_doubleTree = doubleTree;
   this->_featureSampleWeights = featureSampleWeights;
 
+  // Check that the featSamplingWeights are correct
+  if (isVerbose()) {
+    std::vector<float> featSamplingWeights = getfeatureSampleWeights();
+    Rcpp::Rcout << "The sampling weights are: "
+                << std::endl;
+    for (int i = 0; i < featSamplingWeights.size(); i++) {
+      Rcpp::Rcout << featSamplingWeights[i] << " ";
+    }
+    Rcpp::Rcout << std::endl;
+  }
+
+
   if (splitRatio > 1 || splitRatio < 0) {
     throw std::runtime_error("splitRatio shoule be between 0 and 1.");
   }
