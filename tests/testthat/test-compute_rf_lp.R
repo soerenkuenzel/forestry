@@ -16,7 +16,7 @@ test_that("Tests that compute the lp distances works correctly", {
   x_test <- iris[test_idx, -1]
 
   # Create a random forest
-  rf <- forestry(x = x_train, y = y_train)
+  rf <- forestry(x = x_train, y = y_train, nthread = 1)
 
   # Compute the l1 distances in the "Species" dimension
   distances_1 <- compute_lp(object = rf,
@@ -38,9 +38,6 @@ test_that("Tests that compute the lp distances works correctly", {
                c(0.5735928, 0.5648549, 0.6683935, 0.6109477, 0.5571071,
                  0.6334010, 0.4082906, 0.5991195, 0.6761388, 0.5996498),
                tolerance = 1e-2)
-
-
-
 
 })
 

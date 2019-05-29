@@ -37,7 +37,7 @@ test_that("Tests that backward compatibility", {
   y_pred_old <- predict(forest_old, x)
   y_pred_new <- predict(forest_new, x)
 
-  expect_equal(y_pred_new, y_pred_old, tolerance = 1e-6)
+  expect_equal(y_pred_new, y_pred_old, tolerance = 1e-5)
 
   # ----------------------------------------------------------------------------
   context("Backward compatibility: autohonest_RF")
@@ -62,5 +62,5 @@ test_that("Tests that backward compatibility", {
   y_pred_old <- predict(tuned_forest_old, x)
   y_pred_new <- predict(tuned_forest_new, x)
 
-  expect_equal(y_pred_new, y_pred_old, tolerance = 1e-10)
+  expect_equal(y_pred_new, y_pred_old, tolerance = 1e-5)
 })

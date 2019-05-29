@@ -130,7 +130,7 @@ void multilayerForestry::addForests(size_t ntree) {
 
     multilayerForests[i] = residualForest;
     std::unique_ptr< std::vector<float> > predictedResiduals =
-      residualForest->predict(getTrainingData()->getAllFeatureData(), NULL);
+      residualForest->predict(getTrainingData()->getAllFeatureData(), NULL, NULL);
 
     // Calculate and store best gamma value
     // std::vector<float> bestPredictedResiduals(trainingData->getNumRows());
@@ -187,14 +187,14 @@ std::unique_ptr< std::vector<float> > multilayerForestry::predict(
   std::vector<float> gammas = getGammas();
 
   std::unique_ptr< std::vector<float> > initialPrediction =
-    multilayerForests[0]->predict(xNew, weightMatrix);
+    multilayerForests[0]->predict(xNew, weightMatrix, NULL);
 
   std::vector<float> prediction(initialPrediction->size(), getMeanOutcome());
 
   // Use forestry objects and gamma values to make prediction
   for (int i = 0; i < getNrounds(); i ++) {
     std::unique_ptr< std::vector<float> > predictedResiduals =
-      multilayerForests[i]->predict(xNew, weightMatrix);
+      multilayerForests[i]->predict(xNew, weightMatrix, NULL);
 
     std::transform(predictedResiduals->begin(), predictedResiduals->end(),
                    predictedResiduals->begin(), std::bind1st(std::multiplies<float>(), gammas[i]));

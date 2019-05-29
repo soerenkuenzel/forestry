@@ -18,6 +18,10 @@ Imports:
     MASS (>= 7.3.0),
     rBayesianOptimization,
     methods,
+    visNetwork, 
+    glmnet, 
+    grDevices,
+    onehot
 LinkingTo: Rcpp,
   RcppArmadillo
 RoxygenNote: 6.1.1
@@ -35,3 +39,4 @@ Collate:
     'compute_rf_lp.R'
     'quantileForest.R'
     'evaluate_lp.R'
+    'plottree.R'

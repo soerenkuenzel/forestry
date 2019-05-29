@@ -56,8 +56,8 @@ training_data_checker <- function(x,
     stop("sampsize must be a positive integer.")
   }
 
-  if (max(linFeats) >= nfeatures || any(linFeats < 0)) {
-    stop("linFeats must be a positive integer less than ncol(x).")
+  if (max(linFeats) > nfeatures || any(linFeats < 1)) {
+    stop("linFeats must be a positive integer less than or equal to ncol(x).")
   }
 
   if (!replace && sampsize > nrow(x)) {
@@ -395,7 +395,7 @@ forestry <- function(x,
                      middleSplit = FALSE,
                      maxObs = length(y),
                      ridgeRF = FALSE,
-                     linFeats = 0:(ncol(x)-1),
+                     linFeats = 1:(ncol(x)),
                      overfitPenalty = 1,
                      doubleTree = FALSE,
                      reuseforestry = NULL,
@@ -437,6 +437,8 @@ forestry <- function(x,
   # Total number of obervations
   nObservations <- length(y)
   numColumns <- ncol(x)
+  # Update linear features to be zero-indexed
+  linFeats = linFeats - 1
 
   if (is.null(reuseforestry)) {
     preprocessedData <- preprocess_training(x, y)
@@ -652,7 +654,7 @@ multilayerForestry <- function(x,
                      middleSplit = TRUE,
                      maxObs = length(y),
                      ridgeRF = FALSE,
-                     linFeats = 0:(ncol(x)-1),
+                     linFeats = 1:(ncol(x)),
                      overfitPenalty = 1,
                      doubleTree = FALSE,
                      reuseforestry = NULL,
@@ -671,6 +673,8 @@ multilayerForestry <- function(x,
   # Total number of obervations
   nObservations <- length(y)
   numColumns <- ncol(x)
+  # Update linear features to be zero-indexed
+  linFeats = linFeats - 1
 
   if (is.null(reuseforestry)) {
     preprocessedData <- preprocess_training(x, y)
@@ -868,12 +872,15 @@ multilayerForestry <- function(x,
 #' @param feature.new A data frame of testing predictors.
 #' @param aggregation How shall the leaf be aggregated. The default is to return
 #'   the mean of the leave `average`. Other options are `weightMatrix`.
+#' @param localVariableImportance Returns a matrix providing local variable
+#'   importance for each prediction.
 #' @param ... additional arguments.
 #' @return A vector of predicted responses.
 #' @export
 predict.forestry <- function(object,
                              feature.new,
-                             aggregation = "average", ...) {
+                             aggregation = "average",
+                             localVariableImportance = FALSE,...) {
   # Preprocess the data
   testing_data_checker(feature.new)
 
@@ -881,8 +888,12 @@ predict.forestry <- function(object,
                                     object@categoricalFeatureCols,
                                     object@categoricalFeatureMapping)
 
+  if (localVariableImportance && (aggregation != "weightMatrix")) {
+    stop("Aggregation must be set to weightMatrix if localVariableImportance is true.")
+  }
+
   rcppPrediction <- tryCatch({
-    rcpp_cppPredictInterface(object@forest, processed_x, aggregation)
+    rcpp_cppPredictInterface(object@forest, processed_x, aggregation, localVariableImportance)
   }, error = function(err) {
     print(err)
     return(NULL)
@@ -980,7 +991,8 @@ getOOB <- function(object,
 #' @param noWarning flag to not display warnings
 #' @export
 getVI <- function(object,
-                           noWarning) {
+                  noWarning = FALSE) {
+
     # Keep warning for small sample size
     if (!object@replace &&
         object@ntree * (rcpp_getObservationSizeInterface(object@dataframe) -
@@ -993,9 +1005,10 @@ getVI <- function(object,
       }
       return(NA)
     }
-
     rcppVI <- tryCatch({
-      return(rcpp_VariableImportanceInterface(object@forest))
+      VI <- rcpp_VariableImportanceInterface(object@forest)[[1]]
+      names(VI) <- colnames(object@processed_dta$processed_x)
+      return(VI)
     }, error = function(err) {
       print(err)
       return(NA)
