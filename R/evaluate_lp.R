@@ -57,9 +57,6 @@ evaluate_lp <- function(object, feature.new, feature, p = 1, verbose = TRUE){
                                feature = feat,
                                p = p)
 
-    # Set seed for reproductivity
-    set.seed(24750371)
-
     # Compute lp distances for the training data using OOB observations:
     k_CV <- 10
     folds <- caret::createFolds(y_train, k = k_CV, list = TRUE,
