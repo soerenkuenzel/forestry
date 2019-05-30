@@ -10,6 +10,7 @@
 #' @param object A `forestry` object.
 #' @param feature.new A data frame of testing predictors.
 #' @param feature a list of features for computing the levels with respect to.
+#' @param verbose Print out the steps in the algorithm.
 #' @return A data frame of quantiles of in response variable conditional on the
 #' test observations.
 #' @examples
@@ -33,7 +34,7 @@
 #'                      feature = features,
 #'                      p = 1)
 #' @export
-evaluate_lp <- function(object, feature.new, feature, p = 1){
+evaluate_lp <- function(object, feature.new, feature, p = 1, verbose = TRUE){
 
   # Checks and parsing:
   if (class(object) != "forestry") {
@@ -49,7 +50,7 @@ evaluate_lp <- function(object, feature.new, feature, p = 1){
                                     object@categoricalFeatureMapping)
 
   eval <- data.frame(1:nrow(feature.new))
-  for (feat in feature){
+  for (feat in feature) {
     # Compute lp distances for new data
     lp_distances <- compute_lp(object = object,
                                feature.new = feature.new,
@@ -66,7 +67,10 @@ evaluate_lp <- function(object, feature.new, feature, p = 1){
     # Create a vector of lp distances for training observations to be filled
     x_train_lp <- rep(NA, nrow(x_train))
 
-    for(k in 1:k_CV){
+    for (k in 1:k_CV) {
+      if (verbose) {
+        print(paste("Running fold", k, "out of", k_CV))
+      }
       fold_ids <- folds[[k]]
       rf <- forestry(x = x_train[-fold_ids, ], y = y_train[-fold_ids])
       x_train_lp[fold_ids] <- compute_lp(object = rf,
@@ -114,7 +118,7 @@ evaluate_lp_alt <- function(object, feature.new, feature, p = 1){
 
 
   eval <- data.frame(1:nrow(feature.new))
-  for (feat in feature){
+  for (feat in feature) {
     # Compute lp distances for new data
     lp_distances <- compute_lp(object = object,
                                feature.new = feature.new,
@@ -132,7 +136,7 @@ evaluate_lp_alt <- function(object, feature.new, feature, p = 1){
     # Create a vector of lp distances for training observations to be filled
     x_train_lp <- rep(NA, nrow(x_train))
 
-    for(k in 1:k_CV){
+    for (k in 1:k_CV) {
       fold_ids <- folds[[k]]
       rf <- forestry(x = x_train[-fold_ids, ],
                      y = y_train[-fold_ids])
