@@ -16,14 +16,15 @@ test_that("Tests that evaluate_lp is working correctly", {
 
   trust <- evaluate_lp(object = rf,
                        feature.new = x_test,
-                       feature = features,
-                       p = 1)
+                       feat.name = features,
+                       p = 1,
+                       verbose = FALSE)
 
   expect_equal(trust$Sepal.Width,
-               c(0.3724928, 0.4318362, 0.2068011, 0.5407588, 0.2155091),
+               c(0.2304842, 0.4566183, 0.4179750, 0.4714608, 0.1065377),
                tolerance = 5e-2)
   expect_equal(trust$Species,
-               c(0.3935524, 0.5599691, 0.3910131, 0.6238988, 0.4652994),
+               c(0.3374607, 0.2840422, 0.4327882, 0.5381107, 0.3480015),
                tolerance = 5e-2)
 
 })

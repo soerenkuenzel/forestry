@@ -22,16 +22,13 @@ rf_forestry <- forestry(x = cars_train_sample %>% select(-y),
 # Get variable importances
 var_imp <- getVI(rf_forestry)
 var_imp <- unlist(var_imp)
-var_imp_relative <- var_imp/(sum(var_imp))
-
-importance <- data.frame(colnames(cars_train_sample)[-c(1)], var_imp_relative)
 #' By Observation it looks like registration date and powerPS are the most
 #' important variables
 
-# Evaluate
-trust <- evaluate_lp_alt(object = rf_forestry,
+# Evaluate:
+trust <- evaluate_lp(object = rf_forestry,
                      feature.new = cars_test_sample %>% select(-y),
-                     c("DateOfRegistration", "powerPS"))
+                     feat.name = c("DateOfRegistration", "powerPS"))
 
 pred <- predict(rf_forestry,
                 feature.new = cars_test_sample %>% select(-y))
@@ -58,8 +55,8 @@ summary(eval[-trust_ids, ]$abs_error)
 
 # Visualize the difference in error distributions
 ggplot(data = eval, mapping = aes(x = abs_error, fill = trust, color = trust)) +
-  geom_histogram(position="identity", alpha=0.5) +
-  theme(legend.position="top")
+  geom_histogram(position ="identity", alpha = 0.5) +
+  theme(legend.position = "top")
 
 
 

@@ -73,6 +73,7 @@ get_conditional_quantiles <- function(object,
 
   quants <- as.data.frame(quants)
   colnames(quants) <- paste0("q", colnames(quants))
+  rownames(quants) <- paste0("s", rownames(quants))
   return(quants)
 }
 

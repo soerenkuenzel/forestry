@@ -9,8 +9,7 @@ library(ggplot2)
 library(caret)
 
 # projection function
-
-compute_proj <- function(x, num_proj = 100, var_imp, supervise = FALSE){
+compute_proj <- function(x, num_proj, var_imp, supervise){
   # Create one hot encodings for factor variables
   dummy <- caret::dummyVars(" ~ .", data = x)
   x_new <- data.frame(predict(dummy, newdata = x))
@@ -28,15 +27,23 @@ compute_proj <- function(x, num_proj = 100, var_imp, supervise = FALSE){
   x_z[is.na(x_z)] <- 0
 
   # Create random matrix
+
+  # Indepent normal distributions
   A <- matrix(rnorm(num_proj * ncol(x_new), mean = 0, sd = 1),
               nrow = num_proj,
               ncol = ncol(x_new))
 
+  # Independent Gamma Distributions
+  # A <- matrix(rgamma(num_proj * ncol(x_new), shape = 1, rate = 0.5),
+  #             nrow = num_proj,
+  #             ncol = ncol(x_new))
+
+  # Dependent
   if(supervise){
     var_imp[var_imp < 0] <- 0
     A_sup <- 1/length(var_imp) * matrix(var_imp,
-                                        nrow = dim(x_new)[1],
-                                        ncol = dim(x_new)[2],
+                                        nrow = num_proj,
+                                        ncol = ncol(x_new),
                                         byrow = TRUE)
     A <- A * A_sup
   }
@@ -57,7 +64,7 @@ n <- 500
 m <- 100
 
 # Set seed for reproductivity
-set.seed(24750371)
+set.seed(24755374)
 
 mini.train.id <- sample(train.id, n, replace = FALSE)
 mini.test.id <- sample(test.id, m, replace = FALSE)
@@ -73,9 +80,9 @@ forest <- forestry(x = x_train,
                    ntree = 500,
                    verbose = TRUE)
 
-# var_imp <- getVI(rf)
+# var_imp <- getVI(forest)
 # var_imp <- unlist(var_imp)
-var_imp <- matrix(1:ncol(X))
+var_imp <- NA
 
 n_proj <- 100
 # compute projections
@@ -90,7 +97,7 @@ test.proj <- X.proj[mini.test.id, ]
 # ===================================
 
 y_weights <- predict(object = forest,
-                     feature.new = X[mini.test.id, ],
+                     feature.new = x_test,
                      aggregation = "weightMatrix")$weightMatrix
 
 # Compute lp distances for new data wrt to each projection
@@ -103,10 +110,6 @@ for (i in 1:n_proj){
   test_proj_lp <- cbind(test_proj_lp, dist_vec)
 }
 test_proj_lp <- test_proj_lp[ ,-1]
-
-
-# Set seed for reproductivity
-set.seed(24750371)
 
 # Compute lp distances for the training data:
 k_CV <- 10
@@ -163,7 +166,7 @@ trust_ids <- which(eval$med_prob <= quant)
 # ========== Method 2, get median/location of top half of entries===============
 sorted <- t(apply(trust, 1, sort))
 top_med_prob <- apply(sorted[ ,51:100], 1, median)
-quant <- quantile(top_med_prob, probs = 0.90)
+quant <- quantile(top_med_prob, probs = 0.95)
 
 eval <- cbind(top_med_prob, abs_error = abs(pred - y_test))
 eval <- as.data.frame(eval)
