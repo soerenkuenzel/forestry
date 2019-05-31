@@ -228,7 +228,8 @@ std::vector<size_t> sampleFeatures(
     std::vector<size_t> numericCols;
     std::set_intersection(numCols->begin(), numCols->end(),
                           splitCols->begin(), splitCols->end(), back_inserter(numericCols));
-    while (featureList.size() < mtry) {
+    size_t mtry_split = std::min(mtry, numericCols.size());
+    while (featureList.size() < mtry_split) {
       std::uniform_int_distribution<size_t> unif_dist(
           0, (size_t) numericCols.size() - 1
       );
@@ -239,7 +240,7 @@ std::vector<size_t> sampleFeatures(
           std::find(
             featureList.begin(),
             featureList.end(),
-            (*numCols)[index]
+            (numericCols)[index]
           ) == featureList.end()
       ) {
         featureList.push_back(numericCols[index]);
@@ -247,7 +248,8 @@ std::vector<size_t> sampleFeatures(
     }
 
   } else {
-    while (featureList.size() < mtry) {
+    size_t mtry_split = std::min(mtry, splitCols->size());
+    while (featureList.size() < mtry_split) {
       std::uniform_int_distribution<size_t> unif_dist(
           0, (size_t) splitCols->size() - 1
       );
