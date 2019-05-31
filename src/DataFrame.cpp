@@ -3,7 +3,7 @@
 DataFrame::DataFrame():
   _featureData(nullptr), _outcomeData(nullptr), _rowNumbers(nullptr),
   _categoricalFeatureCols(nullptr), _numericalFeatureCols(nullptr),
-  _linearFeatureCols(nullptr), _numRows(0), _numColumns(0) {}
+  _linearFeatureCols(nullptr), _numRows(0), _numColumns(0), _sampleWeights(nullptr) {}
 
 DataFrame::~DataFrame() {
 //  std::cout << "DataFrame() destructor is called." << std::endl;
@@ -15,7 +15,8 @@ DataFrame::DataFrame(
   std::unique_ptr< std::vector<size_t> > categoricalFeatureCols,
   std::unique_ptr< std::vector<size_t> > linearFeatureCols,
   std::size_t numRows,
-  std::size_t numColumns
+  std::size_t numColumns,
+  std::unique_ptr< std::vector<float> > sampleWeights
 ) {
   this->_featureData = std::move(featureData);
   this->_outcomeData = std::move(outcomeData);
@@ -23,6 +24,7 @@ DataFrame::DataFrame(
   this->_linearFeatureCols = std::move(linearFeatureCols);
   this->_numRows = numRows;
   this->_numColumns = numColumns;
+  this->_sampleWeights = std::move(sampleWeights);
 
   // define the row numbers to be the numbers from 1 to nrow:
   std::vector<size_t> rowNumberss;

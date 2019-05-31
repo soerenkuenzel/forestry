@@ -34,7 +34,8 @@ SEXP rcpp_cppDataFrameInterface(
     Rcpp::NumericVector catCols,
     Rcpp::NumericVector linCols,
     int numRows,
-    int numColumns
+    int numColumns,
+    Rcpp::NumericVector sampleWeights
 ){
 
   try {
@@ -62,6 +63,12 @@ SEXP rcpp_cppDataFrameInterface(
         )
     );
 
+    std::unique_ptr< std::vector<float> > sampleWeightsRcpp (
+        new std::vector<float>(
+            Rcpp::as< std::vector<float> >(sampleWeights)
+        )
+    );
+
     std::sort(linearFeats->begin(), linearFeats->end());
 
     DataFrame* trainingData = new DataFrame(
@@ -70,7 +77,8 @@ SEXP rcpp_cppDataFrameInterface(
         std::move(categoricalFeatureColsRcpp),
         std::move(linearFeats),
         (size_t) numRows,
-        (size_t) numColumns
+        (size_t) numColumns,
+        std::move(sampleWeightsRcpp)
     );
 
     Rcpp::XPtr<DataFrame> ptr(trainingData, true) ;
@@ -109,6 +117,7 @@ SEXP rcpp_cppBuildInterface(
   bool verbose,
   bool middleSplit,
   int maxObs,
+  Rcpp::NumericVector sampleWeights,
   bool ridgeRF,
   double overfitPenalty,
   bool doubleTree,
@@ -185,6 +194,12 @@ SEXP rcpp_cppBuildInterface(
           )
       );
 
+      std::unique_ptr< std::vector<float> > sampleWeightsRcpp (
+          new std::vector<float>(
+              Rcpp::as< std::vector<float> >(sampleWeights)
+          )
+      );
+
       std::sort(linearFeats->begin(), linearFeats->end());
 
       DataFrame* trainingData = new DataFrame(
@@ -193,7 +208,8 @@ SEXP rcpp_cppBuildInterface(
           std::move(categoricalFeatureColsRcpp),
           std::move(linearFeats),
           (size_t) numRows,
-          (size_t) numColumns
+          (size_t) numColumns,
+          std::move(sampleWeightsRcpp)
       );
 
       forestry* testFullForest = new forestry(
@@ -263,6 +279,7 @@ SEXP rcpp_cppMultilayerBuildInterface(
     bool verbose,
     bool middleSplit,
     int maxObs,
+    Rcpp::NumericVector sampleWeights,
     bool ridgeRF,
     double overfitPenalty,
     bool doubleTree,
@@ -617,6 +634,7 @@ Rcpp::List rcpp_reconstructree(
   bool verbose,
   bool middleSplit,
   int maxObs,
+  Rcpp::NumericVector sampleWeights,
   bool ridgeRF,
   double overfitPenalty,
   bool doubleTree
@@ -704,6 +722,12 @@ Rcpp::List rcpp_reconstructree(
       )
   );
 
+  std::unique_ptr< std::vector<float> > sampleWeightsRcpp (
+      new std::vector<float>(
+          Rcpp::as< std::vector<float> >(sampleWeights)
+      )
+  );
+
   std::sort(linearFeats->begin(), linearFeats->end());
 
   DataFrame* trainingData = new DataFrame(
@@ -712,7 +736,8 @@ Rcpp::List rcpp_reconstructree(
     std::move(categoricalFeatureColsRcpp),
     std::move(linearFeats),
     (size_t) numRows,
-    (size_t) numColumns
+    (size_t) numColumns,
+    std::move(sampleWeightsRcpp)
   );
 
   forestry* testFullForest = new forestry(
