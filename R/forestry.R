@@ -1322,6 +1322,7 @@ relinkCPP_prt <- function(object) {
         x = object@processed_dta$processed_x,
         y = object@processed_dta$y,
         catCols = object@processed_dta$categoricalFeatureCols_cpp,
+        splitCols = object@processed_dta$splittingFeaturesCols_cpp,
         linCols = object@processed_dta$linearFeatureCols_cpp,
         numRows = object@processed_dta$nObservations,
         numColumns = object@processed_dta$numColumns,
