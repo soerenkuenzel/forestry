@@ -6,8 +6,8 @@
 \usage{
 training_data_checker(x, y, ntree, replace, sampsize, mtry, nodesizeSpl,
   nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, minSplitGain,
-  maxDepth, splitratio, nthread, middleSplit, doubleTree, linFeats,
-  ridgeRF)
+  maxDepth, splitratio, nthread, middleSplit, doubleTree, splitFeats,
+  linFeats, ridgeRF)
 }
 \arguments{
 \item{x}{A data frame of all training predictors.}
@@ -61,6 +61,9 @@ between two feature values. (Default = FALSE)}
 
 \item{doubleTree}{if the number of tree is doubled as averaging and splitting
 data can be exchanged to create decorrelated trees. (Default = FALSE)}
+
+\item{splitFeats}{Specify which features to split on when creating a tree
+(defaults to use all features)}
 
 \item{linFeats}{Specify which features to split linearly on when using
 ridgeRF (defaults to use all numerical features)}

@@ -217,45 +217,49 @@ void forestryTree::predict(
 std::vector<size_t> sampleFeatures(
     size_t mtry,
     std::mt19937_64& random_number_generator,
-    int totalColumns,
     bool numFeaturesOnly,
+    std::vector<size_t>* splitCols,
     std::vector<size_t>* numCols
 ){
   // Sample features without replacement
   std::vector<size_t> featureList;
   if (numFeaturesOnly) {
-
+    // TODO: Set numericCols to be the intersection of numCols and splitCols
+    std::vector<size_t> numericCols;
+    std::set_intersection(numCols->begin(), numCols->end(),
+                          splitCols->begin(), splitCols->end(), back_inserter(numericCols));
     while (featureList.size() < mtry) {
       std::uniform_int_distribution<size_t> unif_dist(
-          0, (size_t) numCols->size() - 1
+          0, (size_t) numericCols.size() - 1
       );
 
       size_t index = unif_dist(random_number_generator);
 
       if (featureList.size() == 0 ||
-          std::find(featureList.begin(),
-                    featureList.end(),
-                    (*numCols)[index]) == featureList.end()
+          std::find(
+            featureList.begin(),
+            featureList.end(),
+            (*numCols)[index]
+          ) == featureList.end()
       ) {
-        featureList.push_back((*numCols)[index]);
+        featureList.push_back(numericCols[index]);
       }
     }
 
   } else {
     while (featureList.size() < mtry) {
       std::uniform_int_distribution<size_t> unif_dist(
-          0, (size_t) totalColumns - 1
+          0, (size_t) splitCols->size() - 1
       );
       size_t randomIndex = unif_dist(random_number_generator);
-      if (
-          featureList.size() == 0 ||
-            std::find(
-              featureList.begin(),
-              featureList.end(),
-              randomIndex
-            ) == featureList.end()
+      if (featureList.size() == 0 ||
+          std::find(
+            featureList.begin(),
+            featureList.end(),
+            (*splitCols)[randomIndex]
+          ) == featureList.end()
       ) {
-        featureList.push_back(randomIndex);
+        featureList.push_back((*splitCols)[randomIndex]);
       }
     }
   }
@@ -521,8 +525,8 @@ void forestryTree::recursivePartition(
   featureList = sampleFeatures(
     getMtry(),
     random_number_generator,
-    ((int) (*trainingData).getNumColumns()),
     false,
+    trainingData->getSplitCols(),
     trainingData->getNumCols()
   );
 
