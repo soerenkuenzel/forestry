@@ -102,6 +102,30 @@ compute_lp_bnd <- function(y_weights, train_vec, test_vec, p){
 }
 
 
+compute_rf_dist <- function(object, feature.new, aggregation = "average",
+                            localVariableImportance = FALSE, feat.name, p){
+  # Preprocess the data
+  testing_data_checker(feature.new)
+
+  processed_x <- preprocess_testing(feature.new,
+                                    object@categoricalFeatureCols,
+                                    object@categoricalFeatureMapping)
+
+  rcppPrediction <- rcpp_cppPredictInterface(object@forest,
+                                             processed_x,
+                                             aggregation,
+                                             localVariableImportance,
+                                             feat.name,
+                                             p)
+
+  if (aggregation == "average") {
+    return(rcppPrediction$prediction)
+  } else if (aggregation == "weightMatrix") {
+    return(rcppPrediction)
+  }
+}
+
+
 
 
 

@@ -5,14 +5,14 @@
 \alias{evaluate_lp}
 \title{compute trust levels}
 \usage{
-evaluate_lp(object, feature.new, feature, p = 1, verbose = TRUE)
+evaluate_lp(object, feature.new, feat.name, p = 1, verbose = TRUE)
 }
 \arguments{
 \item{object}{A `forestry` object.}
 
 \item{feature.new}{A data frame of testing predictors.}
 
-\item{feature}{a list of features for computing the levels with respect to.}
+\item{feat.name}{a list of features for computing the levels with respect to.}
 
 \item{verbose}{Print out the steps in the algorithm.}
 }
