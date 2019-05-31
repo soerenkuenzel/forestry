@@ -104,6 +104,9 @@ training_data_checker <- function(x,
   if (min(sampleWeights < 0)) {
     stop("sampleWeights must be greater than 0")
   }
+  if (min(sampleWeights <= .001*max(sampleWeights))) {
+    stop("MAX(sampleWeights):MIN(sampleWeights) must be < 1000")
+  }
 
   sampleWeights <- (sampleWeights / sum(sampleWeights))
 
