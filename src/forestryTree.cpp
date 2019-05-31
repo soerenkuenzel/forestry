@@ -220,18 +220,19 @@ std::vector<size_t> sampleFeatures(
     std::mt19937_64& random_number_generator,
     int totalColumns,
     bool numFeaturesOnly,
-    std::vector<size_t>* numCols
+    std::vector<size_t>* numCols,
+    std::vector<float>* weights
 ){
   // Sample features without replacement
   std::vector<size_t> featureList;
   if (numFeaturesOnly) {
 
     while (featureList.size() < mtry) {
-      std::uniform_int_distribution<size_t> unif_dist(
-          0, (size_t) numCols->size() - 1
+      std::discrete_distribution<size_t> discrete_dist(
+          weights->begin(), weights->end()
       );
 
-      size_t index = unif_dist(random_number_generator);
+      size_t index = discrete_dist(random_number_generator);
 
       if (featureList.size() == 0 ||
           std::find(featureList.begin(),
@@ -244,10 +245,11 @@ std::vector<size_t> sampleFeatures(
 
   } else {
     while (featureList.size() < mtry) {
-      std::uniform_int_distribution<size_t> unif_dist(
-          0, (size_t) totalColumns - 1
+      std::discrete_distribution<size_t> discrete_dist(
+          weights->begin(), weights->end()
       );
-      size_t randomIndex = unif_dist(random_number_generator);
+
+      size_t randomIndex = discrete_dist(random_number_generator);
       if (
           featureList.size() == 0 ||
             std::find(
@@ -524,7 +526,8 @@ void forestryTree::recursivePartition(
     random_number_generator,
     ((int) (*trainingData).getNumColumns()),
     false,
-    trainingData->getNumCols()
+    trainingData->getNumCols(),
+    trainingData->getSampleWeights()
   );
 
 

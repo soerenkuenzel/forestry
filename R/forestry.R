@@ -101,13 +101,11 @@ training_data_checker <- function(x,
   if (length(sampleWeights) != ncol(x)) {
     stop("Must have sample weight length equal to columns in data")
   }
-  if (max(sampleWeights) > 1 || min(sampleWeights < 0)) {
-    stop("sampleWeights must be between 1 and 0")
-  }
-  if (sum(sampleWeights) != 1) {
-    stop("Sample weights must sum to one")
+  if (min(sampleWeights < 0)) {
+    stop("sampleWeights must be greater than 0")
   }
 
+  sampleWeights <- (sampleWeights / sum(sampleWeights))
 
   # if the splitratio is 1, then we use adaptive rf and avgSampleSize is the
   # equal to the total sampsize
@@ -207,7 +205,8 @@ training_data_checker <- function(x,
               "nthread" = nthread,
               "middleSplit" = middleSplit,
               "doubleTree" = doubleTree,
-              "linFeats" = linFeats))
+              "linFeats" = linFeats,
+              "sampleWeights" = sampleWeights))
 }
 
 #' @title Test data check
