@@ -79,7 +79,9 @@ training_data_checker <- function(x,
   if (mtry > nfeatures) {
     stop("mtry cannot exceed total amount of features in x.")
   }
-
+  if (mtry > length(splitFeats)) {
+    stop("mtry cannot exceed total number of features specified in splitFeats.")
+  }
   if (nodesizeSpl <= 0 || nodesizeSpl %% 1 != 0) {
     stop("nodesizeSpl must be a positive integer.")
   }
