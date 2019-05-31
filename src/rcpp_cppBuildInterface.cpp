@@ -325,14 +325,9 @@ Rcpp::List rcpp_cppPredictInterface(
   SEXP forest,
   Rcpp::List x,
   std::string aggregation,
-  bool localVariableImportance,
-  std::string featureName = "",
-  float power = -1
+  bool localVariableImportance
 ){
   try {
-
-    std::cout << power << "THis worked" << featureName;
-
     Rcpp::XPtr< forestry > testFullForest(forest) ;
 
     std::vector< std::vector<float> > featureData =

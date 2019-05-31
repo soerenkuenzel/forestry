@@ -103,7 +103,7 @@ compute_lp_bnd <- function(y_weights, train_vec, test_vec, p){
 
 
 compute_rf_dist <- function(object, feature.new, aggregation = "average",
-                            localVariableImportance = FALSE, feat.name, p){
+                            localVariableImportance = FALSE){
   # Preprocess the data
   testing_data_checker(feature.new)
 
@@ -114,9 +114,7 @@ compute_rf_dist <- function(object, feature.new, aggregation = "average",
   rcppPrediction <- rcpp_cppPredictInterface(object@forest,
                                              processed_x,
                                              aggregation,
-                                             localVariableImportance,
-                                             feat.name,
-                                             p)
+                                             localVariableImportance)
 
   if (aggregation == "average") {
     return(rcppPrediction$prediction)

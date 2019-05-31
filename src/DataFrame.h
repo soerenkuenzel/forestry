@@ -19,7 +19,9 @@ public:
     std::unique_ptr< std::vector<size_t> > categoricalFeatureCols,
     std::unique_ptr< std::vector<size_t> > linearCols,
     std::size_t numRows,
-    std::size_t numColumns
+    std::size_t numColumns,
+    std::size_t power = -1,
+    std::size_t j = -1
   );
 
   float getPoint(size_t rowIndex, size_t colIndex);

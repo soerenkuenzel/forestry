@@ -15,7 +15,9 @@ DataFrame::DataFrame(
   std::unique_ptr< std::vector<size_t> > categoricalFeatureCols,
   std::unique_ptr< std::vector<size_t> > linearFeatureCols,
   std::size_t numRows,
-  std::size_t numColumns
+  std::size_t numColumns,
+  std::size_t power,
+  std::size_t j
 ) {
   this->_featureData = std::move(featureData);
   this->_outcomeData = std::move(outcomeData);
