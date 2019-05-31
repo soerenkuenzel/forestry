@@ -937,7 +937,7 @@ predict.forestry <- function(object,
   # rccpPrediction is a list with an entry $coef
   # which gives pointwise regression coeffficients averaged across the forest
   if (aggregation == "coefs") {
-    coef_names <- colnames(feature.new)
+    coef_names <- colnames(feature.new)[object@linFeats + 1]
     coef_names <- c(coef_names, "Intercept")
     colnames(rcppPrediction$coef) <- coef_names
   }
