@@ -30,6 +30,7 @@ public:
 
   void ridgePredict(
       std::vector<float> &outputPrediction,
+      std::vector< std::vector<float> > &outputCoefficients,
       std::vector<size_t>* updateIndex,
       std::vector< std::vector<float> >* xNew,
       DataFrame* trainingData,
@@ -38,6 +39,7 @@ public:
 
   void predict(
     std::vector<float> &outputPrediction,
+    std::vector< std::vector<float> > &outputCoefficients,
     std::vector<size_t>* updateIndex,
     std::vector< std::vector<float> >* xNew,
     DataFrame* trainingData,

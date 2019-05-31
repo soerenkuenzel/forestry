@@ -339,7 +339,20 @@ Rcpp::List rcpp_cppPredictInterface(
     // then we inialize the empty weight matrix
     arma::Mat<float> weightMatrix;
     arma::Mat<float> localVIMatrix;
-    if (aggregation == "weightMatrix") {
+    arma::Mat<float> coefficients;
+
+    if (aggregation == "coefs") {
+      size_t nrow = featureData[0].size();
+      // Now we need the number of linear features + 1 for the intercept
+      size_t ncol = (*testFullForest).getTrainingData()->getLinObsData(0).size() + 1;
+      //Set coefficients to be zero
+      coefficients.resize(nrow, ncol);
+      coefficients.zeros(nrow, ncol);
+
+      testForestPrediction = (*testFullForest).predict(&featureData, NULL,
+                              NULL, &coefficients);
+
+    } else if (aggregation == "weightMatrix") {
       size_t nrow = featureData[0].size(); // number of features to be predicted
       size_t ncol = (*testFullForest).getNtrain(); // number of train data
       weightMatrix.resize(nrow, ncol); // initialize the space for the matrix
@@ -349,17 +362,19 @@ Rcpp::List rcpp_cppPredictInterface(
         localVIMatrix.resize(nrow, featureData.size());
         localVIMatrix.zeros(nrow, featureData.size());
         testForestPrediction = (*testFullForest).predict(&featureData, &weightMatrix,
-                                &localVIMatrix);
+                                &localVIMatrix, NULL);
       } else {
         testForestPrediction = (*testFullForest).predict(&featureData, &weightMatrix,
-                                NULL);
+                                NULL, NULL);
       }
       // The idea is that, if the weightMatrix is point to NULL it won't be
       // be updated, but otherwise it will be updated:
 
     } else {
-      testForestPrediction = (*testFullForest).predict(&featureData, NULL, NULL);
+      testForestPrediction = (*testFullForest).predict(&featureData, NULL, NULL, NULL);
     }
+
+    // Clean this up for new predict scheme*********
 
     std::vector<float>* testForestPrediction_ =
       new std::vector<float>(*testForestPrediction.get());
@@ -368,7 +383,8 @@ Rcpp::List rcpp_cppPredictInterface(
 
     return Rcpp::List::create(Rcpp::Named("predictions") = predictions,
                               Rcpp::Named("weightMatrix") = weightMatrix,
-                              Rcpp::Named("localVIMatrix") = localVIMatrix);
+                              Rcpp::Named("localVIMatrix") = localVIMatrix,
+                              Rcpp::Named("coef") = coefficients);
 
     // return output;
 

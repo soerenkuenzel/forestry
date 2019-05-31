@@ -44,7 +44,8 @@ public:
   std::unique_ptr< std::vector<float> > predict(
     std::vector< std::vector<float> >* xNew,
     arma::Mat<float>* weightMatrix,
-    arma::Mat<float>* localVIMatrix
+    arma::Mat<float>* localVIMatrix,
+    arma::Mat<float>* coefficients
   );
 
   void fillinTreeInfo(

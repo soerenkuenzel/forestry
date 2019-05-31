@@ -892,6 +892,10 @@ predict.forestry <- function(object,
     stop("Aggregation must be set to weightMatrix if localVariableImportance is true.")
   }
 
+  if ((!(object@ridgeRF)) && (aggregation == "coefs")) {
+    stop("Aggregation can only be linear with ridgeRF = TRUE.")
+  }
+
   rcppPrediction <- tryCatch({
     rcpp_cppPredictInterface(object@forest, processed_x, aggregation, localVariableImportance)
   }, error = function(err) {
@@ -899,9 +903,20 @@ predict.forestry <- function(object,
     return(NULL)
   })
 
+  # In the case aggregation is set to "linear"
+  # rccpPrediction is a list with an entry $coef
+  # which gives pointwise regression coeffficients averaged across the forest
+  if (aggregation == "coefs") {
+    coef_names <- colnames(feature.new)
+    coef_names <- c(coef_names, "Intercept")
+    colnames(rcppPrediction$coef) <- coef_names
+  }
+
   if (aggregation == "average") {
     return(rcppPrediction$prediction)
   } else if (aggregation == "weightMatrix") {
+    return(rcppPrediction)
+  } else if (aggregation == "coefs") {
     return(rcppPrediction)
   }
 }
