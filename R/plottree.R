@@ -237,7 +237,7 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
       # leaf_id = 5
       ###
       this_ds <- dta_x[leaf_idx[[leaf_id]],
-                       forestry_tree@linFeats + 1]
+                       forestry_tree@linFeats + 1, drop = FALSE]
       encoder <- onehot::onehot(this_ds)
       remat <- predict(encoder, this_ds)
       ###
