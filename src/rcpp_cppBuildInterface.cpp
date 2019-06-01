@@ -325,7 +325,9 @@ Rcpp::List rcpp_cppPredictInterface(
   SEXP forest,
   Rcpp::List x,
   std::string aggregation,
-  bool localVariableImportance
+  bool localVariableImportance,
+  float power = -1,
+  size_t j = -1
 ){
   try {
     Rcpp::XPtr< forestry > testFullForest(forest) ;

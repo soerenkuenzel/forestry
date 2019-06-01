@@ -13,8 +13,8 @@ rcpp_cppMultilayerBuildInterface <- function(x, y, catCols, linCols, numRows, nu
     .Call(`_forestry_rcpp_cppMultilayerBuildInterface`, x, y, catCols, linCols, numRows, numColumns, ntree, nrounds, eta, replace, sampsize, mtry, splitratio, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, minSplitGain, maxDepth, seed, nthread, verbose, middleSplit, maxObs, ridgeRF, overfitPenalty, doubleTree, existing_dataframe_flag, existing_dataframe)
 }
 
-rcpp_cppPredictInterface <- function(forest, x, aggregation, localVariableImportance) {
-    .Call(`_forestry_rcpp_cppPredictInterface`, forest, x, aggregation, localVariableImportance)
+rcpp_cppPredictInterface <- function(forest, x, aggregation, localVariableImportance, power = -1, j = -1L) {
+    .Call(`_forestry_rcpp_cppPredictInterface`, forest, x, aggregation, localVariableImportance, power, j)
 }
 
 rcpp_cppMultilayerPredictInterface <- function(multilayerForest, x, aggregation) {

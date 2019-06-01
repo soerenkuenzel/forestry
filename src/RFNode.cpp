@@ -133,6 +133,8 @@ void RFNode::predict(
   float lambda
 ) {
 
+  arma::cout << (*trainingData).getJ();
+
   // If the node is a leaf, aggregate all its averaging data samples
   if (is_leaf()) {
 
@@ -148,6 +150,10 @@ void RFNode::predict(
 
       // Calculate the mean of current node
       float predictedMean = (*trainingData).partitionMean(getAveragingIndex());
+
+      // Calculate pth_root( mean( |Xi_j - Xo_j|^p ) )
+      // If
+      arma::cout << (*trainingData).getJ();
 
       // Give all updateIndex the mean of the node as prediction values
       for (

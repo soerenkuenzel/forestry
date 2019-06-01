@@ -20,7 +20,7 @@ public:
     std::unique_ptr< std::vector<size_t> > linearCols,
     std::size_t numRows,
     std::size_t numColumns,
-    std::size_t power = -1,
+    float power = -1,
     std::size_t j = -1
   );
 
@@ -55,6 +55,13 @@ public:
     return _numRows;
   }
 
+  size_t getPower() {
+    return _power;
+  }
+
+  size_t getJ() {
+    return _j;
+  }
   std::vector<size_t>* getCatCols() {
     return _categoricalFeatureCols.get();
   }
@@ -86,6 +93,8 @@ private:
   std::unique_ptr< std::vector<size_t> > _linearFeatureCols;
   std::size_t _numRows;
   std::size_t _numColumns;
+  std::size_t _power;
+  std::size_t _j;
 };
 
 

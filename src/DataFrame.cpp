@@ -16,7 +16,7 @@ DataFrame::DataFrame(
   std::unique_ptr< std::vector<size_t> > linearFeatureCols,
   std::size_t numRows,
   std::size_t numColumns,
-  std::size_t power,
+  float power,
   std::size_t j
 ) {
   this->_featureData = std::move(featureData);
@@ -25,6 +25,8 @@ DataFrame::DataFrame(
   this->_linearFeatureCols = std::move(linearFeatureCols);
   this->_numRows = numRows;
   this->_numColumns = numColumns;
+  this->_power = power;
+  this->_j = j;
 
   // define the row numbers to be the numbers from 1 to nrow:
   std::vector<size_t> rowNumberss;
