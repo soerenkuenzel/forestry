@@ -5,7 +5,8 @@
 \alias{evaluate_lp}
 \title{compute trust levels}
 \usage{
-evaluate_lp(object, feature.new, feat.name, p = 1, verbose = TRUE)
+evaluate_lp(object, feature.new, feat.name, p = 1, verbose = TRUE,
+  num.CV = 10)
 }
 \arguments{
 \item{object}{A `forestry` object.}
@@ -15,6 +16,8 @@ evaluate_lp(object, feature.new, feat.name, p = 1, verbose = TRUE)
 \item{feat.name}{a list of features for computing the levels with respect to.}
 
 \item{verbose}{Print out the steps in the algorithm.}
+
+\item{num.CV}{Number of folds in the CV to compute the detachement}
 }
 \value{
 A data frame of quantiles of in response variable conditional on the
@@ -23,6 +26,9 @@ test observations.
 \description{
 Computes and returns the lp levels of new observations in
 specified dimensions.
+}
+\details{
+compute lp levels
 }
 \examples{
 # Set seed for reproductivity

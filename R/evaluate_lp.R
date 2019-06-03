@@ -1,4 +1,6 @@
 #' @include quantileForest.R
+#' @importFrom caret createFolds
+NULL
 
 #' compute lp levels
 #' @name evaluate_lp-forestry
@@ -14,7 +16,6 @@
 #' @param num.CV Number of folds in the CV to compute the detachement
 #' @return A data frame of quantiles of in response variable conditional on the
 #' test observations.
-#' @importFrom caret createFolds
 #' @examples
 #' # Set seed for reproductivity
 #' set.seed(292313)

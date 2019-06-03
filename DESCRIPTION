@@ -21,7 +21,8 @@ Imports:
     visNetwork, 
     glmnet, 
     grDevices,
-    onehot
+    onehot, 
+    caret
 LinkingTo: Rcpp,
   RcppArmadillo
 RoxygenNote: 6.1.1
