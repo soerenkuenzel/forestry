@@ -230,11 +230,10 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
   dta_x <- forestry_tree@processed_dta$processed_x
   dta_y <- forestry_tree@processed_dta$y
 
-
   if (forestry_tree@ridgeRF) {
     # ridge forest
     for (leaf_id in node_info$node_id[node_info$is_leaf]) {
-      # leaf_id = 5
+      # leaf_id = 1
       ###
       this_ds <- dta_x[leaf_idx[[leaf_id]],
                        forestry_tree@linFeats + 1, drop = FALSE]
@@ -246,18 +245,29 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
         plm_pred <- c(dta_y_leaf[1], rep(0, ncol(remat)))
         r_squared = 1
       } else {
+
+        remat.is.of.dim.one <- FALSE
+        if(ncol(remat) == 1) {
+          remat.is.of.dim.one <- TRUE
+          remat <- as.matrix(data.frame(dummy = 1, remat))
+        }
         plm <- glmnet::glmnet(x = remat,
                               y = dta_y_leaf,
                               lambda = forestry_tree@overfitPenalty,
                               alpha	= 0)
 
         plm_pred <- predict(plm, type = "coef")
+        if(remat.is.of.dim.one){
+          remat <- remat[,-1, drop = FALSE]
+          plm_pred <- plm_pred[-2,]
+        }
         r_squared = plm$dev.ratio
       }
 
       plm_pred_names <- c("interc", colnames(remat))
 
       return_char <- character()
+
       for (i in 1:length(plm_pred)) {
         return_char <- paste0(return_char,
                               substr(plm_pred_names[i], 1, beta.char.len), " ",
