@@ -13,6 +13,7 @@
 #' @param verbose Print out the steps in the algorithm.
 #' @return A data frame of quantiles of in response variable conditional on the
 #' test observations.
+#' @importFrom caret createFolds
 #' @examples
 #' # Set seed for reproductivity
 #' set.seed(292313)
@@ -77,7 +78,23 @@ evaluate_lp <- function(object, feature.new, feat.name, p = 1, verbose = TRUE){
       }
       fold_ids <- folds[[k]]
       rf <- forestry(x = x_train[-fold_ids, ],
-                     y = y_train[-fold_ids])
+                     y = y_train[-fold_ids],
+                     ntree = object@ntree,
+                     replace = object@replace,
+                     sample.fraction = object@sampsize / length(y_train),
+                     mtry = object@mtry,
+                     nodesizeAvg = object@nodesizeAvg,
+                     nodesizeStrictSpl = object@nodesizeStrictSpl,
+                     nodesizeStrictAvg = object@nodesizeStrictAvg,
+                     minSplitGain = object@minSplitGain,
+                     maxDepth = object@maxDepth,
+                     splitratio = object@splitratio,
+                     middleSplit = object@middleSplit,
+                     maxObs = object@maxObs,
+                     ridgeRF = object@ridgeRF,
+                     linFeats = object@linFeats + 1,
+                     overfitPenalty = object@overfitPenalty,
+                     doubleTree = object@doubleTree)
 
       x_train_lp[fold_ids] <- compute_lp(object = rf,
                                          feature.new = x_train[fold_ids, ],
