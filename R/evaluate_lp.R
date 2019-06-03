@@ -11,6 +11,7 @@
 #' @param feature.new A data frame of testing predictors.
 #' @param feat.name a list of features for computing the levels with respect to.
 #' @param verbose Print out the steps in the algorithm.
+#' @param num.CV Number of folds in the CV to compute the detachement
 #' @return A data frame of quantiles of in response variable conditional on the
 #' test observations.
 #' @importFrom caret createFolds
@@ -35,7 +36,13 @@
 #'                      feature = features,
 #'                      p = 1)
 #' @export
-evaluate_lp <- function(object, feature.new, feat.name, p = 1, verbose = TRUE){
+evaluate_lp <- function(object,
+                        feature.new,
+                        feat.name,
+                        p = 1,
+                        verbose = TRUE,
+                        num.CV = 10) {
+
 
   # Checks and parsing:
   if (class(object) != "forestry") {
@@ -65,16 +72,15 @@ evaluate_lp <- function(object, feature.new, feat.name, p = 1, verbose = TRUE){
                                p = p)
 
     # Compute lp distances for the training data using OOB observations:
-    k_CV <- 10
-    folds <- caret::createFolds(y_train, k = k_CV, list = TRUE,
+    folds <- caret::createFolds(y_train, k = num.CV, list = TRUE,
                                 returnTrain = FALSE)
 
     # Create a vector of lp distances for training observations to be filled
     x_train_lp <- rep(NA, nrow(x_train))
 
-    for (k in 1:k_CV) {
+    for (k in 1:num.CV) {
       if (verbose) {
-        print(paste("Running fold", k, "out of", k_CV))
+        print(paste("Running fold", k, "out of", num.CV))
       }
       fold_ids <- folds[[k]]
       rf <- forestry(x = x_train[-fold_ids, ],
