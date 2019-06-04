@@ -232,6 +232,7 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
   dta_x <- forestry_tree@processed_dta$processed_x
   dta_y <- forestry_tree@processed_dta$y
 
+  glmn_coefs <- list()
   if (forestry_tree@ridgeRF) {
     # ridge forest
     for (leaf_id in node_info$node_id[node_info$is_leaf]) {
@@ -257,12 +258,13 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
                               y = dta_y_leaf,
                               lambda = forestry_tree@overfitPenalty,
                               alpha	= 0)
-
         plm_pred <- predict(plm, type = "coef")
         if (remat.is.of.dim.one) {
           remat <- remat[,-1, drop = FALSE]
           plm_pred <- plm_pred[-2,]
         }
+        glmn_coefs[[as.character(leaf_id)]] <- plm_pred
+
         r_squared = plm$dev.ratio
       }
 
@@ -295,18 +297,24 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
   }
 
   # defines a colors -----------------------------------------------------------
-  split_vals <- node_info$split_feat
-  split_vals <- ifelse(is.na(split_vals), 0, split_vals)
-  split_vals <- factor(split_vals)
-  color_code <- grDevices::terrain.colors(n = length(feat_names) + 1,
-                                          alpha = .7)
-  names(color_code) <- as.character(0:(length(feat_names)))
-  nodes$color <- color_code[split_vals]
+  # split_feat <- node_info$split_feat
+  # split_feat <- ifelse(is.na(split_feat), 0, split_feat)
+  # split_feat <- factor(split_feat)
+  # color_code <- grDevices::terrain.colors(n = length(feat_names) + 1,
+  #                                         alpha = .7)
+  # names(color_code) <- as.character(0:(length(feat_names)))
 
+  potential_split_feats <- colnames(forestry_tree@processed_dta$processed_x)
+  color_code <- grDevices::terrain.colors(n = length(potential_split_feats) + 1,
+                                          alpha = .7)
+  names(color_code) <- c(potential_split_feats, NA)
+
+  nodes$color <- color_code[node_info$feat_nm]
+  nodes$color[is.na(nodes$color)] <- color_code[length(color_code)]
   # Plot the actual node -------------------------------------------------------
   if (return.plot.dta) {
     return(list(
-      node_info, nodes, edges
+      node_info, nodes, edges, glmn_coefs, tree.id
     ))
   } else {
     (p1 <-
