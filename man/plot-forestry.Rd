@@ -6,7 +6,7 @@
 \title{visualize a tree}
 \usage{
 \method{plot}{forestry}(x, tree.id = 1, print.meta_dta = FALSE,
-  beta.char.len = 30, ...)
+  beta.char.len = 30, return.plot.dta = FALSE, ...)
 }
 \arguments{
 \item{x}{A forestry x.}
@@ -17,6 +17,9 @@
 
 \item{beta.char.len}{The length of the beta values in leaf node
 representation.}
+
+\item{return.plot.dta}{if TRUE no plot will be generated, but instead a list
+with all the plot data is returned}
 
 \item{...}{additional arguments that are not used.}
 }
