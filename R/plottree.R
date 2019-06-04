@@ -160,7 +160,7 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
           (!is.na(node_info$split_feat))
 
         node_info$cat_split_value[nodes_with_this_split] <-
-          as.character(cat_feat_map[[i]]$uniqueFeatureValues[
+          as.character(sort(cat_feat_map[[i]]$uniqueFeatureValues)[
             node_info$split_val[nodes_with_this_split]])
       }
     }
