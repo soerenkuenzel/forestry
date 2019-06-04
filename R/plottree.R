@@ -11,6 +11,8 @@
 #' @param print.meta_dta Should the data for the plot be printed?
 #' @param beta.char.len The length of the beta values in leaf node
 #' representation.
+#' @param return.plot.dta if TRUE no plot will be generated, but instead a list
+#'   with all the plot data is returned
 #' @param ... additional arguments that are not used.
 #' @import glmnet
 #' @examples
@@ -41,7 +43,7 @@
 #' @export
 #' @import visNetwork
 plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
-                          beta.char.len = 30, ...) {
+                          beta.char.len = 30, return.plot.dta = FALSE, ...) {
   if (x@ntree < tree.id | 1 > tree.id) {
     stop("tree.id is too large or too small.")
   }
@@ -247,7 +249,7 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
       } else {
 
         remat.is.of.dim.one <- FALSE
-        if(ncol(remat) == 1) {
+        if (ncol(remat) == 1) {
           remat.is.of.dim.one <- TRUE
           remat <- as.matrix(data.frame(dummy = 1, remat))
         }
@@ -257,7 +259,7 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
                               alpha	= 0)
 
         plm_pred <- predict(plm, type = "coef")
-        if(remat.is.of.dim.one){
+        if (remat.is.of.dim.one) {
           remat <- remat[,-1, drop = FALSE]
           plm_pred <- plm_pred[-2,]
         }
@@ -302,17 +304,24 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
   nodes$color <- color_code[split_vals]
 
   # Plot the actual node -------------------------------------------------------
-  (p1 <-
-    visNetwork(
-      nodes,
-      edges,
-      width = "100%",
-      height = "800px",
-      main = paste("Tree", tree.id)
-    ) %>%
-    visEdges(arrows = "to") %>%
-    visHierarchicalLayout() %>% visExport(type = "pdf", name = "ridge_tree"))
+  if (return.plot.dta) {
+    return(list(
+      node_info, nodes, edges
+    ))
+  } else {
+    (p1 <-
+        visNetwork(
+          nodes,
+          edges,
+          width = "100%",
+          height = "800px",
+          main = paste("Tree", tree.id)
+        ) %>%
+        visEdges(arrows = "to") %>%
+        visHierarchicalLayout() %>% visExport(type = "pdf", name = "ridge_tree"))
 
-  if (print.meta_dta) print(node_info)
-  return(p1)
+    if (print.meta_dta)
+      print(node_info)
+    return(p1)
+  }
 }
