@@ -10,6 +10,8 @@ preprocess_testing(x, featureNames, categoricalFeatureCols,
 \arguments{
 \item{x}{A data frame of all training predictors.}
 
+\item{featureNames}{A vector of column names in training data.}
+
 \item{categoricalFeatureCols}{A list of index for all categorical data. Used
 for trees to detect categorical columns.}
 

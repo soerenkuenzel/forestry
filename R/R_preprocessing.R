@@ -78,6 +78,7 @@ preprocess_training <- function(x, y) {
 #'   training data and encoding categorical data into numerical representation
 #'   in the same way as training data.
 #' @inheritParams forestry
+#' @param featureNames A vector of column names in training data.
 #' @param categoricalFeatureCols A list of index for all categorical data. Used
 #'   for trees to detect categorical columns.
 #' @param categoricalFeatureMapping A list of encoding details for each
