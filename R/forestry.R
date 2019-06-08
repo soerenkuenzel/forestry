@@ -400,14 +400,14 @@ forestry <- function(x,
                      doubleTree = FALSE,
                      reuseforestry = NULL,
                      saveable = TRUE) {
+  x <- as.data.frame(x)
+
   # only if sample.fraction is given, update sampsize
   if (!is.null(sample.fraction))
     sampsize <- ceiling(sample.fraction * nrow(x))
   linFeats <- unique(linFeats)
 
-  x <- as.data.frame(x)
   # Preprocess the data
-
   updated_variables <-
     training_data_checker(
       x = x,
