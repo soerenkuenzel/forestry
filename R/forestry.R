@@ -217,6 +217,7 @@ setClass(
     forest = "externalptr",
     dataframe = "externalptr",
     processed_dta = "list",
+    featureNames = "character",
     R_forest = "list",
     categoricalFeatureCols = "list",
     categoricalFeatureMapping = "list",
@@ -510,6 +511,7 @@ forestry <- function(x,
           forest = rcppForest,
           dataframe = rcppDataFrame,
           processed_dta = processed_dta,
+          featureNames = colnames(x),
           R_forest = R_forest,
           categoricalFeatureCols = categoricalFeatureCols,
           categoricalFeatureMapping = categoricalFeatureMapping,
@@ -885,6 +887,7 @@ predict.forestry <- function(object,
   testing_data_checker(feature.new)
 
   processed_x <- preprocess_testing(feature.new,
+                                    object@featureNames,
                                     object@categoricalFeatureCols,
                                     object@categoricalFeatureMapping)
 

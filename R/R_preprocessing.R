@@ -86,6 +86,7 @@ preprocess_training <- function(x, y) {
 #' @import plyr
 #' @return A preprocessed training dataaset x
 preprocess_testing <- function(x,
+                               featureNames,
                                categoricalFeatureCols,
                                categoricalFeatureMapping) {
   x <- as.data.frame(x)
@@ -94,6 +95,10 @@ preprocess_testing <- function(x,
   testingFeatureNames <- colnames(x)
   if (is.null(testingFeatureNames)) {
     warning("No names are given for each column.")
+  }
+
+  if (!(identical((featureNames), testingFeatureNames))) {
+    stop("Training data and testing data column names must be the same.")
   }
 
   # Track all categorical features (both factors and characters)

@@ -4,7 +4,8 @@
 \alias{preprocess_testing}
 \title{preprocess_testing}
 \usage{
-preprocess_testing(x, categoricalFeatureCols, categoricalFeatureMapping)
+preprocess_testing(x, featureNames, categoricalFeatureCols,
+  categoricalFeatureMapping)
 }
 \arguments{
 \item{x}{A data frame of all training predictors.}
