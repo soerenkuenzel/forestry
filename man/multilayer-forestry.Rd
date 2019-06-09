@@ -13,8 +13,9 @@ multilayerForestry(x, y, ntree = 500, nrounds = 1, eta = 0.3,
   maxDepth = 99, splitratio = 1, seed = as.integer(runif(1) * 1000),
   verbose = FALSE, nthread = 0, splitrule = "variance",
   middleSplit = TRUE, maxObs = length(y), ridgeRF = FALSE,
-  linFeats = 1:(ncol(x)), overfitPenalty = 1, doubleTree = FALSE,
-  reuseforestry = NULL, saveable = TRUE)
+  splitFeats = 1:(ncol(x)), linFeats = 1:(ncol(x)),
+  overfitPenalty = 1, doubleTree = FALSE, reuseforestry = NULL,
+  saveable = TRUE)
 }
 \arguments{
 \item{x}{A data frame of all training predictors.}
@@ -85,6 +86,9 @@ between two feature values. (Default = FALSE)}
 \item{maxObs}{The max number of observations to split on}
 
 \item{ridgeRF}{Fit the model with a ridge regression or not}
+
+\item{splitFeats}{Specify which features to split on when creating a tree
+(defaults to use all features)}
 
 \item{linFeats}{Specify which features to split linearly on when using
 ridgeRF (defaults to use all numerical features)}
