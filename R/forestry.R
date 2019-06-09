@@ -226,6 +226,7 @@ setClass(
     dataframe = "externalptr",
     processed_dta = "list",
     R_forest = "list",
+    featureNames = "character",
     categoricalFeatureCols = "list",
     categoricalFeatureMapping = "list",
     ntree = "numeric",
@@ -257,6 +258,7 @@ setClass(
     dataframe = "externalptr",
     processed_dta = "list",
     R_forest = "list",
+    featureNames = "character",
     categoricalFeatureCols = "list",
     categoricalFeatureMapping = "list",
     ntree = "numeric",
@@ -413,15 +415,15 @@ forestry <- function(x,
                      doubleTree = FALSE,
                      reuseforestry = NULL,
                      saveable = TRUE) {
+  x <- as.data.frame(x)
+
   # only if sample.fraction is given, update sampsize
   if (!is.null(sample.fraction))
     sampsize <- ceiling(sample.fraction * nrow(x))
   splitFeats <- unique(splitFeats)
   linFeats <- unique(linFeats)
 
-  x <- as.data.frame(x)
   # Preprocess the data
-
   updated_variables <-
     training_data_checker(
       x = x,
@@ -530,6 +532,7 @@ forestry <- function(x,
           dataframe = rcppDataFrame,
           processed_dta = processed_dta,
           R_forest = R_forest,
+          featureNames = colnames(x),
           categoricalFeatureCols = categoricalFeatureCols,
           categoricalFeatureMapping = categoricalFeatureMapping,
           ntree = ntree * (doubleTree + 1),
@@ -611,6 +614,7 @@ forestry <- function(x,
           dataframe = reuseforestry@dataframe,
           processed_dta = reuseforestry@processed_dta,
           R_forest = reuseforestry@R_forest,
+          featureNames = colnames(x),
           categoricalFeatureCols = reuseforestry@categoricalFeatureCols,
           categoricalFeatureMapping = categoricalFeatureMapping,
           ntree = ntree * (doubleTree + 1),
@@ -777,6 +781,7 @@ multilayerForestry <- function(x,
           dataframe = rcppDataFrame,
           processed_dta = processed_dta,
           R_forest = R_forest,
+          featureNames = colnames(x),
           categoricalFeatureCols = categoricalFeatureCols,
           categoricalFeatureMapping = categoricalFeatureMapping,
           ntree = ntree * (doubleTree + 1),
@@ -916,6 +921,7 @@ predict.forestry <- function(object,
   testing_data_checker(feature.new)
 
   processed_x <- preprocess_testing(feature.new,
+                                    object@featureNames,
                                     object@categoricalFeatureCols,
                                     object@categoricalFeatureMapping)
 
@@ -958,6 +964,7 @@ predict.multilayerForestry <- function(object,
     testing_data_checker(feature.new)
 
     processed_x <- preprocess_testing(feature.new,
+                                      object@featureNames,
                                       object@categoricalFeatureCols,
                                       object@categoricalFeatureMapping)
 

@@ -4,10 +4,13 @@
 \alias{preprocess_testing}
 \title{preprocess_testing}
 \usage{
-preprocess_testing(x, categoricalFeatureCols, categoricalFeatureMapping)
+preprocess_testing(x, featureNames, categoricalFeatureCols,
+  categoricalFeatureMapping)
 }
 \arguments{
 \item{x}{A data frame of all training predictors.}
+
+\item{featureNames}{A vector of column names in training data.}
 
 \item{categoricalFeatureCols}{A list of index for all categorical data. Used
 for trees to detect categorical columns.}
