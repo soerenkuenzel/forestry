@@ -309,7 +309,7 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
                                           alpha = .7)
   names(color_code) <- c(potential_split_feats, NA)
 
-  nodes$color <- color_code[node_info$feat_nm]
+  nodes$color <- color_code[node_info$feat_nm][1:length(node_info$feat_nm)]
   nodes$color[is.na(nodes$color)] <- color_code[length(color_code)]
   # Plot the actual node -------------------------------------------------------
   if (return.plot.dta) {
