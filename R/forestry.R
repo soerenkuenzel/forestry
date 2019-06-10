@@ -26,6 +26,7 @@ training_data_checker <- function(x,
                                   nthread,
                                   middleSplit,
                                   doubleTree,
+                                  splitFeats,
                                   linFeats,
                                   ridgeRF) {
   x <- as.data.frame(x)
@@ -56,6 +57,10 @@ training_data_checker <- function(x,
     stop("sampsize must be a positive integer.")
   }
 
+  if (max(splitFeats) > nfeatures || any(splitFeats < 1)) {
+    stop("splitFeats must be a positive integer less than or equal to ncol(x).")
+  }
+
   if (max(linFeats) > nfeatures || any(linFeats < 1)) {
     stop("linFeats must be a positive integer less than or equal to ncol(x).")
   }
@@ -74,7 +79,9 @@ training_data_checker <- function(x,
   if (mtry > nfeatures) {
     stop("mtry cannot exceed total amount of features in x.")
   }
-
+  if (mtry > length(splitFeats)) {
+    stop("mtry cannot exceed total number of features specified in splitFeats.")
+  }
   if (nodesizeSpl <= 0 || nodesizeSpl %% 1 != 0) {
     stop("nodesizeSpl must be a positive integer.")
   }
@@ -196,6 +203,7 @@ training_data_checker <- function(x,
               "nthread" = nthread,
               "middleSplit" = middleSplit,
               "doubleTree" = doubleTree,
+              "splitFeats" = splitFeats,
               "linFeats" = linFeats))
 }
 
@@ -218,6 +226,7 @@ setClass(
     dataframe = "externalptr",
     processed_dta = "list",
     R_forest = "list",
+    featureNames = "character",
     categoricalFeatureCols = "list",
     categoricalFeatureMapping = "list",
     ntree = "numeric",
@@ -235,6 +244,7 @@ setClass(
     y = "vector",
     maxObs = "numeric",
     ridgeRF = "logical",
+    splitFeats = "numeric",
     linFeats = "numeric",
     overfitPenalty = "numeric",
     doubleTree = "logical"
@@ -248,6 +258,7 @@ setClass(
     dataframe = "externalptr",
     processed_dta = "list",
     R_forest = "list",
+    featureNames = "character",
     categoricalFeatureCols = "list",
     categoricalFeatureMapping = "list",
     ntree = "numeric",
@@ -267,6 +278,7 @@ setClass(
     y = "vector",
     maxObs = "numeric",
     ridgeRF = "logical",
+    splitFeats = "numeric",
     linFeats = "numeric",
     overfitPenalty = "numeric",
     doubleTree = "logical"
@@ -330,6 +342,8 @@ setClass(
 #'   training many RF, it makes a lot of sense to set this to FALSE to save
 #'   time and memory.
 #' @param ridgeRF Fit the model with a ridge regression or not
+#' @param splitFeats Specify which features to split on when creating a tree
+#'   (defaults to use all features)
 #' @param linFeats Specify which features to split linearly on when using
 #'   ridgeRF (defaults to use all numerical features)
 #' @param overfitPenalty Value to determine how much to penalize magnitude of
@@ -395,19 +409,21 @@ forestry <- function(x,
                      middleSplit = FALSE,
                      maxObs = length(y),
                      ridgeRF = FALSE,
+                     splitFeats = 1:(ncol(x)),
                      linFeats = 1:(ncol(x)),
                      overfitPenalty = 1,
                      doubleTree = FALSE,
                      reuseforestry = NULL,
                      saveable = TRUE) {
+  x <- as.data.frame(x)
+
   # only if sample.fraction is given, update sampsize
   if (!is.null(sample.fraction))
     sampsize <- ceiling(sample.fraction * nrow(x))
+  splitFeats <- unique(splitFeats)
   linFeats <- unique(linFeats)
 
-  x <- as.data.frame(x)
   # Preprocess the data
-
   updated_variables <-
     training_data_checker(
       x = x,
@@ -426,6 +442,7 @@ forestry <- function(x,
       nthread = nthread,
       middleSplit = middleSplit,
       doubleTree = doubleTree,
+      splitFeats = splitFeats,
       linFeats = linFeats,
       ridgeRF = ridgeRF)
 
@@ -438,6 +455,7 @@ forestry <- function(x,
   nObservations <- length(y)
   numColumns <- ncol(x)
   # Update linear features to be zero-indexed
+  splitFeats = splitFeats - 1
   linFeats = linFeats - 1
 
   if (is.null(reuseforestry)) {
@@ -461,6 +479,7 @@ forestry <- function(x,
       rcppDataFrame <- rcpp_cppDataFrameInterface(processed_x,
                                                   y,
                                                   categoricalFeatureCols_cpp,
+                                                  splitFeats,
                                                   linFeats,
                                                   nObservations,
                                                   numColumns)
@@ -469,6 +488,7 @@ forestry <- function(x,
         processed_x,
         y,
         categoricalFeatureCols_cpp,
+        splitFeats,
         linFeats,
         nObservations,
         numColumns,
@@ -498,6 +518,7 @@ forestry <- function(x,
         "processed_x" = processed_x,
         "y" = y,
         "categoricalFeatureCols_cpp" = categoricalFeatureCols_cpp,
+        "splittingFeaturesCols_cpp" = splitFeats,
         "linearFeatureCols_cpp" = linFeats,
         "nObservations" = nObservations,
         "numColumns" = numColumns
@@ -511,6 +532,7 @@ forestry <- function(x,
           dataframe = rcppDataFrame,
           processed_dta = processed_dta,
           R_forest = R_forest,
+          featureNames = colnames(x),
           categoricalFeatureCols = categoricalFeatureCols,
           categoricalFeatureMapping = categoricalFeatureMapping,
           ntree = ntree * (doubleTree + 1),
@@ -527,6 +549,7 @@ forestry <- function(x,
           middleSplit = middleSplit,
           maxObs = maxObs,
           ridgeRF = ridgeRF,
+          splitFeats = splitFeats,
           linFeats = linFeats,
           overfitPenalty = overfitPenalty,
           doubleTree = doubleTree
@@ -557,6 +580,7 @@ forestry <- function(x,
         x,
         y,
         categoricalFeatureCols_cpp,
+        splitFeats,
         linFeats,
         nObservations,
         numColumns,
@@ -590,6 +614,7 @@ forestry <- function(x,
           dataframe = reuseforestry@dataframe,
           processed_dta = reuseforestry@processed_dta,
           R_forest = reuseforestry@R_forest,
+          featureNames = colnames(x),
           categoricalFeatureCols = reuseforestry@categoricalFeatureCols,
           categoricalFeatureMapping = categoricalFeatureMapping,
           ntree = ntree * (doubleTree + 1),
@@ -606,6 +631,7 @@ forestry <- function(x,
           middleSplit = middleSplit,
           maxObs = maxObs,
           ridgeRF = ridgeRF,
+          splitFeats = splitFeats,
           linFeats = linFeats,
           overfitPenalty = overfitPenalty,
           doubleTree = doubleTree
@@ -654,6 +680,7 @@ multilayerForestry <- function(x,
                      middleSplit = TRUE,
                      maxObs = length(y),
                      ridgeRF = FALSE,
+                     splitFeats = 1:(ncol(x)),
                      linFeats = 1:(ncol(x)),
                      overfitPenalty = 1,
                      doubleTree = FALSE,
@@ -662,6 +689,7 @@ multilayerForestry <- function(x,
   # only if sample.fraction is given, update sampsize
   if (!is.null(sample.fraction))
     sampsize <- ceiling(sample.fraction * nrow(x))
+  splitFeats <- unique(splitFeats)
   linFeats <- unique(linFeats)
 
   x <- as.data.frame(x)
@@ -669,11 +697,12 @@ multilayerForestry <- function(x,
   training_data_checker(x, y, ntree,replace, sampsize, mtry, nodesizeSpl,
                         nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg,
                         minSplitGain, maxDepth, splitratio, nthread, middleSplit,
-                        doubleTree, linFeats)
+                        doubleTree, splitFeats, linFeats)
   # Total number of obervations
   nObservations <- length(y)
   numColumns <- ncol(x)
   # Update linear features to be zero-indexed
+  splitFeats = splitFeats - 1
   linFeats = linFeats - 1
 
   if (is.null(reuseforestry)) {
@@ -697,6 +726,7 @@ multilayerForestry <- function(x,
       rcppDataFrame <- rcpp_cppDataFrameInterface(processed_x,
                                                   y,
                                                   categoricalFeatureCols_cpp,
+                                                  splitFeats,
                                                   linFeats,
                                                   nObservations,
                                                   numColumns)
@@ -705,6 +735,7 @@ multilayerForestry <- function(x,
         processed_x,
         y,
         categoricalFeatureCols_cpp,
+        splitFeats,
         linFeats,
         nObservations,
         numColumns,
@@ -736,6 +767,7 @@ multilayerForestry <- function(x,
         "processed_x" = processed_x,
         "y" = y,
         "categoricalFeatureCols_cpp" = categoricalFeatureCols_cpp,
+        "splittingFeaturesCols_cpp" = splitFeats,
         "linearFeatureCols_cpp" = linFeats,
         "nObservations" = nObservations,
         "numColumns" = numColumns
@@ -749,6 +781,7 @@ multilayerForestry <- function(x,
           dataframe = rcppDataFrame,
           processed_dta = processed_dta,
           R_forest = R_forest,
+          featureNames = colnames(x),
           categoricalFeatureCols = categoricalFeatureCols,
           categoricalFeatureMapping = categoricalFeatureMapping,
           ntree = ntree * (doubleTree + 1),
@@ -767,6 +800,7 @@ multilayerForestry <- function(x,
           middleSplit = middleSplit,
           maxObs = maxObs,
           ridgeRF = ridgeRF,
+          splitFeats = splitFeats,
           linFeats = linFeats,
           overfitPenalty = overfitPenalty,
           doubleTree = doubleTree
@@ -797,6 +831,7 @@ multilayerForestry <- function(x,
         x,
         y,
         categoricalFeatureCols_cpp,
+        splitFeats,
         linFeats,
         nObservations,
         numColumns,
@@ -848,6 +883,7 @@ multilayerForestry <- function(x,
           middleSplit = middleSplit,
           maxObs = maxObs,
           ridgeRF = ridgeRF,
+          splitFeats = splitFeats,
           linFeats = linFeats,
           overfitPenalty = overfitPenalty,
           doubleTree = doubleTree
@@ -885,6 +921,7 @@ predict.forestry <- function(object,
   testing_data_checker(feature.new)
 
   processed_x <- preprocess_testing(feature.new,
+                                    object@featureNames,
                                     object@categoricalFeatureCols,
                                     object@categoricalFeatureMapping)
 
@@ -927,6 +964,7 @@ predict.multilayerForestry <- function(object,
     testing_data_checker(feature.new)
 
     processed_x <- preprocess_testing(feature.new,
+                                      object@featureNames,
                                       object@categoricalFeatureCols,
                                       object@categoricalFeatureMapping)
 
@@ -1293,6 +1331,7 @@ relinkCPP_prt <- function(object) {
         x = object@processed_dta$processed_x,
         y = object@processed_dta$y,
         catCols = object@processed_dta$categoricalFeatureCols_cpp,
+        splitCols = object@processed_dta$splittingFeaturesCols_cpp,
         linCols = object@processed_dta$linearFeatureCols_cpp,
         numRows = object@processed_dta$nObservations,
         numColumns = object@processed_dta$numColumns,
