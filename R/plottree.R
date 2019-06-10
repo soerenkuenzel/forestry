@@ -160,7 +160,7 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
           (!is.na(node_info$split_feat))
 
         node_info$cat_split_value[nodes_with_this_split] <-
-          as.character(cat_feat_map[[i]]$uniqueFeatureValues[
+          as.character(sort(cat_feat_map[[i]]$uniqueFeatureValues)[
             node_info$split_val[nodes_with_this_split]])
       }
     }
@@ -309,7 +309,7 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
                                           alpha = .7)
   names(color_code) <- c(potential_split_feats, NA)
 
-  nodes$color <- color_code[node_info$feat_nm]
+  nodes$color <- color_code[node_info$feat_nm][1:length(node_info$feat_nm)]
   nodes$color[is.na(nodes$color)] <- color_code[length(color_code)]
   # Plot the actual node -------------------------------------------------------
   if (return.plot.dta) {
@@ -318,15 +318,15 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
     ))
   } else {
     (p1 <-
-        visNetwork(
-          nodes,
-          edges,
-          width = "100%",
-          height = "800px",
-          main = paste("Tree", tree.id)
-        ) %>%
-        visEdges(arrows = "to") %>%
-        visHierarchicalLayout() %>% visExport(type = "pdf", name = "ridge_tree"))
+       visNetwork(
+         nodes,
+         edges,
+         width = "100%",
+         height = "800px",
+         main = paste("Tree", tree.id)
+       ) %>%
+       visEdges(arrows = "to") %>%
+       visHierarchicalLayout() %>% visExport(type = "pdf", name = "ridge_tree"))
 
     if (print.meta_dta)
       print(node_info)
