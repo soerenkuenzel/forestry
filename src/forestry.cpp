@@ -306,8 +306,8 @@ void forestry::addTrees(size_t ntree) {
 
 std::unique_ptr< std::vector<float> > forestry::predict(
   std::vector< std::vector<float> >* xNew,
-  arma::Mat<float>* weightMatrix,
-  arma::Mat<float>* localVIMatrix
+  arma::Mat<float>* localVIMatrix,
+  predict_info predictInfo
 ){
   std::vector<float> prediction;
   size_t numObservations = (*xNew)[0].size();
@@ -350,8 +350,7 @@ std::unique_ptr< std::vector<float> > forestry::predict(
               currentTreePrediction,
               xNew,
               getTrainingData(),
-              weightMatrix,
-              getRidgeRF()
+              predictInfo
             );
 
             #if DOPARELLEL
@@ -394,20 +393,20 @@ std::unique_ptr< std::vector<float> > forestry::predict(
 
   // If we also update the weight matrix, we now have to divide every entry
   // by the number of trees:
-  if (weightMatrix) {
+  if (predictInfo.isWeightMatrix) {
     size_t nrow = (*xNew)[0].size(); // number of features to be predicted
     size_t ncol = getNtrain(); // number of train data
     for ( size_t i = 0; i < nrow; i++){
       for (size_t j = 0; j < ncol; j++){
-        (*weightMatrix)(i,j) = (*weightMatrix)(i,j) / _ntree;
+        (*predictInfo.weightMatrix)(i,j) = (*predictInfo.weightMatrix)(i,j) / _ntree;
       }
     }
     if (localVIMatrix) {
       calculateLocalVariableImportance(
         xNew,
-        weightMatrix,
         localVIMatrix,
-        prediction
+        prediction,
+        predictInfo
       );
     }
   }
@@ -526,9 +525,9 @@ void forestry::calculateVariableImportance() {
 
 void forestry::calculateLocalVariableImportance(
     std::vector< std::vector<float> >* xNew,
-    arma::Mat<float>* weightMatrix,
     arma::Mat<float>* localVIMatrix,
-    std::vector<float> prediction
+    std::vector<float> prediction,
+    predict_info predictInfo
   ) {
   // Get predicted outcomes for training data
   size_t numNewObs = (*xNew)[0].size();
@@ -563,7 +562,7 @@ void forestry::calculateLocalVariableImportance(
   // Loop over all new observations
   for (size_t observationIndex = 0; observationIndex < numNewObs; observationIndex++) {
     std::vector<float> observationWeight =
-      arma::conv_to< std::vector<float> >::from(weightMatrix->row(observationIndex));
+      arma::conv_to< std::vector<float> >::from(predictInfo.weightMatrix->row(observationIndex));
 
     // 1. Calculate weightedMSE and weightedVariance
     float weightedMSE = 0;

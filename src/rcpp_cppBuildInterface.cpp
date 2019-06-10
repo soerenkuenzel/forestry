@@ -352,30 +352,38 @@ Rcpp::List rcpp_cppPredictInterface(
       Rcpp::as< std::vector< std::vector<float> > >(x);
 
     std::unique_ptr< std::vector<float> > testForestPrediction;
-    // We always initialize the weightMatrix. If the aggregation is weightMatrix
-    // then we inialize the empty weight matrix
+
+    predict_info predictInfo = {};
+    predictInfo.isPredict = true;
+    predictInfo.isWeightMatrix = (aggregation == "weightMatrix");
+
     arma::Mat<float> weightMatrix;
     arma::Mat<float> localVIMatrix;
-    if (aggregation == "weightMatrix") {
+    if (predictInfo.isWeightMatrix) {
       size_t nrow = featureData[0].size(); // number of features to be predicted
       size_t ncol = (*testFullForest).getNtrain(); // number of train data
       weightMatrix.resize(nrow, ncol); // initialize the space for the matrix
       weightMatrix.zeros(nrow, ncol);// set it all to 0
 
+      predictInfo.weightMatrix = &weightMatrix;
+
       if (localVariableImportance) {
         localVIMatrix.resize(nrow, featureData.size());
         localVIMatrix.zeros(nrow, featureData.size());
-        testForestPrediction = (*testFullForest).predict(&featureData, &weightMatrix,
-                                &localVIMatrix);
+        testForestPrediction = (*testFullForest).predict(&featureData,
+                                &localVIMatrix,
+                                predictInfo);
       } else {
-        testForestPrediction = (*testFullForest).predict(&featureData, &weightMatrix,
-                                NULL);
+        testForestPrediction = (*testFullForest).predict(&featureData,
+                                NULL,
+                                predictInfo);
       }
       // The idea is that, if the weightMatrix is point to NULL it won't be
       // be updated, but otherwise it will be updated:
 
     } else {
-      testForestPrediction = (*testFullForest).predict(&featureData, NULL, NULL);
+
+      testForestPrediction = (*testFullForest).predict(&featureData, NULL);
     }
 
     std::vector<float>* testForestPrediction_ =

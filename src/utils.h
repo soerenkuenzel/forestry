@@ -27,4 +27,12 @@ struct tree_info {
   // contains the indices of the splitting set.
 };
 
+struct predict_info{
+  bool isPredict;
+  bool isWeightMatrix;
+  bool isRidgeRF;
+
+  arma::Mat<float>* weightMatrix;
+  float overfitPenalty;
+};
 #endif //FORESTRYCPP_UTILS_H
