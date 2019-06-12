@@ -31,8 +31,17 @@ struct predict_info{
   bool isPredict;
   bool isWeightMatrix;
   bool isRidgeRF;
+  bool isRFdistance;
+  // Booleans contain the desired prediction method
 
   arma::Mat<float>* weightMatrix;
+  // contains the address of the weight matrix
   float overfitPenalty;
+  // contains the overfit penalty (lambda)
+  float power;
+  // contains the power for the rf distances
+  int distanceNumCol;
+  // contains the column number for the feature in which the rf distances
+  // will be computed
 };
 #endif //FORESTRYCPP_UTILS_H

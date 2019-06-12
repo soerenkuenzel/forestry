@@ -198,6 +198,9 @@ void forestryTree::predict(
     DataFrame* trainingData,
     predict_info predictInfo
 ){
+  // std::cout << "isPred: " << predictInfo.isPredict << std::endl;
+  // std::cout << "isDist: " << predictInfo.isRFdistance << std::endl;
+  // std::cout << "p: " << predictInfo.power << " and j: " << predictInfo.distanceNumCol << std::endl;
   // If we are estimating the average in each leaf:
   struct rangeGenerator {
     size_t currentNumber;

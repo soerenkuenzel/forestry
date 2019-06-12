@@ -146,6 +146,9 @@ void RFNode::predict(
 
       // Calculate the mean of current node
       float predictedMean = (*trainingData).partitionMean(getAveragingIndex());
+      // std::cout << "isPred: " << predictInfo.isPredict << std::endl;
+      // std::cout << "isDist: " << predictInfo.isRFdistance << std::endl;
+      // std::cout << "p: " << predictInfo.power << " and j: " << predictInfo.distanceNumCol << std::endl;
 
       // Give all updateIndex the mean of the node as prediction values
       for (

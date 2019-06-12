@@ -69,6 +69,8 @@ float DataFrame::getOutcomePoint(size_t rowIndex) {
   }
 }
 
+// floa
+
 std::vector<float>* DataFrame::getFeatureData(
   size_t colIndex
 ) {
@@ -135,6 +137,25 @@ float DataFrame::partitionMean(
     ++it
   ) {
     accummulatedSum += getOutcomePoint(*it);
+  }
+  return accummulatedSum / totalSampleSize;
+}
+
+float DataFrame::partitionDistance(
+    std::vector<size_t>* sampleIndex,
+    float power,
+    size_t distColIndex
+){
+  size_t totalSampleSize = (*sampleIndex).size();
+  float accummulatedSum = 0;
+  for (
+      std::vector<size_t>::iterator it = (*sampleIndex).begin();
+      it != (*sampleIndex).end();
+      ++it
+  ) {
+    // accummulatedSum += getFeatureData(distColIndex)[*it];
+    accummulatedSum += getOutcomePoint(*it);
+    std::cout<< getFeatureData(distColIndex) << std::endl;
   }
   return accummulatedSum / totalSampleSize;
 }

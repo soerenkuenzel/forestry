@@ -342,7 +342,9 @@ Rcpp::List rcpp_cppPredictInterface(
   SEXP forest,
   Rcpp::List x,
   std::string aggregation,
-  bool localVariableImportance
+  bool localVariableImportance,
+  float power = -1,
+  int distanceNumCol = -1
 ){
   try {
 
@@ -356,6 +358,15 @@ Rcpp::List rcpp_cppPredictInterface(
     predict_info predictInfo = {};
     predictInfo.isPredict = true;
     predictInfo.isWeightMatrix = (aggregation == "weightMatrix");
+    predictInfo.power = power;
+    predictInfo.distanceNumCol = distanceNumCol;
+    predictInfo.isRFdistance = (predictInfo.power != -1 &&
+                                predictInfo.distanceNumCol != -1);
+
+    std::cout << "isPred: " << predictInfo.isPredict << std::endl;
+    std::cout << "isDist: " << predictInfo.isRFdistance << std::endl;
+    std::cout << "p: " << predictInfo.power << " and j: " << predictInfo.distanceNumCol << std::endl;
+
 
     arma::Mat<float> weightMatrix;
     arma::Mat<float> localVIMatrix;
@@ -383,7 +394,9 @@ Rcpp::List rcpp_cppPredictInterface(
 
     } else {
 
-      testForestPrediction = (*testFullForest).predict(&featureData, NULL);
+      testForestPrediction = (*testFullForest).predict(&featureData,
+                              NULL,
+                              predictInfo);
     }
 
     std::vector<float>* testForestPrediction_ =

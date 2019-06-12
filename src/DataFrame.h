@@ -38,6 +38,8 @@ public:
 
   float partitionMean(std::vector<size_t>* sampleIndex);
 
+  float partitionDistance(std::vector<size_t>* sampleIndex, float power, size_t distColIndex);
+
   std::vector< std::vector<float> >* getAllFeatureData() {
     return _featureData.get();
   }
