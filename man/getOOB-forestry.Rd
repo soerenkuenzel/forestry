@@ -19,3 +19,6 @@ The OOB error of the forest.
 \description{
 Calculate the out-of-bag error of a given forest.
 }
+\seealso{
+\code{\link{forestry}}
+}

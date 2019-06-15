@@ -298,7 +298,7 @@ setClass(
 #'   sampling with replacement, the default value is the length of the training
 #'   data. If samplying without replacement, the default value is two-third of
 #'   the length of the training data.
-#' @param sample.fraction if this is given, then sampsize is ignored and set to
+#' @param sample.fraction If this is given, then sampsize is ignored and set to
 #'   be round(length(y) * sample.fraction). It must be a real number between 0
 #'   and 1
 #' @param mtry The number of variables randomly selected at each split point.
@@ -313,6 +313,8 @@ setClass(
 #' @param nodesizeStrictAvg Minimum size of terminal nodes for averaging dataset
 #'   to follow strictly. The default value is 1.
 #' @param minSplitGain Minimum loss reduction to split a node further in a tree.
+#'   specifically this is the percentage R squared increase which each potential
+#'   split must give to be considered (default is 0).
 #' @param maxDepth Maximum depth of a tree. The default value is 99.
 #' @param splitratio Proportion of the training data used as the splitting
 #'   dataset. It is a ratio between 0 and 1. If the ratio is 1, then essentially
@@ -320,35 +322,54 @@ setClass(
 #'   dataset is empty. If the ratio is 0, then the splitting data set is empty
 #'   and all the data is used for the averaging data set (This is not a good
 #'   usage however since there will be no data available for splitting).
-#' @param seed random seed
-#' @param verbose if training process in verbose mode
+#' @param seed Seed for random number generator.
+#' @param verbose Flag to indicate if training process is verbose.
 #' @param nthread Number of threads to train and predict the forest. The default
 #'   number is 0 which represents using all cores.
-#' @param splitrule only variance is implemented at this point and it contains
+#' @param splitrule Only variance is implemented at this point and it
 #'   specifies the loss function according to which the splits of random forest
 #'   should be made
-#' @param middleSplit if the split value is taking the average of two feature
-#'   values. If false, it will take a point based on a uniform distribution
-#'   between two feature values. (Default = FALSE)
-#' @param doubleTree if the number of tree is doubled as averaging and splitting
-#'   data can be exchanged to create decorrelated trees. (Default = FALSE)
-#' @param reuseforestry pass in an `forestry` object which will recycle the
+#' @param middleSplit Flag to indicate whether the split value takes the average
+#'   of two feature values. If false, it will take a point based on a uniform
+#'   distribution between two feature values. (Default = FALSE)
+#' @param doubleTree Indicate whether the number of tree is doubled as averaging
+#'   and splitting data can be exchanged to create decorrelated trees.
+#'   (Default = FALSE)
+#' @param reuseforestry Pass in a `forestry` object which will recycle the
 #'   dataframe the old object created. It will save some space working on the
 #'   same dataset.
-#' @param maxObs The max number of observations to split on
+#' @param maxObs The max number of observations to split on. If set to a number
+#'   less than nrow(x), at each split point, maxObs split points will be
+#'   randomly sampled to test as potential splitting points instead of every
+#'   feature value (default).
 #' @param saveable If TRUE, then RF is created in such a way that it can be
 #'   saved and loaded using save(...) and load(...). Setting it to TRUE
 #'   (default) will, however, take longer and it will use more memory. When
 #'   training many RF, it makes a lot of sense to set this to FALSE to save
 #'   time and memory.
-#' @param ridgeRF Fit the model with a ridge regression or not
+#' @param ridgeRF Fit the model with a split function optimizing for a linear
+#'   aggregation function instead of a constant aggregation function. (default
+#'   is FALSE).
 #' @param splitFeats Specify which features to split on when creating a tree
-#'   (defaults to use all features)
+#'   (defaults to use all features).
 #' @param linFeats Specify which features to split linearly on when using
 #'   ridgeRF (defaults to use all numerical features)
 #' @param overfitPenalty Value to determine how much to penalize magnitude of
-#' coefficients in ridge regression
+#'   coefficients in ridge regression when using ridgeRF (default is 1).
 #' @return A `forestry` object.
+#' @description forestry is a fast implementation of a variety of tree-based
+#'   estimators. Implemented estimators include CART trees, randoms forests,
+#'   boosted trees and forests, and linear trees and forests. All estimators are
+#'   implemented to scale well with very large datasets.
+#' @details For Linear Random Forests, set the ridgeRF option to TRUE, and
+#'   specify lambda for ridge regression with overfitPenalty parameter. For
+#'   gradient boosting and gradient boosting forests, see mulitlater-forestry.
+#' @seealso \code{\link{predict.forestry}}
+#' @seealso \code{\link{multilayer-forestry}}
+#' @seealso \code{\link{predict-multilayer-forestry}}
+#' @seealso \code{\link{getVI}}
+#' @seealso \code{\link{getOOB}}
+#' @seealso \code{\link{make_savable}}
 #' @examples
 #' set.seed(292315)
 #' library(forestry)
@@ -656,6 +677,7 @@ forestry <- function(x,
 #' @param nrounds Number of iterations used for gradient boosting.
 #' @param eta Step size shrinkage used in gradient boosting update.
 #' @return A `multilayerForestry` object.
+#' @seealso \code{\link{forestry}}
 #' @export
 multilayerForestry <- function(x,
                      y,
@@ -912,6 +934,8 @@ multilayerForestry <- function(x,
 #'   importance for each prediction.
 #' @param ... additional arguments.
 #' @return A vector of predicted responses.
+#' @details This is where we describe the features of predict
+#' @seealso \code{\link{forestry}}
 #' @export
 predict.forestry <- function(object,
                              feature.new,
@@ -955,6 +979,7 @@ predict.forestry <- function(object,
 #'   the mean of the leave `average`. Other options are `weightMatrix`.
 #' @param ... additional arguments.
 #' @return A vector of predicted responses.
+#' @seealso \code{\link{forestry}}
 #' @export
 predict.multilayerForestry <- function(object,
                              feature.new,
@@ -993,6 +1018,7 @@ predict.multilayerForestry <- function(object,
 #' @param noWarning flag to not display warnings
 #' @aliases getOOB,forestry-method
 #' @return The OOB error of the forest.
+#' @seealso \code{\link{forestry}}
 #' @export
 getOOB <- function(object,
                    noWarning) {
@@ -1024,9 +1050,12 @@ getOOB <- function(object,
 # -- Calculate Variable Importance ---------------------------------------------
 #' getVI-forestry
 #' @rdname getVI-forestry
-#' @description Calculate increase in OOB for each shuffled feature for forest.
+#' @description Calculate variable importance for `forestry` object as
+#'   introduced in (Breiman 2001). Returns a list of percentage increases in
+#'   OOB error when shuffling each feature values and getting OOB error.
 #' @param object A `forestry` object.
-#' @param noWarning flag to not display warnings
+#' @param noWarning flag to not display warnings or display warnings
+#' @seealso \code{\link{forestry}}
 #' @export
 getVI <- function(object,
                   noWarning = FALSE) {
@@ -1395,6 +1424,7 @@ relinkCPP_prt <- function(object) {
 #' file.remove("forest.Rda")
 #' @return A list of lists. Each sublist contains the information to span a
 #'   tree.
+#' @seealso \code{\link{forestry}}
 #' @aliases make_savable,forestry-method
 #' @export
 make_savable <- function(object) {

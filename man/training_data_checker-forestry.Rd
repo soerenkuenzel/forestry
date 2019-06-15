@@ -41,7 +41,9 @@ nodes. The default value is 1.}
 \item{nodesizeStrictAvg}{Minimum size of terminal nodes for averaging dataset
 to follow strictly. The default value is 1.}
 
-\item{minSplitGain}{Minimum loss reduction to split a node further in a tree.}
+\item{minSplitGain}{Minimum loss reduction to split a node further in a tree.
+specifically this is the percentage R squared increase which each potential
+split must give to be considered (default is 0).}
 
 \item{maxDepth}{Maximum depth of a tree. The default value is 99.}
 
@@ -55,20 +57,23 @@ usage however since there will be no data available for splitting).}
 \item{nthread}{Number of threads to train and predict the forest. The default
 number is 0 which represents using all cores.}
 
-\item{middleSplit}{if the split value is taking the average of two feature
-values. If false, it will take a point based on a uniform distribution
-between two feature values. (Default = FALSE)}
+\item{middleSplit}{Flag to indicate whether the split value takes the average
+of two feature values. If false, it will take a point based on a uniform
+distribution between two feature values. (Default = FALSE)}
 
-\item{doubleTree}{if the number of tree is doubled as averaging and splitting
-data can be exchanged to create decorrelated trees. (Default = FALSE)}
+\item{doubleTree}{Indicate whether the number of tree is doubled as averaging
+and splitting data can be exchanged to create decorrelated trees.
+(Default = FALSE)}
 
 \item{splitFeats}{Specify which features to split on when creating a tree
-(defaults to use all features)}
+(defaults to use all features).}
 
 \item{linFeats}{Specify which features to split linearly on when using
 ridgeRF (defaults to use all numerical features)}
 
-\item{ridgeRF}{Fit the model with a ridge regression or not}
+\item{ridgeRF}{Fit the model with a split function optimizing for a linear
+aggregation function instead of a constant aggregation function. (default
+is FALSE).}
 }
 \description{
 Check the input to forestry constructor

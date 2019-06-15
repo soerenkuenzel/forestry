@@ -37,7 +37,7 @@ sampling with replacement, the default value is the length of the training
 data. If samplying without replacement, the default value is two-third of
 the length of the training data.}
 
-\item{sample.fraction}{if this is given, then sampsize is ignored and set to
+\item{sample.fraction}{If this is given, then sampsize is ignored and set to
 be round(length(y) * sample.fraction). It must be a real number between 0
 and 1}
 
@@ -57,7 +57,9 @@ nodes. The default value is 1.}
 \item{nodesizeStrictAvg}{Minimum size of terminal nodes for averaging dataset
 to follow strictly. The default value is 1.}
 
-\item{minSplitGain}{Minimum loss reduction to split a node further in a tree.}
+\item{minSplitGain}{Minimum loss reduction to split a node further in a tree.
+specifically this is the percentage R squared increase which each potential
+split must give to be considered (default is 0).}
 
 \item{maxDepth}{Maximum depth of a tree. The default value is 99.}
 
@@ -68,38 +70,44 @@ dataset is empty. If the ratio is 0, then the splitting data set is empty
 and all the data is used for the averaging data set (This is not a good
 usage however since there will be no data available for splitting).}
 
-\item{seed}{random seed}
+\item{seed}{Seed for random number generator.}
 
-\item{verbose}{if training process in verbose mode}
+\item{verbose}{Flag to indicate if training process is verbose.}
 
 \item{nthread}{Number of threads to train and predict the forest. The default
 number is 0 which represents using all cores.}
 
-\item{splitrule}{only variance is implemented at this point and it contains
+\item{splitrule}{Only variance is implemented at this point and it
 specifies the loss function according to which the splits of random forest
 should be made}
 
-\item{middleSplit}{if the split value is taking the average of two feature
-values. If false, it will take a point based on a uniform distribution
-between two feature values. (Default = FALSE)}
+\item{middleSplit}{Flag to indicate whether the split value takes the average
+of two feature values. If false, it will take a point based on a uniform
+distribution between two feature values. (Default = FALSE)}
 
-\item{maxObs}{The max number of observations to split on}
+\item{maxObs}{The max number of observations to split on. If set to a number
+less than nrow(x), at each split point, maxObs split points will be
+randomly sampled to test as potential splitting points instead of every
+feature value (default).}
 
-\item{ridgeRF}{Fit the model with a ridge regression or not}
+\item{ridgeRF}{Fit the model with a split function optimizing for a linear
+aggregation function instead of a constant aggregation function. (default
+is FALSE).}
 
 \item{splitFeats}{Specify which features to split on when creating a tree
-(defaults to use all features)}
+(defaults to use all features).}
 
 \item{linFeats}{Specify which features to split linearly on when using
 ridgeRF (defaults to use all numerical features)}
 
 \item{overfitPenalty}{Value to determine how much to penalize magnitude of
-coefficients in ridge regression}
+coefficients in ridge regression when using ridgeRF (default is 1).}
 
-\item{doubleTree}{if the number of tree is doubled as averaging and splitting
-data can be exchanged to create decorrelated trees. (Default = FALSE)}
+\item{doubleTree}{Indicate whether the number of tree is doubled as averaging
+and splitting data can be exchanged to create decorrelated trees.
+(Default = FALSE)}
 
-\item{reuseforestry}{pass in an `forestry` object which will recycle the
+\item{reuseforestry}{Pass in a `forestry` object which will recycle the
 dataframe the old object created. It will save some space working on the
 same dataset.}
 
@@ -114,4 +122,7 @@ A `multilayerForestry` object.
 }
 \description{
 Construct a gradient boosted random forest.
+}
+\seealso{
+\code{\link{forestry}}
 }
