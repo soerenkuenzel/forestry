@@ -32,7 +32,7 @@ multilayerForestry::multilayerForestry(
   bool verbose,
   bool splitMiddle,
   size_t maxObs,
-  bool ridgeRF,
+  bool linear,
   float overfitPenalty,
   bool doubleTree
 ){
@@ -55,7 +55,7 @@ multilayerForestry::multilayerForestry(
   this->_verbose = verbose;
   this->_splitMiddle = splitMiddle;
   this->_maxObs = maxObs;
-  this->_ridgeRF = ridgeRF;
+  this->_linear = linear;
   this->_overfitPenalty = overfitPenalty;
   this->_doubleTree = doubleTree;
 
@@ -127,7 +127,7 @@ void multilayerForestry::addForests(size_t ntree) {
       _verbose,
       _splitMiddle,
       _maxObs,
-      _ridgeRF,
+      _linear,
       _overfitPenalty,
       _doubleTree
     );

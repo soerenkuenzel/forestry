@@ -28,7 +28,7 @@ training_data_checker <- function(x,
                                   doubleTree,
                                   splitFeats,
                                   linFeats,
-                                  ridgeRF) {
+                                  linear) {
   x <- as.data.frame(x)
   nfeatures <- ncol(x)
 
@@ -98,8 +98,8 @@ training_data_checker <- function(x,
   if (minSplitGain < 0) {
     stop("minSplitGain must be greater than or equal to 0.")
   }
-  if (minSplitGain > 0 && !ridgeRF) {
-    stop("minSplitGain cannot be set without setting ridgeRF to be true.")
+  if (minSplitGain > 0 && !linear) {
+    stop("minSplitGain cannot be set without setting linear to be true.")
   }
   if (maxDepth <= 0 || maxDepth %% 1 != 0) {
     stop("maxDepth must be a positive integer.")
@@ -243,7 +243,7 @@ setClass(
     middleSplit = "logical",
     y = "vector",
     maxObs = "numeric",
-    ridgeRF = "logical",
+    linear = "logical",
     splitFeats = "numeric",
     linFeats = "numeric",
     overfitPenalty = "numeric",
@@ -277,7 +277,7 @@ setClass(
     middleSplit = "logical",
     y = "vector",
     maxObs = "numeric",
-    ridgeRF = "logical",
+    linear = "logical",
     splitFeats = "numeric",
     linFeats = "numeric",
     overfitPenalty = "numeric",
@@ -347,21 +347,21 @@ setClass(
 #'   (default) will, however, take longer and it will use more memory. When
 #'   training many RF, it makes a lot of sense to set this to FALSE to save
 #'   time and memory.
-#' @param ridgeRF Fit the model with a split function optimizing for a linear
+#' @param linear Fit the model with a split function optimizing for a linear
 #'   aggregation function instead of a constant aggregation function. (default
 #'   is FALSE).
 #' @param splitFeats Specify which features to split on when creating a tree
 #'   (defaults to use all features).
 #' @param linFeats Specify which features to split linearly on when using
-#'   ridgeRF (defaults to use all numerical features)
+#'   linear (defaults to use all numerical features)
 #' @param overfitPenalty Value to determine how much to penalize magnitude of
-#'   coefficients in ridge regression when using ridgeRF (default is 1).
+#'   coefficients in ridge regression when using linear (default is 1).
 #' @return A `forestry` object.
 #' @description forestry is a fast implementation of a variety of tree-based
 #'   estimators. Implemented estimators include CART trees, randoms forests,
 #'   boosted trees and forests, and linear trees and forests. All estimators are
 #'   implemented to scale well with very large datasets.
-#' @details For Linear Random Forests, set the ridgeRF option to TRUE, and
+#' @details For Linear Random Forests, set the linear option to TRUE, and
 #'   specify lambda for ridge regression with overfitPenalty parameter. For
 #'   gradient boosting and gradient boosting forests, see mulitlater-forestry.
 #' @seealso \code{\link{predict.forestry}}
@@ -401,7 +401,7 @@ setClass(
 #'           replace = TRUE,
 #'           nodesizeStrictSpl = 5,
 #'           nodesizeStrictAvg = 5,
-#'           ridgeRF = TRUE
+#'           linear = TRUE
 #'           )
 #'
 #' predict(forest, x)
@@ -429,7 +429,7 @@ forestry <- function(x,
                      splitrule = "variance",
                      middleSplit = FALSE,
                      maxObs = length(y),
-                     ridgeRF = FALSE,
+                     linear = FALSE,
                      splitFeats = 1:(ncol(x)),
                      linFeats = 1:(ncol(x)),
                      overfitPenalty = 1,
@@ -465,7 +465,7 @@ forestry <- function(x,
       doubleTree = doubleTree,
       splitFeats = splitFeats,
       linFeats = linFeats,
-      ridgeRF = ridgeRF)
+      linear = linear)
 
   for (variable in names(updated_variables)) {
     assign(x = variable, value = updated_variables[[variable]],
@@ -529,7 +529,7 @@ forestry <- function(x,
         verbose,
         middleSplit,
         maxObs,
-        ridgeRF,
+        linear,
         overfitPenalty,
         doubleTree,
         TRUE,
@@ -569,7 +569,7 @@ forestry <- function(x,
           splitratio = splitratio,
           middleSplit = middleSplit,
           maxObs = maxObs,
-          ridgeRF = ridgeRF,
+          linear = linear,
           splitFeats = splitFeats,
           linFeats = linFeats,
           overfitPenalty = overfitPenalty,
@@ -621,7 +621,7 @@ forestry <- function(x,
         verbose,
         middleSplit,
         maxObs,
-        ridgeRF,
+        linear,
         overfitPenalty,
         doubleTree,
         TRUE,
@@ -651,7 +651,7 @@ forestry <- function(x,
           splitratio = splitratio,
           middleSplit = middleSplit,
           maxObs = maxObs,
-          ridgeRF = ridgeRF,
+          linear = linear,
           splitFeats = splitFeats,
           linFeats = linFeats,
           overfitPenalty = overfitPenalty,
@@ -701,7 +701,7 @@ multilayerForestry <- function(x,
                      splitrule = "variance",
                      middleSplit = TRUE,
                      maxObs = length(y),
-                     ridgeRF = FALSE,
+                     linear = FALSE,
                      splitFeats = 1:(ncol(x)),
                      linFeats = 1:(ncol(x)),
                      overfitPenalty = 1,
@@ -779,7 +779,7 @@ multilayerForestry <- function(x,
         verbose,
         middleSplit,
         maxObs,
-        ridgeRF,
+        linear,
         overfitPenalty,
         doubleTree,
         TRUE,
@@ -821,7 +821,7 @@ multilayerForestry <- function(x,
           splitratio = splitratio,
           middleSplit = middleSplit,
           maxObs = maxObs,
-          ridgeRF = ridgeRF,
+          linear = linear,
           splitFeats = splitFeats,
           linFeats = linFeats,
           overfitPenalty = overfitPenalty,
@@ -875,7 +875,7 @@ multilayerForestry <- function(x,
         verbose,
         middleSplit,
         maxObs,
-        ridgeRF,
+        linear,
         overfitPenalty,
         doubleTree,
         TRUE,
@@ -904,7 +904,7 @@ multilayerForestry <- function(x,
           splitratio = splitratio,
           middleSplit = middleSplit,
           maxObs = maxObs,
-          ridgeRF = ridgeRF,
+          linear = linear,
           splitFeats = splitFeats,
           linFeats = linFeats,
           overfitPenalty = overfitPenalty,
@@ -1380,7 +1380,7 @@ relinkCPP_prt <- function(object) {
         verbose = FALSE,
         middleSplit = object@middleSplit,
         maxObs = object@maxObs,
-        ridgeRF = object@ridgeRF,
+        linear = object@linear,
         overfitPenalty = object@overfitPenalty,
         doubleTree = object@doubleTree)
 

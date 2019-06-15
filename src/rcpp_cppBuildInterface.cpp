@@ -118,7 +118,7 @@ SEXP rcpp_cppBuildInterface(
   bool verbose,
   bool middleSplit,
   int maxObs,
-  bool ridgeRF,
+  bool linear,
   double overfitPenalty,
   bool doubleTree,
   bool existing_dataframe_flag,
@@ -148,7 +148,7 @@ SEXP rcpp_cppBuildInterface(
         verbose,
         middleSplit,
         (size_t) maxObs,
-        ridgeRF,
+        linear,
         (float) overfitPenalty,
         doubleTree
       );
@@ -230,7 +230,7 @@ SEXP rcpp_cppBuildInterface(
         verbose,
         middleSplit,
         (size_t) maxObs,
-        ridgeRF,
+        linear,
         (float) overfitPenalty,
         doubleTree
       );
@@ -280,7 +280,7 @@ SEXP rcpp_cppMultilayerBuildInterface(
     bool verbose,
     bool middleSplit,
     int maxObs,
-    bool ridgeRF,
+    bool linear,
     double overfitPenalty,
     bool doubleTree,
     bool existing_dataframe_flag,
@@ -312,7 +312,7 @@ SEXP rcpp_cppMultilayerBuildInterface(
         verbose,
         middleSplit,
         (size_t) maxObs,
-        ridgeRF,
+        linear,
         (float) overfitPenalty,
         doubleTree
       );
@@ -619,7 +619,7 @@ Rcpp::List rcpp_reconstructree(
   bool verbose,
   bool middleSplit,
   int maxObs,
-  bool ridgeRF,
+  bool linear,
   double overfitPenalty,
   bool doubleTree
 ){
@@ -742,7 +742,7 @@ Rcpp::List rcpp_reconstructree(
     (bool) verbose,
     (bool) middleSplit,
     (int) maxObs,
-    (bool) ridgeRF,
+    (bool) linear,
     (float) overfitPenalty,
     doubleTree
   );

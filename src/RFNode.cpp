@@ -129,14 +129,14 @@ void RFNode::predict(
   std::vector< std::vector<float> >* xNew,
   DataFrame* trainingData,
   arma::Mat<float>* weightMatrix,
-  bool ridgeRF,
+  bool linear,
   float lambda
 ) {
 
   // If the node is a leaf, aggregate all its averaging data samples
   if (is_leaf()) {
 
-      if (ridgeRF) {
+      if (linear) {
 
       //Use ridgePredict (fit linear model on leaf avging obs + evaluate it)
       ridgePredict(outputPrediction,
@@ -233,7 +233,7 @@ void RFNode::predict(
         xNew,
         trainingData,
         weightMatrix,
-        ridgeRF,
+        linear,
         lambda
       );
     }
@@ -244,7 +244,7 @@ void RFNode::predict(
         xNew,
         trainingData,
         weightMatrix,
-        ridgeRF,
+        linear,
         lambda
       );
     }

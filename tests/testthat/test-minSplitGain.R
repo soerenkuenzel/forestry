@@ -1,6 +1,6 @@
 library(testthat)
-test_that("Tests if ridgeRF works with minSplitGain", {
-  context('Tests RidgeRF and the parameter minSplitGain')
+test_that("Tests if linear works with minSplitGain", {
+  context('Tests linear and the parameter minSplitGain')
 
   x <- iris[, c(1,2,3)]
   y <- iris[, 4]
@@ -18,7 +18,7 @@ test_that("Tests if ridgeRF works with minSplitGain", {
     splitrule = "variance",
     splitratio = 1,
     nodesizeStrictAvg = 5,
-    ridgeRF = TRUE,
+    linear = TRUE,
     minSplitGain = 0.9,
     overfitPenalty = 1000
   )

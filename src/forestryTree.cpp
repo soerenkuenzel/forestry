@@ -37,7 +37,7 @@ forestryTree::forestryTree(
   std::mt19937_64& random_number_generator,
   bool splitMiddle,
   size_t maxObs,
-  bool ridgeRF,
+  bool linear,
   float overfitPenalty
 ){
   /**
@@ -88,8 +88,8 @@ forestryTree::forestryTree(
   if (maxDepth == 0) {
     throw std::runtime_error("maxDepth cannot be set to 0.");
   }
-  if (minSplitGain != 0 && !ridgeRF) {
-    throw std::runtime_error("minSplitGain cannot be set without setting ridgeRF to be true.");
+  if (minSplitGain != 0 && !linear) {
+    throw std::runtime_error("minSplitGain cannot be set without setting linear to be true.");
   }
   if ((*averagingSampleIndex).size() == 0) {
     throw std::runtime_error("averagingSampleIndex size cannot be set to 0.");
@@ -138,8 +138,8 @@ forestryTree::forestryTree(
   sTotal.col(0) = arma::conv_to<arma::Col<double> >::from(firstOb);
   arma::Mat<double> gTotal(numLinearFeatures + 1,
                           numLinearFeatures + 1);
-  if (ridgeRF) {
-    this->initializeRidgeRF(trainingData,
+  if (linear) {
+    this->initializelinear(trainingData,
                                   gTotal,
                                   sTotal,
                                   numLinearFeatures,
@@ -157,7 +157,7 @@ forestryTree::forestryTree(
     0,
     splitMiddle,
     maxObs,
-    ridgeRF,
+    linear,
     overfitPenalty,
     getBenchmark(),
     gTotal,
@@ -197,7 +197,7 @@ void forestryTree::predict(
     std::vector< std::vector<float> >* xNew,
     DataFrame* trainingData,
     arma::Mat<float>* weightMatrix,
-    bool ridgeRF
+    bool linear
 ){
   // If we are estimating the average in each leaf:
   struct rangeGenerator {
@@ -210,7 +210,7 @@ void forestryTree::predict(
   rangeGenerator _rangeGenerator(0);
   std::generate(updateIndex.begin(), updateIndex.end(), _rangeGenerator);
   (*getRoot()).predict(outputPrediction, &updateIndex, xNew, trainingData,
-   weightMatrix, ridgeRF, getOverfitPenalty());
+   weightMatrix, linear, getOverfitPenalty());
 }
 
 
@@ -499,7 +499,7 @@ void forestryTree::recursivePartition(
     size_t depth,
     bool splitMiddle,
     size_t maxObs,
-    bool ridgeRF,
+    bool linear,
     float overfitPenalty,
     std::vector<double>* benchmark,
     arma::Mat<double> gTotal,
@@ -557,7 +557,7 @@ void forestryTree::recursivePartition(
     random_number_generator,
     splitMiddle,
     maxObs,
-    ridgeRF,
+    linear,
     overfitPenalty,
     benchmark,
     gTotal,
@@ -647,7 +647,7 @@ void forestryTree::recursivePartition(
       childDepth,
       splitMiddle,
       maxObs,
-      ridgeRF,
+      linear,
       overfitPenalty,
       benchmark,
       bestSplitGL,
@@ -662,7 +662,7 @@ void forestryTree::recursivePartition(
       childDepth,
       splitMiddle,
       maxObs,
-      ridgeRF,
+      linear,
       overfitPenalty,
       benchmark,
       bestSplitGR,
@@ -678,7 +678,7 @@ void forestryTree::recursivePartition(
   }
 }
 
-void forestryTree::initializeRidgeRF(
+void forestryTree::initializelinear(
     DataFrame* trainingData,
     arma::Mat<double>& gTotal,
     arma::Mat<double>& sTotal,
@@ -1833,7 +1833,7 @@ void forestryTree::selectBestFeature(
     std::mt19937_64& random_number_generator,
     bool splitMiddle,
     size_t maxObs,
-    bool ridgeRF,
+    bool linear,
     float overfitPenalty,
     std::vector<double>* benchmark,
     arma::Mat<double> &gTotal,
@@ -1868,7 +1868,7 @@ void forestryTree::selectBestFeature(
           currentFeature
         ) != categorialCols.end()
     ){
-      if (ridgeRF) {
+      if (linear) {
         findBestSplitRidgeCategorical(
           averagingSampleIndex,
           splittingSampleIndex,
@@ -1903,7 +1903,7 @@ void forestryTree::selectBestFeature(
           maxObs
         );
       }
-    } else if (ridgeRF) {
+    } else if (linear) {
       findBestSplitRidge(
         averagingSampleIndex,
         splittingSampleIndex,
@@ -1957,7 +1957,7 @@ void forestryTree::selectBestFeature(
   );
 
   // If ridge splitting, need to update RSS components to pass down
-  if (ridgeRF) {
+  if (linear) {
     updateBestSplitG(bestSplitGL,
                      bestSplitGR,
                      gTotal,
@@ -2188,7 +2188,7 @@ void forestryTree::reconstruct_tree(
     size_t minNodeSizeToSplitAvg,
     float minSplitGain,
     size_t maxDepth,
-    bool ridgeRF,
+    bool linear,
     float overfitPenalty,
     std::vector<size_t> categoricalFeatureColsRcpp,
     std::vector<int> var_ids,
@@ -2206,7 +2206,7 @@ void forestryTree::reconstruct_tree(
   _minNodeSizeToSplitAvg = minNodeSizeToSplitAvg;
   _minSplitGain = minSplitGain;
   _maxDepth = maxDepth;
-  _ridgeRF = ridgeRF;
+  _linear = linear;
   _overfitPenalty = overfitPenalty;
 
   _averagingSampleIndex = std::unique_ptr< std::vector<size_t> > (
