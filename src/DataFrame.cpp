@@ -187,7 +187,9 @@ void DataFrame::computeTreeDistances(std::vector<size_t>* sampleIndex,
   ) {
     // float accummulatedSum = 0;
     // std::cout<< xNew << std::endl;
-    std::cout<< (*xNew)[1][1] << std::endl;
+    std::cout<< *it << " and " << distColIndex << std::endl;
+    std::cout<< (*xNew)[distColIndex][*it] << std::endl;
+    // std::cout<< "Hallo" << std::endl;
     // float testPoint = (*xNew)[*it][distColIndex];
     for (
         std::vector<size_t>::iterator bit = (*sampleIndex).begin();
@@ -197,7 +199,8 @@ void DataFrame::computeTreeDistances(std::vector<size_t>* sampleIndex,
       // accummulatedSum += pow(fabs(distCol[*bit] - testPoint), power);
       // std::cout<< *bit << std::endl;
     }
-    (*outputPrediction)[*it] = (*xNew)[*it][distColIndex];
+    // (*outputPrediction)[*it] = (*xNew)[*it][distColIndex];
+    // (*outputPrediction)[*it] = power + distColIndex;
   }
 }
 
