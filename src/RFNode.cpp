@@ -2,7 +2,6 @@
 #include <RcppArmadillo.h>
 #include <mutex>
 #include <thread>
-#include "utils.h"
 
 std::mutex mutex_weightMatrix;
 
@@ -145,18 +144,42 @@ void RFNode::predict(
       } else {
 
       // Calculate the mean of current node
-      float predictedMean = (*trainingData).partitionMean(getAveragingIndex());
-      // std::cout << "isPred: " << predictInfo.isPredict << std::endl;
-      // std::cout << "isDist: " << predictInfo.isRFdistance << std::endl;
-      // std::cout << "p: " << predictInfo.power << " and j: " << predictInfo.distanceNumCol << std::endl;
+      float predictedMean;
+      if(predictInfo.isRFdistance){
 
-      // Give all updateIndex the mean of the node as prediction values
-      for (
-        std::vector<size_t>::iterator it = (*updateIndex).begin();
-        it != (*updateIndex).end();
-        ++it
-      ) {
-        outputPrediction[*it] = predictedMean;
+        //std::vector<size_t>* averagingIndex = getAveragingIndex();
+        // for (
+        //     std::vector<size_t>::iterator it = (*updateIndex).begin();
+        //     it != (*updateIndex).end();
+        //     ++it
+        // ) {
+        //   outputPrediction[*it] = (*trainingData).treeDistance(averagingIndex,
+        //                                                        predictInfo.power,
+        //                                                        predictInfo.distanceNumCol,
+        //                                                        (*xNew)[*it][predictInfo.distanceNumCol]);
+        // }
+
+        // std::vector<float> distCol = *(*trainingData).getFeatureData(predictInfo.distanceNumCol);
+
+        (*trainingData).computeTreeDistances(getAveragingIndex(),
+                             predictInfo.power,
+                             predictInfo.distanceNumCol,
+                             updateIndex,
+                             xNew,
+                             &outputPrediction);
+
+      }else{
+
+        predictedMean = (*trainingData).partitionMean(getAveragingIndex());
+
+        // Give all updateIndex the mean of the node as prediction values
+        for (
+          std::vector<size_t>::iterator it = (*updateIndex).begin();
+          it != (*updateIndex).end();
+          ++it
+        ) {
+          outputPrediction[*it] = predictedMean;
+        }
       }
     }
 

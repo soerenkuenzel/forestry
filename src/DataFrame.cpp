@@ -1,4 +1,5 @@
 #include "DataFrame.h"
+#include <math.h>
 
 DataFrame::DataFrame():
   _featureData(nullptr), _outcomeData(nullptr), _rowNumbers(nullptr),
@@ -69,7 +70,17 @@ float DataFrame::getOutcomePoint(size_t rowIndex) {
   }
 }
 
-// floa
+float DataFrame::getFeaturePoint(size_t rowIndex, size_t colIndex) {
+  // Check if rowIndex is valid
+  if (rowIndex < getNumRows() && colIndex < getNumColumns()) {
+    return (*getAllFeatureData())[rowIndex][colIndex];
+    //return (*getOutcomeData())[rowIndex];
+  } else {
+    throw std::runtime_error("Invalid rowIndex or colIndex.");
+  }
+}
+
+// float
 
 std::vector<float>* DataFrame::getFeatureData(
   size_t colIndex
@@ -141,23 +152,53 @@ float DataFrame::partitionMean(
   return accummulatedSum / totalSampleSize;
 }
 
-float DataFrame::partitionDistance(
+float DataFrame::treeDistance(
     std::vector<size_t>* sampleIndex,
     float power,
-    size_t distColIndex
+    size_t distColIndex,
+    float testPoint
 ){
   size_t totalSampleSize = (*sampleIndex).size();
   float accummulatedSum = 0;
+  std::vector<float> distCol = *getFeatureData(distColIndex);
   for (
       std::vector<size_t>::iterator it = (*sampleIndex).begin();
       it != (*sampleIndex).end();
       ++it
   ) {
-    // accummulatedSum += getFeatureData(distColIndex)[*it];
-    accummulatedSum += getOutcomePoint(*it);
-    std::cout<< getFeatureData(distColIndex) << std::endl;
+    accummulatedSum += pow(fabs(distCol[*it] - testPoint), power);
   }
   return accummulatedSum / totalSampleSize;
+}
+
+void DataFrame::computeTreeDistances(std::vector<size_t>* sampleIndex,
+                          float power,
+                          size_t distColIndex,
+                          std::vector<size_t>* updateIndex,
+                          std::vector< std::vector<float> >* xNew,
+                          std::vector<float>* outputPrediction
+){
+  // size_t totalSampleSize = (*sampleIndex).size();
+  // std::vector<float> distCol = *getFeatureData(distColIndex);
+  for (
+      std::vector<size_t>::iterator it = (*updateIndex).begin();
+      it != (*updateIndex).end();
+      ++it
+  ) {
+    // float accummulatedSum = 0;
+    // std::cout<< xNew << std::endl;
+    std::cout<< (*xNew)[1][1] << std::endl;
+    // float testPoint = (*xNew)[*it][distColIndex];
+    for (
+        std::vector<size_t>::iterator bit = (*sampleIndex).begin();
+        bit != (*sampleIndex).end();
+        ++bit
+    ) {
+      // accummulatedSum += pow(fabs(distCol[*bit] - testPoint), power);
+      // std::cout<< *bit << std::endl;
+    }
+    (*outputPrediction)[*it] = (*xNew)[*it][distColIndex];
+  }
 }
 
 std::vector<size_t> DataFrame::get_all_row_idx(

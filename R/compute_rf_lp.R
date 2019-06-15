@@ -102,7 +102,39 @@ compute_lp <- function(object, feature.new, feature, p){
   return(distances)
 }
 
+compute_rf_dist <- function(object, feature.new, p, distance.feat) {
+  # Preprocess the data
+  testing_data_checker(feature.new)
 
+  processed_x <- preprocess_testing(feature.new,
+                                    object@featureNames,
+                                    object@categoricalFeatureCols,
+                                    object@categoricalFeatureMapping)
+
+  # Always use average aggreagation and set localVariableImportance to be false
+  aggregation = "average"
+  localVariableImportance = FALSE
+  feat.num = which(colnames(processed_x) == distance.feat)
+
+  rcppPrediction <- tryCatch({
+    rcpp_cppPredictInterface(object@forest,
+                             processed_x,
+                             aggregation,
+                             localVariableImportance,
+                             p,
+                             feat.num)
+
+  }, error = function(err) {
+    print(err)
+    return(NULL)
+  })
+
+  if (aggregation == "average") {
+    return(rcppPrediction$prediction)
+  } else if (aggregation == "weightMatrix") {
+    return(rcppPrediction)
+  }
+}
 
 
 

@@ -6,6 +6,7 @@
 #include "forestryTree.h"
 #include "utils.h"
 #include <RcppArmadillo.h>
+#include <math.h>
 #include <iostream>
 #include <vector>
 #include <string>

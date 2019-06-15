@@ -393,7 +393,6 @@ Rcpp::List rcpp_cppPredictInterface(
       // be updated, but otherwise it will be updated:
 
     } else {
-
       testForestPrediction = (*testFullForest).predict(&featureData,
                               NULL,
                               predictInfo);

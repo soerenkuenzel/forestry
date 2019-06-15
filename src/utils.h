@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <RcppArmadillo.h>
 
 void print_vector(
   std::vector<size_t> v
