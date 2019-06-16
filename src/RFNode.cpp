@@ -141,36 +141,21 @@ void RFNode::predict(
                    xNew,
                    trainingData,
                    predictInfo.overfitPenalty);
+
+      } else if(predictInfo.isRFdistance){
+
+        // Compute the detachment indices within a single tree
+        (*trainingData).computeTreeDistances(getAveragingIndex(),
+                                             predictInfo.power,
+                                             predictInfo.distanceNumCol,
+                                             updateIndex,
+                                             xNew,
+                                             &outputPrediction);
+
       } else {
 
-      // Calculate the mean of current node
-      float predictedMean;
-      if(predictInfo.isRFdistance){
-
-        //std::vector<size_t>* averagingIndex = getAveragingIndex();
-        // for (
-        //     std::vector<size_t>::iterator it = (*updateIndex).begin();
-        //     it != (*updateIndex).end();
-        //     ++it
-        // ) {
-        //   outputPrediction[*it] = (*trainingData).treeDistance(averagingIndex,
-        //                                                        predictInfo.power,
-        //                                                        predictInfo.distanceNumCol,
-        //                                                        (*xNew)[*it][predictInfo.distanceNumCol]);
-        // }
-
-        // std::vector<float> distCol = *(*trainingData).getFeatureData(predictInfo.distanceNumCol);
-
-        (*trainingData).computeTreeDistances(getAveragingIndex(),
-                             predictInfo.power,
-                             predictInfo.distanceNumCol,
-                             updateIndex,
-                             xNew,
-                             &outputPrediction);
-
-      }else{
-
-        predictedMean = (*trainingData).partitionMean(getAveragingIndex());
+        // Calculate the mean of current node
+        float predictedMean = (*trainingData).partitionMean(getAveragingIndex());
 
         // Give all updateIndex the mean of the node as prediction values
         for (
@@ -180,8 +165,8 @@ void RFNode::predict(
         ) {
           outputPrediction[*it] = predictedMean;
         }
+
       }
-    }
 
     if(predictInfo.isWeightMatrix){
       // If there is a weight matrix, then we want to update it,

@@ -20,7 +20,7 @@ pred <- predict(rf, x_test)
 print(pred)
 
 # Testing C++ implementation:
-distances <- compute_rf_dist(rf, x_test, p = 1, distance.feat = "Petal.Length")
+distances <- compute_lp(rf, x_test, p = 1, distance.feat = "Species")
 print(distances)
 
 

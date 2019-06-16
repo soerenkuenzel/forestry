@@ -89,6 +89,7 @@ std::vector<float>* DataFrame::getFeatureData(
     return &(*getAllFeatureData())[colIndex];
   } else {
     throw std::runtime_error("Invalid colIndex.");
+    std::cout<< "HERE" << std::endl;
   }
 }
 
@@ -152,55 +153,47 @@ float DataFrame::partitionMean(
   return accummulatedSum / totalSampleSize;
 }
 
-float DataFrame::treeDistance(
-    std::vector<size_t>* sampleIndex,
-    float power,
-    size_t distColIndex,
-    float testPoint
+void DataFrame::computeTreeDistances(
+  std::vector<size_t>* sampleIndex,
+  float power,
+  size_t distanceColIndex,
+  std::vector<size_t>* updateIndex,
+  std::vector< std::vector<float> >* xNew,
+  std::vector<float>* outputPrediction
 ){
-  size_t totalSampleSize = (*sampleIndex).size();
-  float accummulatedSum = 0;
-  std::vector<float> distCol = *getFeatureData(distColIndex);
-  for (
-      std::vector<size_t>::iterator it = (*sampleIndex).begin();
-      it != (*sampleIndex).end();
-      ++it
-  ) {
-    accummulatedSum += pow(fabs(distCol[*it] - testPoint), power);
-  }
-  return accummulatedSum / totalSampleSize;
-}
 
-void DataFrame::computeTreeDistances(std::vector<size_t>* sampleIndex,
-                          float power,
-                          size_t distColIndex,
-                          std::vector<size_t>* updateIndex,
-                          std::vector< std::vector<float> >* xNew,
-                          std::vector<float>* outputPrediction
-){
-  // size_t totalSampleSize = (*sampleIndex).size();
-  // std::vector<float> distCol = *getFeatureData(distColIndex);
+  size_t totalSampleSize = (*sampleIndex).size();
+  std::vector<float> featureColumn = *getFeatureData(distanceColIndex - 1);
+  bool isCategoricalVariable =
+    std::count((*getCatCols()).begin(), (*getCatCols()).end(), distanceColIndex - 1);
+
   for (
       std::vector<size_t>::iterator it = (*updateIndex).begin();
       it != (*updateIndex).end();
       ++it
   ) {
-    // float accummulatedSum = 0;
-    // std::cout<< xNew << std::endl;
-    std::cout<< *it << " and " << distColIndex << std::endl;
-    std::cout<< (*xNew)[distColIndex][*it] << std::endl;
-    // std::cout<< "Hallo" << std::endl;
-    // float testPoint = (*xNew)[*it][distColIndex];
+
+    float accummulatedSum = 0;
+    float itsFeatureValue = (*xNew)[distanceColIndex - 1][*it];
     for (
         std::vector<size_t>::iterator bit = (*sampleIndex).begin();
         bit != (*sampleIndex).end();
         ++bit
     ) {
-      // accummulatedSum += pow(fabs(distCol[*bit] - testPoint), power);
-      // std::cout<< *bit << std::endl;
+
+      float addition;
+      if(isCategoricalVariable){
+        addition = (float)(featureColumn[*bit] != itsFeatureValue);
+      }else{
+        // std::cout<< "Numerical Good" << std::endl;
+        addition = pow((float) fabs(featureColumn[*bit] - itsFeatureValue), power);
+        // std::cout<< featureColumn[*bit] << " and " << itsFeatureValue << " and " << power << " and " << addition << std::endl;
+      }
+
+      accummulatedSum += addition;
+
     }
-    // (*outputPrediction)[*it] = (*xNew)[*it][distColIndex];
-    // (*outputPrediction)[*it] = power + distColIndex;
+    (*outputPrediction)[*it] = accummulatedSum / totalSampleSize;
   }
 }
 

@@ -385,9 +385,12 @@ std::unique_ptr< std::vector<float> > forestry::predict(
 
   for (size_t j=0; j<numObservations; j++){
     prediction[j] /= getNtree();
-    // if(predictInfo.isRFdistance){
-    //   prediction[j] = pow(prediction[j], 1 / predictInfo.power);
-    // }
+    std::cout<< prediction[j] << " before "<< std::endl;
+    if(predictInfo.isRFdistance){
+      prediction[j] = pow(prediction[j], 1 / predictInfo.power);
+      std::cout<< prediction[j] << " after "<< std::endl;
+    }
+
   }
 
   std::unique_ptr< std::vector<float> > prediction_ (

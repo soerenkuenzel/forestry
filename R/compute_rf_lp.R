@@ -31,7 +31,41 @@
 #'                           feature = "Petal.Length",
 #'                           p = 2)
 #' @export
-compute_lp <- function(object, feature.new, feature, p){
+compute_lp <- function(object, feature.new, p, distance.feat) {
+  # Preprocess the data
+  testing_data_checker(feature.new)
+
+  processed_x <- preprocess_testing(feature.new,
+                                    object@featureNames,
+                                    object@categoricalFeatureCols,
+                                    object@categoricalFeatureMapping)
+
+  # Always use average aggreagation and set localVariableImportance to be false
+  aggregation = "average"
+  localVariableImportance = FALSE
+  feat.num = which(colnames(processed_x) == distance.feat)
+
+  rcppPrediction <- tryCatch({
+    rcpp_cppPredictInterface(object@forest,
+                             processed_x,
+                             aggregation,
+                             localVariableImportance,
+                             p,
+                             feat.num)
+
+  }, error = function(err) {
+    print(err)
+    return(NULL)
+  })
+
+  if (aggregation == "average") {
+    return(rcppPrediction$prediction)
+  } else if (aggregation == "weightMatrix") {
+    return(rcppPrediction)
+  }
+}
+
+compute_lp_alt <- function(object, feature.new, feature, p){
 
   # Checks and parsing:
   if (class(object) != "forestry") {
@@ -71,20 +105,20 @@ compute_lp <- function(object, feature.new, feature, p){
                        nrow = nrow(feature.new),
                        ncol = nrow(train_set),
                        byrow = TRUE) !=
-                matrix(train_set[,feature],
-                       nrow = nrow(feature.new),
-                       ncol = nrow(train_set),
-                       byrow = FALSE)
+      matrix(train_set[,feature],
+             nrow = nrow(feature.new),
+             ncol = nrow(train_set),
+             byrow = FALSE)
     diff_mat[diff_mat] <- 1
   } else {
     diff_mat <- matrix(feature.new[,feature],
                        nrow = nrow(feature.new),
                        ncol = nrow(train_set),
                        byrow = TRUE) -
-                matrix(train_set[,feature],
-                       nrow = nrow(feature.new),
-                       ncol = nrow(train_set),
-                       byrow = FALSE)
+      matrix(train_set[,feature],
+             nrow = nrow(feature.new),
+             ncol = nrow(train_set),
+             byrow = FALSE)
   }
 
   # Raise absoulte differences to the pth power
@@ -102,39 +136,6 @@ compute_lp <- function(object, feature.new, feature, p){
   return(distances)
 }
 
-compute_rf_dist <- function(object, feature.new, p, distance.feat) {
-  # Preprocess the data
-  testing_data_checker(feature.new)
-
-  processed_x <- preprocess_testing(feature.new,
-                                    object@featureNames,
-                                    object@categoricalFeatureCols,
-                                    object@categoricalFeatureMapping)
-
-  # Always use average aggreagation and set localVariableImportance to be false
-  aggregation = "average"
-  localVariableImportance = FALSE
-  feat.num = which(colnames(processed_x) == distance.feat)
-
-  rcppPrediction <- tryCatch({
-    rcpp_cppPredictInterface(object@forest,
-                             processed_x,
-                             aggregation,
-                             localVariableImportance,
-                             p,
-                             feat.num)
-
-  }, error = function(err) {
-    print(err)
-    return(NULL)
-  })
-
-  if (aggregation == "average") {
-    return(rcppPrediction$prediction)
-  } else if (aggregation == "weightMatrix") {
-    return(rcppPrediction)
-  }
-}
 
 
 

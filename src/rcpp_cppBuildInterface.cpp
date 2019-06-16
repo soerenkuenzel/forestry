@@ -355,6 +355,7 @@ Rcpp::List rcpp_cppPredictInterface(
 
     std::unique_ptr< std::vector<float> > testForestPrediction;
 
+    // Store information about the prediction type
     predict_info predictInfo = {};
     predictInfo.isPredict = true;
     predictInfo.isWeightMatrix = (aggregation == "weightMatrix");
@@ -362,11 +363,6 @@ Rcpp::List rcpp_cppPredictInterface(
     predictInfo.distanceNumCol = distanceNumCol;
     predictInfo.isRFdistance = (predictInfo.power != -1 &&
                                 predictInfo.distanceNumCol != -1);
-
-    std::cout << "isPred: " << predictInfo.isPredict << std::endl;
-    std::cout << "isDist: " << predictInfo.isRFdistance << std::endl;
-    std::cout << "p: " << predictInfo.power << " and j: " << predictInfo.distanceNumCol << std::endl;
-
 
     arma::Mat<float> weightMatrix;
     arma::Mat<float> localVIMatrix;

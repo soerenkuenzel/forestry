@@ -40,11 +40,6 @@ public:
 
   float partitionMean(std::vector<size_t>* sampleIndex);
 
-  float treeDistance(std::vector<size_t>* sampleIndex,
-                          float power,
-                          size_t distColIndex,
-                          float testPoint);
-
   void computeTreeDistances(std::vector<size_t>* sampleIndex,
                             float power,
                             size_t distColIndex,
