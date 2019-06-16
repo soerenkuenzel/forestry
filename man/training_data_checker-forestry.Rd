@@ -7,7 +7,7 @@
 training_data_checker(x, y, ntree, replace, sampsize, mtry, nodesizeSpl,
   nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, minSplitGain,
   maxDepth, splitratio, nthread, middleSplit, doubleTree, splitFeats,
-  linFeats, linear)
+  linFeats, sampleWeights, linear)
 }
 \arguments{
 \item{x}{A data frame of all training predictors.}
@@ -70,6 +70,9 @@ and splitting data can be exchanged to create decorrelated trees.
 
 \item{linFeats}{Specify which features to split linearly on when using
 linear (defaults to use all numerical features)}
+
+\item{sampleWeights}{Specify weights for weighted uniform distribution used
+to randomly sample features.}
 
 \item{linear}{Fit the model with a split function optimizing for a linear
 aggregation function instead of a constant aggregation function. (default

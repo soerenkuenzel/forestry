@@ -12,8 +12,8 @@ forestry(x, y, ntree = 500, replace = TRUE, sampsize = if (replace)
   seed = as.integer(runif(1) * 1000), verbose = FALSE, nthread = 0,
   splitrule = "variance", middleSplit = FALSE, maxObs = length(y),
   linear = FALSE, splitFeats = 1:(ncol(x)), linFeats = 1:(ncol(x)),
-  overfitPenalty = 1, doubleTree = FALSE, reuseforestry = NULL,
-  saveable = TRUE)
+  sampleWeights = rep((1/ncol(x)), ncol(x)), overfitPenalty = 1,
+  doubleTree = FALSE, reuseforestry = NULL, saveable = TRUE)
 }
 \arguments{
 \item{x}{A data frame of all training predictors.}
@@ -93,6 +93,9 @@ is FALSE).}
 
 \item{linFeats}{Specify which features to split linearly on when using
 linear (defaults to use all numerical features)}
+
+\item{sampleWeights}{Specify weights for weighted uniform distribution used
+to randomly sample features.}
 
 \item{overfitPenalty}{Value to determine how much to penalize magnitude of
 coefficients in ridge regression when using linear (default is 1).}

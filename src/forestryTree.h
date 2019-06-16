@@ -51,6 +51,7 @@ public:
 
   void predict(
     std::vector<float> &outputPrediction,
+    std::vector< std::vector<float> > &outputCoefficients,
     std::vector< std::vector<float> >* xNew,
     DataFrame* trainingData,
     arma::Mat<float>* weightMatrix = NULL,

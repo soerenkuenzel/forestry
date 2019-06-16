@@ -307,12 +307,27 @@ void forestry::addTrees(size_t ntree) {
 std::unique_ptr< std::vector<float> > forestry::predict(
   std::vector< std::vector<float> >* xNew,
   arma::Mat<float>* weightMatrix,
-  arma::Mat<float>* localVIMatrix
+  arma::Mat<float>* localVIMatrix,
+  arma::Mat<float>* coefficients
 ){
   std::vector<float> prediction;
   size_t numObservations = (*xNew)[0].size();
   for (size_t j=0; j<numObservations; j++) {
     prediction.push_back(0);
+  }
+
+  if (coefficients) {
+    // Create coefficient vector of vectors of zeros
+    std::vector< std::vector<float> > coef;
+    size_t numObservations = (*xNew)[0].size();
+    size_t numCol = (*coefficients).n_cols;
+    for (size_t i=0; i<numObservations; i++) {
+      std::vector<float> row;
+      for (size_t j = 0; j<numCol; j++) {
+        row.push_back(0);
+      }
+      coef.push_back(row);
+    }
   }
 
   #if DOPARELLEL
@@ -345,14 +360,33 @@ std::unique_ptr< std::vector<float> > forestry::predict(
   #endif
           try {
             std::vector<float> currentTreePrediction(numObservations);
+            std::vector< std::vector<float> > currentTreeCoefficients(numObservations);
             forestryTree *currentTree = (*getForest())[i].get();
-            (*currentTree).predict(
-              currentTreePrediction,
-              xNew,
-              getTrainingData(),
-              weightMatrix,
-              getlinear()
-            );
+
+            //Return coefficients and predictions
+            if (coefficients) {
+              for (size_t l=0; l<numObservations; l++) {
+                currentTreeCoefficients[l] = std::vector<float>(coefficients->n_cols);
+              }
+
+              (*currentTree).predict(
+                  currentTreePrediction,
+                  currentTreeCoefficients,
+                  xNew,
+                  getTrainingData(),
+                  weightMatrix,
+                  getlinear()
+              );
+            } else {
+              (*currentTree).predict(
+                currentTreePrediction,
+                currentTreeCoefficients,
+                xNew,
+                getTrainingData(),
+                weightMatrix,
+                getlinear()
+              );
+            }
 
             #if DOPARELLEL
             std::lock_guard<std::mutex> lock(threadLock);
@@ -360,6 +394,14 @@ std::unique_ptr< std::vector<float> > forestry::predict(
 
             for (size_t j = 0; j < numObservations; j++) {
               prediction[j] += currentTreePrediction[j];
+            }
+
+            if (coefficients) {
+              for (size_t k = 0; k < numObservations; k++) {
+                for (size_t l = 0; l < coefficients->n_cols; l++) {
+                  (*coefficients)(k,l) += currentTreeCoefficients[k][l];
+                }
+              }
             }
 
           } catch (std::runtime_error &err) {
@@ -386,6 +428,15 @@ std::unique_ptr< std::vector<float> > forestry::predict(
 
   for (size_t j=0; j<numObservations; j++){
     prediction[j] /= getNtree();
+  }
+
+  // Average coefficients across number of trees after aggregating
+  if (coefficients) {
+    for (size_t k = 0; k < numObservations; k++) {
+      for (size_t l = 0; l < coefficients->n_cols; l++) {
+        (*coefficients)(k,l) /= getNtree();;
+      }
+    }
   }
 
   std::unique_ptr< std::vector<float> > prediction_ (

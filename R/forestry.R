@@ -28,6 +28,7 @@ training_data_checker <- function(x,
                                   doubleTree,
                                   splitFeats,
                                   linFeats,
+                                  sampleWeights,
                                   linear) {
   x <- as.data.frame(x)
   nfeatures <- ncol(x)
@@ -104,6 +105,17 @@ training_data_checker <- function(x,
   if (maxDepth <= 0 || maxDepth %% 1 != 0) {
     stop("maxDepth must be a positive integer.")
   }
+  if (length(sampleWeights) != ncol(x)) {
+    stop("Must have sample weight length equal to columns in data")
+  }
+  if (min(sampleWeights < 0)) {
+    stop("sampleWeights must be greater than 0")
+  }
+  if (min(sampleWeights) <= .001*max(sampleWeights)) {
+    stop("MAX(sampleWeights):MIN(sampleWeights) must be < 1000")
+  }
+
+  sampleWeights <- (sampleWeights / sum(sampleWeights))
 
   # if the splitratio is 1, then we use adaptive rf and avgSampleSize is the
   # equal to the total sampsize
@@ -204,7 +216,8 @@ training_data_checker <- function(x,
               "middleSplit" = middleSplit,
               "doubleTree" = doubleTree,
               "splitFeats" = splitFeats,
-              "linFeats" = linFeats))
+              "linFeats" = linFeats,
+              "sampleWeights" = sampleWeights))
 }
 
 #' @title Test data check
@@ -246,6 +259,7 @@ setClass(
     linear = "logical",
     splitFeats = "numeric",
     linFeats = "numeric",
+    sampleWeights = "numeric",
     overfitPenalty = "numeric",
     doubleTree = "logical"
   )
@@ -280,6 +294,7 @@ setClass(
     linear = "logical",
     splitFeats = "numeric",
     linFeats = "numeric",
+    sampleWeights = "numeric",
     overfitPenalty = "numeric",
     doubleTree = "logical"
   )
@@ -354,6 +369,8 @@ setClass(
 #'   (defaults to use all features).
 #' @param linFeats Specify which features to split linearly on when using
 #'   linear (defaults to use all numerical features)
+#' @param sampleWeights Specify weights for weighted uniform distribution used
+#'   to randomly sample features.
 #' @param overfitPenalty Value to determine how much to penalize magnitude of
 #'   coefficients in ridge regression when using linear (default is 1).
 #' @return A `forestry` object.
@@ -432,6 +449,7 @@ forestry <- function(x,
                      linear = FALSE,
                      splitFeats = 1:(ncol(x)),
                      linFeats = 1:(ncol(x)),
+                     sampleWeights = rep((1/ncol(x)), ncol(x)),
                      overfitPenalty = 1,
                      doubleTree = FALSE,
                      reuseforestry = NULL,
@@ -465,6 +483,7 @@ forestry <- function(x,
       doubleTree = doubleTree,
       splitFeats = splitFeats,
       linFeats = linFeats,
+      sampleWeights = sampleWeights,
       linear = linear)
 
   for (variable in names(updated_variables)) {
@@ -503,7 +522,8 @@ forestry <- function(x,
                                                   splitFeats,
                                                   linFeats,
                                                   nObservations,
-                                                  numColumns)
+                                                  numColumns,
+                                                  sampleWeights)
 
       rcppForest <- rcpp_cppBuildInterface(
         processed_x,
@@ -529,6 +549,7 @@ forestry <- function(x,
         verbose,
         middleSplit,
         maxObs,
+        sampleWeights,
         linear,
         overfitPenalty,
         doubleTree,
@@ -569,6 +590,7 @@ forestry <- function(x,
           splitratio = splitratio,
           middleSplit = middleSplit,
           maxObs = maxObs,
+          sampleWeights = sampleWeights,
           linear = linear,
           splitFeats = splitFeats,
           linFeats = linFeats,
@@ -621,6 +643,7 @@ forestry <- function(x,
         verbose,
         middleSplit,
         maxObs,
+        sampleWeights,
         linear,
         overfitPenalty,
         doubleTree,
@@ -651,6 +674,7 @@ forestry <- function(x,
           splitratio = splitratio,
           middleSplit = middleSplit,
           maxObs = maxObs,
+          sampleWeights = sampleWeights,
           linear = linear,
           splitFeats = splitFeats,
           linFeats = linFeats,
@@ -704,6 +728,7 @@ multilayerForestry <- function(x,
                      linear = FALSE,
                      splitFeats = 1:(ncol(x)),
                      linFeats = 1:(ncol(x)),
+                     sampleWeights = rep((1/ncol(x)), ncol(x)),
                      overfitPenalty = 1,
                      doubleTree = FALSE,
                      reuseforestry = NULL,
@@ -719,7 +744,7 @@ multilayerForestry <- function(x,
   training_data_checker(x, y, ntree,replace, sampsize, mtry, nodesizeSpl,
                         nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg,
                         minSplitGain, maxDepth, splitratio, nthread, middleSplit,
-                        doubleTree, splitFeats, linFeats)
+                        doubleTree, splitFeats, linFeats, sampleWeights)
   # Total number of obervations
   nObservations <- length(y)
   numColumns <- ncol(x)
@@ -751,7 +776,8 @@ multilayerForestry <- function(x,
                                                   splitFeats,
                                                   linFeats,
                                                   nObservations,
-                                                  numColumns)
+                                                  numColumns,
+                                                  sampleWeights)
 
       rcppForest <- rcpp_cppMultilayerBuildInterface(
         processed_x,
@@ -779,6 +805,7 @@ multilayerForestry <- function(x,
         verbose,
         middleSplit,
         maxObs,
+        sampleWeights,
         linear,
         overfitPenalty,
         doubleTree,
@@ -821,6 +848,7 @@ multilayerForestry <- function(x,
           splitratio = splitratio,
           middleSplit = middleSplit,
           maxObs = maxObs,
+          sampleWeights = sampleWeights,
           linear = linear,
           splitFeats = splitFeats,
           linFeats = linFeats,
@@ -875,6 +903,7 @@ multilayerForestry <- function(x,
         verbose,
         middleSplit,
         maxObs,
+        sampleWeights,
         linear,
         overfitPenalty,
         doubleTree,
@@ -904,6 +933,7 @@ multilayerForestry <- function(x,
           splitratio = splitratio,
           middleSplit = middleSplit,
           maxObs = maxObs,
+          sampleWeights = sampleWeights,
           linear = linear,
           splitFeats = splitFeats,
           linFeats = linFeats,
@@ -953,6 +983,10 @@ predict.forestry <- function(object,
     stop("Aggregation must be set to weightMatrix if localVariableImportance is true.")
   }
 
+  if ((!(object@linear)) && (aggregation == "coefs")) {
+    stop("Aggregation can only be linear with setting the parameter linear = TRUE.")
+  }
+
   rcppPrediction <- tryCatch({
     rcpp_cppPredictInterface(object@forest, processed_x, aggregation, localVariableImportance)
   }, error = function(err) {
@@ -960,9 +994,20 @@ predict.forestry <- function(object,
     return(NULL)
   })
 
+  # In the case aggregation is set to "linear"
+  # rccpPrediction is a list with an entry $coef
+  # which gives pointwise regression coeffficients averaged across the forest
+  if (aggregation == "coefs") {
+    coef_names <- colnames(feature.new)[object@linFeats + 1]
+    coef_names <- c(coef_names, "Intercept")
+    colnames(rcppPrediction$coef) <- coef_names
+  }
+
   if (aggregation == "average") {
     return(rcppPrediction$prediction)
   } else if (aggregation == "weightMatrix") {
+    return(rcppPrediction)
+  } else if (aggregation == "coefs") {
     return(rcppPrediction)
   }
 }
@@ -1380,6 +1425,7 @@ relinkCPP_prt <- function(object) {
         verbose = FALSE,
         middleSplit = object@middleSplit,
         maxObs = object@maxObs,
+        sampleWeights = object@sampleWeights,
         linear = object@linear,
         overfitPenalty = object@overfitPenalty,
         doubleTree = object@doubleTree)

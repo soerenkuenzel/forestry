@@ -20,7 +20,8 @@ public:
     std::unique_ptr< std::vector<size_t> > splitFeatureCols,
     std::unique_ptr< std::vector<size_t> > linearCols,
     std::size_t numRows,
-    std::size_t numColumns
+    std::size_t numColumns,
+    std::unique_ptr< std::vector<float> > sampleWeights
   );
 
   float getPoint(size_t rowIndex, size_t colIndex);
@@ -70,6 +71,10 @@ public:
     return _linearFeatureCols.get();
   }
 
+  std::vector<float>* getSampleWeights() {
+    return _sampleWeights.get();
+  }
+
   std::vector<size_t>* getRowNumbers() {
     return _rowNumbers.get();
   }
@@ -90,6 +95,7 @@ private:
   std::unique_ptr< std::vector<size_t> > _linearFeatureCols;
   std::size_t _numRows;
   std::size_t _numColumns;
+  std::unique_ptr< std::vector<float> > _sampleWeights;
 };
 
 

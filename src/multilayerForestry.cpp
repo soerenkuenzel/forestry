@@ -98,6 +98,9 @@ void multilayerForestry::addForests(size_t ntree) {
     std::unique_ptr< std::vector<size_t> > residualLinCols_(
         new std::vector<size_t>(*(trainingData->getLinCols()))
     );
+    std::unique_ptr< std::vector<float> > residualSampleWeights_(
+        new std::vector<float>(*(trainingData->getSampleWeights()))
+    );
 
     DataFrame* residualDataFrame = new DataFrame(
       residualFeatureData_,
@@ -106,7 +109,8 @@ void multilayerForestry::addForests(size_t ntree) {
       std::move(residualSplitCols_),
       std::move(residualLinCols_),
       trainingData->getNumRows(),
-      trainingData->getNumColumns()
+      trainingData->getNumColumns(),
+      std::move(residualSampleWeights_)
     );
 
     forestry *residualForest = new forestry(
@@ -134,7 +138,10 @@ void multilayerForestry::addForests(size_t ntree) {
 
     multilayerForests[i] = residualForest;
     std::unique_ptr< std::vector<float> > predictedResiduals =
-      residualForest->predict(getTrainingData()->getAllFeatureData(), NULL, NULL);
+      residualForest->predict(getTrainingData()->getAllFeatureData(),
+                              NULL,
+                              NULL,
+                              NULL);
 
     // Calculate and store best gamma value
     // std::vector<float> bestPredictedResiduals(trainingData->getNumRows());
@@ -191,14 +198,20 @@ std::unique_ptr< std::vector<float> > multilayerForestry::predict(
   std::vector<float> gammas = getGammas();
 
   std::unique_ptr< std::vector<float> > initialPrediction =
-    multilayerForests[0]->predict(xNew, weightMatrix, NULL);
+    multilayerForests[0]->predict(xNew,
+                                  weightMatrix,
+                                  NULL,
+                                  NULL);
 
   std::vector<float> prediction(initialPrediction->size(), getMeanOutcome());
 
   // Use forestry objects and gamma values to make prediction
   for (int i = 0; i < getNrounds(); i ++) {
     std::unique_ptr< std::vector<float> > predictedResiduals =
-      multilayerForests[i]->predict(xNew, weightMatrix, NULL);
+      multilayerForests[i]->predict(xNew,
+                                    weightMatrix,
+                                    NULL,
+                                    NULL);
 
     std::transform(predictedResiduals->begin(), predictedResiduals->end(),
                    predictedResiduals->begin(), std::bind1st(std::multiplies<float>(), gammas[i]));

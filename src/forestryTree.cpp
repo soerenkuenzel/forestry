@@ -194,6 +194,7 @@ void forestryTree::setDummyTree(
 
 void forestryTree::predict(
     std::vector<float> &outputPrediction,
+    std::vector< std::vector<float> > &outputCoefficients,
     std::vector< std::vector<float> >* xNew,
     DataFrame* trainingData,
     arma::Mat<float>* weightMatrix,
@@ -209,7 +210,7 @@ void forestryTree::predict(
   std::vector<size_t> updateIndex(outputPrediction.size());
   rangeGenerator _rangeGenerator(0);
   std::generate(updateIndex.begin(), updateIndex.end(), _rangeGenerator);
-  (*getRoot()).predict(outputPrediction, &updateIndex, xNew, trainingData,
+  (*getRoot()).predict(outputPrediction, outputCoefficients, &updateIndex, xNew, trainingData,
    weightMatrix, linear, getOverfitPenalty());
 }
 
@@ -219,41 +220,52 @@ std::vector<size_t> sampleFeatures(
     std::mt19937_64& random_number_generator,
     bool numFeaturesOnly,
     std::vector<size_t>* splitCols,
-    std::vector<size_t>* numCols
+    std::vector<size_t>* numCols,
+    std::vector<float>* weights
 ){
   // Sample features without replacement
   std::vector<size_t> featureList;
   if (numFeaturesOnly) {
-    // TODO: Set numericCols to be the intersection of numCols and splitCols
-    std::vector<size_t> numericCols;
+    std::vector<size_t> splitNumCols;
     std::set_intersection(numCols->begin(), numCols->end(),
-                          splitCols->begin(), splitCols->end(), back_inserter(numericCols));
-    size_t mtry_split = std::min(mtry, numericCols.size());
-    while (featureList.size() < mtry_split) {
-      std::uniform_int_distribution<size_t> unif_dist(
-          0, (size_t) numericCols.size() - 1
-      );
+                          splitCols->begin(), splitCols->end(), back_inserter(splitNumCols));
 
-      size_t index = unif_dist(random_number_generator);
+    std::vector<float> splitWeights;
+    for (size_t splitIndex: splitNumCols) {
+      splitWeights.push_back(weights->at(splitIndex));
+    }
 
+    std::discrete_distribution<size_t> discrete_dist(
+      splitWeights.begin(), splitWeights.end()
+    );
+
+    size_t mtrySplit = std::min(mtry, splitNumCols.size());
+    while (featureList.size() < mtrySplit) {
+      size_t index = discrete_dist(random_number_generator);
       if (featureList.size() == 0 ||
           std::find(
             featureList.begin(),
             featureList.end(),
-            (numericCols)[index]
+            (splitNumCols)[index]
           ) == featureList.end()
       ) {
-        featureList.push_back(numericCols[index]);
+        featureList.push_back(splitNumCols[index]);
       }
     }
 
   } else {
-    size_t mtry_split = std::min(mtry, splitCols->size());
-    while (featureList.size() < mtry_split) {
-      std::uniform_int_distribution<size_t> unif_dist(
-          0, (size_t) splitCols->size() - 1
-      );
-      size_t randomIndex = unif_dist(random_number_generator);
+    std::vector<float> splitWeights;
+    for (size_t splitIndex: *splitCols) {
+      splitWeights.push_back(weights->at(splitIndex));
+    }
+
+    std::discrete_distribution<size_t> discrete_dist(
+      splitWeights.begin(), splitWeights.end()
+    );
+
+    size_t mtrySplit = std::min(mtry, splitCols->size());
+    while (featureList.size() < mtrySplit) {
+      size_t randomIndex = discrete_dist(random_number_generator);
       if (featureList.size() == 0 ||
           std::find(
             featureList.begin(),
@@ -529,7 +541,8 @@ void forestryTree::recursivePartition(
     random_number_generator,
     false,
     trainingData->getSplitCols(),
-    trainingData->getNumCols()
+    trainingData->getNumCols(),
+    trainingData->getSampleWeights()
   );
 
 
@@ -2097,8 +2110,11 @@ void forestryTree::getOOBPrediction(
       OOBSampleObservation_.push_back(OOBSampleObservation_iter);
     }
 
+    std::vector< std::vector<float> > emptyCoef;
+
     predict(
       currentTreePrediction,
+      emptyCoef,
       &OOBSampleObservation_,
       trainingData
     );
@@ -2148,8 +2164,11 @@ void forestryTree::getShuffledOOBPrediction(
       OOBSampleObservation_.push_back(OOBSampleObservation_iter);
     }
 
+    std::vector< std::vector<float> > emptyCoef;
+
     predict(
       currentTreePrediction,
+      emptyCoef,
       &OOBSampleObservation_,
       trainingData
     );

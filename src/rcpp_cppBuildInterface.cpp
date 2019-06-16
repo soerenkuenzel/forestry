@@ -35,7 +35,8 @@ SEXP rcpp_cppDataFrameInterface(
     Rcpp::NumericVector splitCols,
     Rcpp::NumericVector linCols,
     int numRows,
-    int numColumns
+    int numColumns,
+    Rcpp::NumericVector sampleWeights
 ){
 
   try {
@@ -69,6 +70,12 @@ SEXP rcpp_cppDataFrameInterface(
         )
     );
 
+    std::unique_ptr< std::vector<float> > sampleWeightsRcpp (
+        new std::vector<float>(
+            Rcpp::as< std::vector<float> >(sampleWeights)
+        )
+    );
+
     std::sort(linearFeats->begin(), linearFeats->end());
 
     DataFrame* trainingData = new DataFrame(
@@ -78,7 +85,8 @@ SEXP rcpp_cppDataFrameInterface(
         std::move(splitFeats),
         std::move(linearFeats),
         (size_t) numRows,
-        (size_t) numColumns
+        (size_t) numColumns,
+        std::move(sampleWeightsRcpp)
     );
 
     Rcpp::XPtr<DataFrame> ptr(trainingData, true) ;
@@ -118,6 +126,7 @@ SEXP rcpp_cppBuildInterface(
   bool verbose,
   bool middleSplit,
   int maxObs,
+  Rcpp::NumericVector sampleWeights,
   bool linear,
   double overfitPenalty,
   bool doubleTree,
@@ -200,6 +209,12 @@ SEXP rcpp_cppBuildInterface(
           )
       );
 
+      std::unique_ptr< std::vector<float> > sampleWeightsRcpp (
+          new std::vector<float>(
+              Rcpp::as< std::vector<float> >(sampleWeights)
+          )
+      );
+
       std::sort(linearFeats->begin(), linearFeats->end());
 
       DataFrame* trainingData = new DataFrame(
@@ -209,7 +224,8 @@ SEXP rcpp_cppBuildInterface(
           std::move(splitFeats),
           std::move(linearFeats),
           (size_t) numRows,
-          (size_t) numColumns
+          (size_t) numColumns,
+          std::move(sampleWeightsRcpp)
       );
 
       forestry* testFullForest = new forestry(
@@ -280,6 +296,7 @@ SEXP rcpp_cppMultilayerBuildInterface(
     bool verbose,
     bool middleSplit,
     int maxObs,
+    Rcpp::NumericVector sampleWeights,
     bool linear,
     double overfitPenalty,
     bool doubleTree,
@@ -356,7 +373,20 @@ Rcpp::List rcpp_cppPredictInterface(
     // then we inialize the empty weight matrix
     arma::Mat<float> weightMatrix;
     arma::Mat<float> localVIMatrix;
-    if (aggregation == "weightMatrix") {
+    arma::Mat<float> coefficients;
+
+    if (aggregation == "coefs") {
+      size_t nrow = featureData[0].size();
+      // Now we need the number of linear features + 1 for the intercept
+      size_t ncol = (*testFullForest).getTrainingData()->getLinObsData(0).size() + 1;
+      //Set coefficients to be zero
+      coefficients.resize(nrow, ncol);
+      coefficients.zeros(nrow, ncol);
+
+      testForestPrediction = (*testFullForest).predict(&featureData, NULL,
+                              NULL, &coefficients);
+
+    } else if (aggregation == "weightMatrix") {
       size_t nrow = featureData[0].size(); // number of features to be predicted
       size_t ncol = (*testFullForest).getNtrain(); // number of train data
       weightMatrix.resize(nrow, ncol); // initialize the space for the matrix
@@ -366,17 +396,19 @@ Rcpp::List rcpp_cppPredictInterface(
         localVIMatrix.resize(nrow, featureData.size());
         localVIMatrix.zeros(nrow, featureData.size());
         testForestPrediction = (*testFullForest).predict(&featureData, &weightMatrix,
-                                &localVIMatrix);
+                                &localVIMatrix, NULL);
       } else {
         testForestPrediction = (*testFullForest).predict(&featureData, &weightMatrix,
-                                NULL);
+                                NULL, NULL);
       }
       // The idea is that, if the weightMatrix is point to NULL it won't be
       // be updated, but otherwise it will be updated:
 
     } else {
-      testForestPrediction = (*testFullForest).predict(&featureData, NULL, NULL);
+      testForestPrediction = (*testFullForest).predict(&featureData, NULL, NULL, NULL);
     }
+
+    // Clean this up for new predict scheme*********
 
     std::vector<float>* testForestPrediction_ =
       new std::vector<float>(*testForestPrediction.get());
@@ -385,7 +417,8 @@ Rcpp::List rcpp_cppPredictInterface(
 
     return Rcpp::List::create(Rcpp::Named("predictions") = predictions,
                               Rcpp::Named("weightMatrix") = weightMatrix,
-                              Rcpp::Named("localVIMatrix") = localVIMatrix);
+                              Rcpp::Named("localVIMatrix") = localVIMatrix,
+                              Rcpp::Named("coef") = coefficients);
 
     // return output;
 
@@ -619,6 +652,7 @@ Rcpp::List rcpp_reconstructree(
   bool verbose,
   bool middleSplit,
   int maxObs,
+  Rcpp::NumericVector sampleWeights,
   bool linear,
   double overfitPenalty,
   bool doubleTree
@@ -712,6 +746,12 @@ Rcpp::List rcpp_reconstructree(
       )
   );
 
+  std::unique_ptr< std::vector<float> > sampleWeightsRcpp (
+      new std::vector<float>(
+          Rcpp::as< std::vector<float> >(sampleWeights)
+      )
+  );
+
   std::sort(linearFeats->begin(), linearFeats->end());
 
   DataFrame* trainingData = new DataFrame(
@@ -721,7 +761,8 @@ Rcpp::List rcpp_reconstructree(
     std::move(splitFeats),
     std::move(linearFeats),
     (size_t) numRows,
-    (size_t) numColumns
+    (size_t) numColumns,
+    std::move(sampleWeightsRcpp)
   );
 
   forestry* testFullForest = new forestry(
