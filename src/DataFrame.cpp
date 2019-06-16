@@ -175,6 +175,7 @@ void DataFrame::computeTreeDistances(
 
     float accummulatedSum = 0;
     float itsFeatureValue = (*xNew)[distanceColIndex - 1][*it];
+
     for (
         std::vector<size_t>::iterator bit = (*sampleIndex).begin();
         bit != (*sampleIndex).end();
@@ -185,11 +186,8 @@ void DataFrame::computeTreeDistances(
       if(isCategoricalVariable){
         addition = (float)(featureColumn[*bit] != itsFeatureValue);
       }else{
-        // std::cout<< "Numerical Good" << std::endl;
         addition = pow((float) fabs(featureColumn[*bit] - itsFeatureValue), power);
-        // std::cout<< featureColumn[*bit] << " and " << itsFeatureValue << " and " << power << " and " << addition << std::endl;
       }
-
       accummulatedSum += addition;
 
     }
