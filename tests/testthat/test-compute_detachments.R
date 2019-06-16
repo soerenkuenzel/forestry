@@ -1,6 +1,6 @@
-test_that("Tests that compute the lp distances works correctly", {
+test_that("Tests that compute the detachment indices are working correctly", {
 
-  context('Test lp distances')
+  context('Test detachment indices')
 
   # Set seed for reproductivity
   set.seed(292313)
@@ -21,38 +21,38 @@ test_that("Tests that compute the lp distances works correctly", {
   # Create a random forest
   rf <- forestry(x = x_train, y = y_train)
 
-  # Compute the l-4.5 distances in the "Species" dimension
-  distances_1 <- compute_lp(object = rf,
+  # Compute the l-4.5 detachments in the "Species" dimension
+  detachments_1 <- compute_detachments(object = rf,
                             feature.new = x_test,
-                            distance.feat = "Species",
+                            detachment.feat = "Species",
                             p = 4.5)
 
-  # Compute the l-2 distances in the "Petal.Length" dimension
-  distances_2 <- compute_lp(object = rf,
+  # Compute the l-2 detachments in the "Petal.Length" dimension
+  detachments_2 <- compute_detachments(object = rf,
                             feature.new = x_test,
-                            distance.feat = "Sepal.Width",
+                            detachment.feat = "Sepal.Width",
                             p = 2)
 
-  # Compute the l-3 distances in the "Petal.Length" dimension
-  distances_3 <- compute_lp(object = rf,
+  # Compute the l-3 detachments in the "Petal.Length" dimension
+  detachments_3 <- compute_detachments(object = rf,
                             feature.new = x_test,
-                            distance.feat = "Sepal.Width",
+                            detachment.feat = "Sepal.Width",
                             p = 0.7)
 
   # Assertions:
-  expect_identical(length(distances_1), nrow(x_test))
-  expect_identical(length(distances_2), nrow(x_test))
-  expect_identical(length(distances_3), nrow(x_test))
+  expect_identical(length(detachments_1), nrow(x_test))
+  expect_identical(length(detachments_2), nrow(x_test))
+  expect_identical(length(detachments_3), nrow(x_test))
 
-  expect_equal(distances_1,
+  expect_equal(detachments_1,
                c(0.5064062, 0.6135494, 0.6850906, 0.6110753, 0.4255796,
                  0.7071884, 0.3208159, 0.3319960, 0.4214267, 0.6171963),
                tolerance = 1e-5)
-  expect_equal(distances_2,
+  expect_equal(detachments_2,
                c(0.2572747, 0.4026521, 0.2384931, 0.3999552, 0.2194508,
                  0.2179426, 0.3334502, 0.2518049, 0.2844727, 0.8506433),
                tolerance = 1e-5)
-  expect_equal(distances_3,
+  expect_equal(detachments_3,
                c(0.1608303, 0.2221634, 0.1264818, 0.2757391, 0.1215103,
                  0.1370966, 0.2199645, 0.1301863, 0.1795759, 0.7679039),
                tolerance = 1e-5)

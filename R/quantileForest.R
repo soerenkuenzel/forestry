@@ -1,15 +1,19 @@
-#' @include compute_rf_lp.R
+#' @include quantileForest.R
+#' @importFrom caret createFolds
+NULL
 
-#' get_conditional_quantiles
-#' @name get_conditional_quantiles-forestry
-#' @title compute conditional quantiles
-#' @rdname get_conditional_quantiles-forestry
-#' @description Computes and returns the condidtional quantiles for a random
-#' forest.
-#' @inheritParams compute_lp
+#' compute detachment indicies' percentiles
+#' @name evaluate_detachments-forestry
+#' @title compute detachment indicies' percentiles
+#' @rdname evaluate_detachments-forestry
+#' @description Computes and returns the detachments levels of new observations in
+#' specified dimensions.
+#' @inheritParams compute_detachments
 #' @param object A `forestry` object.
 #' @param feature.new A data frame of testing predictors.
-#' @param probs probabilities to be computed at each x
+#' @param feat.name a list of features for computing the levels with respect to.
+#' @param verbose Print out the steps in the algorithm.
+#' @param num.CV Number of folds in the CV to compute the detachements
 #' @return A data frame of quantiles of in response variable conditional on the
 #' test observations.
 #' @examples
@@ -18,24 +22,28 @@
 #' # Use Iris Data
 #' test_idx <- sample(nrow(iris), 10)
 #'
-#' # Select, for example, sepal sength as the response variable
+#' # Select, for example, sepal length as the response variable
 #' index <- which(colnames(iris) == "Sepal.Length")
 #' x_train <- iris[-test_idx, -index]
 #' y_train <- iris[-test_idx, index]
 #' x_test <- iris[test_idx, -index]
 #' rf <- forestry(x = x_train, y = y_train)
 #'
-#' # Compute the  0.25, 0.5, and 0.75 conditional quantiles for sepal length
-#' quants <- get_conditional_quantiles(object = rf,
-#'                                     feature.new = x_test,
-#'                                     quantiles = c(0.25,0.5, 0.75))
+#' features <- c("Sepal.Width", "Petal.Length", "Petal.Width", "Species")
 #'
-#' # Compare the quantiles to the preditcions
-#' predict(rf, x_test)
+#' # Evaluate the test observations' detachment indicies
+#' trust <- evaluate_detachments(object = rf,
+#'                               feature.new = x_test,
+#'                               feature = features,
+#'                               p = 1)
 #' @export
-get_conditional_quantiles <- function(object,
-                                      feature.new,
-                                      probs) {
+evaluate_detachments <- function(object,
+                                 feature.new,
+                                 feat.name,
+                                 p = 1,
+                                 verbose = TRUE,
+                                 num.CV = 10) {
+
 
   # Checks and parsing:
   if (class(object) != "forestry") {
@@ -43,120 +51,80 @@ get_conditional_quantiles <- function(object,
   }
 
   feature.new <- as.data.frame(feature.new)
-  train_y <- slot(object, "processed_dta")$y
+  x_train <- slot(object, "processed_dta")$processed_x
+  y_train <- slot(object, "processed_dta")$y
 
   feature.new <- preprocess_testing(feature.new,
                                     object@featureNames,
                                     object@categoricalFeatureCols,
                                     object@categoricalFeatureMapping)
 
+  # Get appropropriate weight matrix
   y_weights <- predict(object = object,
                        feature.new = feature.new,
                        aggregation = "weightMatrix")$weightMatrix
 
-  order_of_y <- order(train_y)
-  quants <- matrix(NA, nrow = nrow(feature.new), ncol = length(probs))
-  colnames(quants) <- probs
 
-  for (quantile_prop in probs) {
-    sum_total <- rep(0, nrow(feature.new))
-    quantiles <- rep(-Inf, nrow(feature.new))
+  eval <- data.frame(1:nrow(feature.new))
+  for (feat in feat.name) {
+    # Compute detachment indices for new data
+    detachments <- compute_detachments(object = object,
+                                       feature.new = feature.new,
+                                       distance.feat = "Sepal.Width",
+                                       p = p)
 
-    for (i in 1:length(train_y)) {
-      # For training observation i, get its rank in y
-      ord <- order_of_y[i]
-      sum_total <- sum_total + y_weights[ ,ord]
-      quantiles[sum_total <= quantile_prop] <- train_y[ord]
+    # Compute detachemtn indices for the training data using OOB observations:
+    folds <- caret::createFolds(y_train, k = num.CV, list = TRUE,
+                                returnTrain = FALSE)
+
+    # Create an empty vector for detechment indices for training observations
+    x_train_detachments <- rep(NA, nrow(x_train))
+
+    for (k in 1:num.CV) {
+      if (verbose) {
+        print(paste("Running fold", k, "out of", num.CV))
+      }
+      fold_ids <- folds[[k]]
+      rf <- forestry(x = x_train[-fold_ids, ],
+                     y = y_train[-fold_ids],
+                     ntree = object@ntree,
+                     replace = object@replace,
+                     sample.fraction = object@sampsize / length(y_train),
+                     mtry = object@mtry,
+                     nodesizeAvg = object@nodesizeAvg,
+                     nodesizeStrictSpl = object@nodesizeStrictSpl,
+                     nodesizeStrictAvg = object@nodesizeStrictAvg,
+                     minSplitGain = object@minSplitGain,
+                     maxDepth = object@maxDepth,
+                     splitratio = object@splitratio,
+                     middleSplit = object@middleSplit,
+                     maxObs = object@maxObs,
+                     ridgeRF = object@ridgeRF,
+                     linFeats = object@linFeats + 1,
+                     overfitPenalty = object@overfitPenalty,
+                     doubleTree = object@doubleTree)
+
+      x_train_detachments[fold_ids] <-
+        compute_detachments(object = rf,
+                            feature.new = x_train[fold_ids, ],
+                            distance.feat = feat,
+                            p = p)
     }
 
-    quants[, as.character(quantile_prop)] <- quantiles
+    # Get conditional probabilities for new data
+    probs <- get_conditional_dist_bnd(y_weights = y_weights,
+                                      train_y = x_train_detachments,
+                                      vals = detachments)
+    probs <- as.data.frame(probs)
+
+    colnames(probs)[1] <- feat
+    eval <- cbind(eval, probs)
   }
 
-  quants <- as.data.frame(quants)
-  colnames(quants) <- paste0("q", colnames(quants))
-  rownames(quants) <- paste0("s", rownames(quants))
-  return(quants)
+  eval <- eval[ ,-1]
+  return(eval)
 }
 
 
-#' get_conditional_distribution
-#' @name get_conditional_distribution-forestry
-#' @title compute conditional distribution
-#' @rdname get_conditional_distribution-forestry
-#' @description Computes and returns the condidtional distributions.
-#' @inheritParams compute_lp
-#' @param object A `forestry` object.
-#' @param feature.new A data frame of testing predictors.
-#' @param vals values at which values the conditional cdf will be computed
-#' @return A data frame of conditional cumulative probabilities
-#' @examples
-#' # Set seed for reproductivity
-#' set.seed(292313)
-#'
-#' # Use Iris Data
-#' test_idx <- sample(nrow(iris), 10)
-#'
-#' # Select, for example, sepal sength as the response variable
-#' index <- which(colnames(iris) == "Sepal.Length")
-#' x_train <- iris[-test_idx, -index]
-#' y_train <- iris[-test_idx, index]
-#' x_test <- iris[test_idx, -index]
-#' rf <- forestry(x = x_train, y = y_train)
-#'
-#' vals <- rep(mean(y_train), 10)
-#'
-#' # Compute the conditional probabilities associated with values
-#' probs <- get_conditional_distribution(rf, feature.new = x_test, vals)
-#' @export
-get_conditional_distribution <-function(object, feature.new, vals){
-
-  # Checks and parsing:
-  if (class(object) != "forestry") {
-    stop("The object submitted is not a forestry random forest")
-  }
-
-  feature.new <- as.data.frame(feature.new)
-  if (length(vals) != nrow(feature.new)){
-    stop("The number of values does not match the number of obervations")
-  }
-
-  train_y <- slot(object, "processed_dta")$y
-
-  feature.new <- preprocess_testing(feature.new,
-                                    object@featureNames,
-                                    object@categoricalFeatureCols,
-                                    object@categoricalFeatureMapping)
-
-  y_weights <- predict(object = object,
-                       feature.new = feature.new,
-                       aggregation = "weightMatrix")$weightMatrix
-
-  probs <- get_conditional_dist_bnd(y_weights = y_weights,
-                                    train_y = train_y,
-                                    vals = vals)
-  probs <- as.data.frame(probs)
-  return(probs)
-}
-
-
-# Backend conditional distribution function
-get_conditional_dist_bnd <- function(y_weights, train_y, vals){
-
-  # I_ij = 1 if y_i <= val j
-  I_mat <- matrix(train_y,
-                  nrow = length(train_y),
-                  ncol = length(vals),
-                  byrow = FALSE) <=
-           matrix(vals,
-                  nrow = length(train_y),
-                  ncol = length(vals),
-                  byrow = TRUE)
-  I_mat[I_mat] <- 1
-
-  probs <- diag(y_weights %*% I_mat)
-  probs[probs > 1] <- 1
-  probs[probs < 0] <- 0
-  return(probs)
-}
 
 

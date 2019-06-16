@@ -2,18 +2,18 @@
 #' @importFrom caret createFolds
 NULL
 
-#' compute lp levels
-#' @name evaluate_lp-forestry
-#' @title compute trust levels
-#' @rdname evaluate_lp-forestry
-#' @description Computes and returns the lp levels of new observations in
+#' compute detachment indicies' percentiles
+#' @name evaluate_detachments-forestry
+#' @title compute detachment indicies' percentiles
+#' @rdname evaluate_detachments-forestry
+#' @description Computes and returns the detachments levels of new observations in
 #' specified dimensions.
-#' @inheritParams compute_lp
+#' @inheritParams compute_detachments
 #' @param object A `forestry` object.
 #' @param feature.new A data frame of testing predictors.
 #' @param feat.name a list of features for computing the levels with respect to.
 #' @param verbose Print out the steps in the algorithm.
-#' @param num.CV Number of folds in the CV to compute the detachement
+#' @param num.CV Number of folds in the CV to compute the detachements
 #' @return A data frame of quantiles of in response variable conditional on the
 #' test observations.
 #' @examples
@@ -22,7 +22,7 @@ NULL
 #' # Use Iris Data
 #' test_idx <- sample(nrow(iris), 10)
 #'
-#' # Select, for example, sepal sength as the response variable
+#' # Select, for example, sepal length as the response variable
 #' index <- which(colnames(iris) == "Sepal.Length")
 #' x_train <- iris[-test_idx, -index]
 #' y_train <- iris[-test_idx, index]
@@ -31,18 +31,18 @@ NULL
 #'
 #' features <- c("Sepal.Width", "Petal.Length", "Petal.Width", "Species")
 #'
-#' # Evaluate the test observations' lp distances
-#' trust <- evaluate_lp(object = rf,
-#'                      feature.new = x_test,
-#'                      feature = features,
-#'                      p = 1)
+#' # Evaluate the test observations' detachment indicies
+#' trust <- evaluate_detachments(object = rf,
+#'                               feature.new = x_test,
+#'                               feature = features,
+#'                               p = 1)
 #' @export
-evaluate_lp <- function(object,
-                        feature.new,
-                        feat.name,
-                        p = 1,
-                        verbose = TRUE,
-                        num.CV = 10) {
+evaluate_detachments <- function(object,
+                                 feature.new,
+                                 feat.name,
+                                 p = 1,
+                                 verbose = TRUE,
+                                 num.CV = 10) {
 
 
   # Checks and parsing:
@@ -67,18 +67,19 @@ evaluate_lp <- function(object,
 
   eval <- data.frame(1:nrow(feature.new))
   for (feat in feat.name) {
-    # Compute lp distances for new data
-    lp_distances <- compute_lp(object = object,
-                               feature.new = feature.new,
-                               distance.feat = feat,
-                               p = p)
+    print(feat)
+    # Compute detachment indices for new data
+    detachments <- compute_detachments(object = object,
+                                       feature.new = feature.new,
+                                       detachment.feat = feat,
+                                       p = p)
 
-    # Compute lp distances for the training data using OOB observations:
+    # Compute detachemtn indices for the training data using OOB observations:
     folds <- caret::createFolds(y_train, k = num.CV, list = TRUE,
                                 returnTrain = FALSE)
 
-    # Create a vector of lp distances for training observations to be filled
-    x_train_lp <- rep(NA, nrow(x_train))
+    # Create an empty vector for detechment indices for training observations
+    x_train_detachments <- rep(NA, nrow(x_train))
 
     for (k in 1:num.CV) {
       if (verbose) {
@@ -104,16 +105,17 @@ evaluate_lp <- function(object,
                      overfitPenalty = object@overfitPenalty,
                      doubleTree = object@doubleTree)
 
-      x_train_lp[fold_ids] <- compute_lp(object = rf,
-                                         feature.new = x_train[fold_ids, ],
-                                         distance.feat = feat,
-                                         p = p)
+      x_train_detachments[fold_ids] <-
+        compute_detachments(object = rf,
+                            feature.new = x_train[fold_ids, ],
+                            detachment.feat = feat,
+                            p = p)
     }
 
     # Get conditional probabilities for new data
     probs <- get_conditional_dist_bnd(y_weights = y_weights,
-                                      train_y = x_train_lp,
-                                      vals = lp_distances)
+                                      train_y = x_train_detachments,
+                                      vals = detachments)
     probs <- as.data.frame(probs)
 
     colnames(probs)[1] <- feat

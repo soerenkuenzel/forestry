@@ -1,4 +1,5 @@
 test_that("Tests that quantile forest is working correctly", {
+
   context('Quantile Forest')
 
   # Set seed for reproductivity
@@ -41,9 +42,9 @@ test_that("Tests that quantile forest is working correctly", {
 
   # Tests for quantile function
   expect_equal(dim(quantiles), c(10, 7))
-  expect_equal(as.numeric(quantiles[1,5]), 5.0, tolerance = 1e-2)
+  expect_equal(as.numeric(quantiles[1,5]), 5.1, tolerance = 1e-2)
   expect_equal(as.numeric(quantiles[2,1]), 4.9, tolerance = 1e-2)
-  expect_equal(as.numeric(quantiles[5,3]), 4.8, tolerance = 1e-2)
+  expect_equal(as.numeric(quantiles[5,3]), 4.9, tolerance = 1e-2)
   expect_equal(as.numeric(quantiles[10,6]), 6.4, tolerance = 1e-2)
   expect_equal(as.numeric(quantiles[8,7]), 7.9, tolerance = 1e-2)
   expect_identical(quantiles[7,1], -Inf)
@@ -51,10 +52,16 @@ test_that("Tests that quantile forest is working correctly", {
   # Tests for distribution function
   expect_equal(dim(probs), c(10,1))
   expect_equal(probs$probs,
-               c(1.00000, 0.50437, 0.01402, 1.00000, 1.00000,
-                 0.00273, 0.97496, 0.12750, 0.01149, 0.69632),
+               c(0.99837, 0.47588, 0.02060, 0.99975, 0.99837,
+                 0.00135, 0.95231, 0.12311, 0.02145, 0.63247),
                tolerance = 1e-2)
 })
+
+c(0.99837, 0.47588, 0.02060, 0.99975, 0.99837,
+ 0.00135, 0.95231, 0.12311, 0.02145, 0.63247)
+
+
+
 
 
 

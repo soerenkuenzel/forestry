@@ -1,5 +1,5 @@
-test_that("Tests that evaluate_lp is working correctly", {
-  context('Test evaluate lp')
+test_that("Tests that evaluate_detachments is working correctly", {
+  context('Test evaluate detachments')
 
   # Set seed for reproductivity
   set.seed(24750371)
@@ -14,11 +14,11 @@ test_that("Tests that evaluate_lp is working correctly", {
   # Select features to compute lp distances with respect to.
   features <- c("Sepal.Width", "Species")
 
-  trust <- evaluate_lp(object = rf,
-                       feature.new = x_test,
-                       feat.name = features,
-                       p = 1,
-                       verbose = FALSE)
+  trust <- evaluate_detachments(object = rf,
+                                feature.new = x_test,
+                                feat.name = features,
+                                p = 1,
+                                verbose = FALSE)
 
   # Assertions
   expect_equal(trust$Sepal.Width,
