@@ -17,6 +17,7 @@ public:
     std::shared_ptr< std::vector< std::vector<float> > > featureData,
     std::unique_ptr< std::vector<float> > outcomeData,
     std::unique_ptr< std::vector<size_t> > categoricalFeatureCols,
+    std::unique_ptr< std::vector<size_t> > splitFeatureCols,
     std::unique_ptr< std::vector<size_t> > linearCols,
     std::size_t numRows,
     std::size_t numColumns,
@@ -62,6 +63,10 @@ public:
     return _numericalFeatureCols.get();
   }
 
+  std::vector<size_t>* getSplitCols() {
+    return _splitFeatureCols.get();
+  }
+
   std::vector<size_t>* getLinCols() {
     return _linearFeatureCols.get();
   }
@@ -86,6 +91,7 @@ private:
   std::unique_ptr< std::vector<size_t> > _rowNumbers;
   std::unique_ptr< std::vector<size_t> > _categoricalFeatureCols;
   std::unique_ptr< std::vector<size_t> > _numericalFeatureCols;
+  std::unique_ptr< std::vector<size_t> > _splitFeatureCols;
   std::unique_ptr< std::vector<size_t> > _linearFeatureCols;
   std::size_t _numRows;
   std::size_t _numColumns;

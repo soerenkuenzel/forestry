@@ -27,3 +27,9 @@ A vector of predicted responses.
 \description{
 Return the prediction from the forest.
 }
+\details{
+This is where we describe the features of predict
+}
+\seealso{
+\code{\link{forestry}}
+}

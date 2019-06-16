@@ -78,6 +78,7 @@ preprocess_training <- function(x, y) {
 #'   training data and encoding categorical data into numerical representation
 #'   in the same way as training data.
 #' @inheritParams forestry
+#' @param featureNames A vector of column names in training data.
 #' @param categoricalFeatureCols A list of index for all categorical data. Used
 #'   for trees to detect categorical columns.
 #' @param categoricalFeatureMapping A list of encoding details for each
@@ -86,6 +87,7 @@ preprocess_training <- function(x, y) {
 #' @import plyr
 #' @return A preprocessed training dataaset x
 preprocess_testing <- function(x,
+                               featureNames,
                                categoricalFeatureCols,
                                categoricalFeatureMapping) {
   x <- as.data.frame(x)
@@ -94,6 +96,10 @@ preprocess_testing <- function(x,
   testingFeatureNames <- colnames(x)
   if (is.null(testingFeatureNames)) {
     warning("No names are given for each column.")
+  }
+
+  if (!(identical((featureNames), testingFeatureNames))) {
+    stop("Training data and testing data column names must be the same.")
   }
 
   # Track all categorical features (both factors and characters)

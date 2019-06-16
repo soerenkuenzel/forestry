@@ -35,3 +35,6 @@ y_pred_after <- predict(forest, x)
 testthat::expect_equal(y_pred_before, y_pred_after, tolerance = 0.000001)
 file.remove("forest.Rda")
 }
+\seealso{
+\code{\link{forestry}}
+}

@@ -32,6 +32,7 @@ SEXP rcpp_cppDataFrameInterface(
     Rcpp::List x,
     Rcpp::NumericVector y,
     Rcpp::NumericVector catCols,
+    Rcpp::NumericVector splitCols,
     Rcpp::NumericVector linCols,
     int numRows,
     int numColumns,
@@ -57,6 +58,12 @@ SEXP rcpp_cppDataFrameInterface(
         )
     );
 
+    std::unique_ptr< std::vector<size_t> > splitFeats (
+        new std::vector<size_t>(
+            Rcpp::as< std::vector<size_t> >(splitCols)
+        )
+    );
+
     std::unique_ptr< std::vector<size_t> > linearFeats (
         new std::vector<size_t>(
             Rcpp::as< std::vector<size_t> >(linCols)
@@ -75,6 +82,7 @@ SEXP rcpp_cppDataFrameInterface(
         std::move(featureDataRcpp),
         std::move(outcomeDataRcpp),
         std::move(categoricalFeatureColsRcpp),
+        std::move(splitFeats),
         std::move(linearFeats),
         (size_t) numRows,
         (size_t) numColumns,
@@ -98,6 +106,7 @@ SEXP rcpp_cppBuildInterface(
   Rcpp::List x,
   Rcpp::NumericVector y,
   Rcpp::NumericVector catCols,
+  Rcpp::NumericVector splitCols,
   Rcpp::NumericVector linCols,
   int numRows,
   int numColumns,
@@ -118,7 +127,7 @@ SEXP rcpp_cppBuildInterface(
   bool middleSplit,
   int maxObs,
   Rcpp::NumericVector sampleWeights,
-  bool ridgeRF,
+  bool linear,
   double overfitPenalty,
   bool doubleTree,
   bool existing_dataframe_flag,
@@ -148,7 +157,7 @@ SEXP rcpp_cppBuildInterface(
         verbose,
         middleSplit,
         (size_t) maxObs,
-        ridgeRF,
+        linear,
         (float) overfitPenalty,
         doubleTree
       );
@@ -188,6 +197,12 @@ SEXP rcpp_cppBuildInterface(
           )
       );
 
+      std::unique_ptr< std::vector<size_t> > splitFeats (
+          new std::vector<size_t>(
+              Rcpp::as< std::vector<size_t> >(splitCols)
+          )
+      );
+
       std::unique_ptr< std::vector<size_t> > linearFeats (
           new std::vector<size_t>(
               Rcpp::as< std::vector<size_t> >(linCols)
@@ -206,6 +221,7 @@ SEXP rcpp_cppBuildInterface(
           std::move(featureDataRcpp),
           std::move(outcomeDataRcpp),
           std::move(categoricalFeatureColsRcpp),
+          std::move(splitFeats),
           std::move(linearFeats),
           (size_t) numRows,
           (size_t) numColumns,
@@ -230,7 +246,7 @@ SEXP rcpp_cppBuildInterface(
         verbose,
         middleSplit,
         (size_t) maxObs,
-        ridgeRF,
+        linear,
         (float) overfitPenalty,
         doubleTree
       );
@@ -258,6 +274,7 @@ SEXP rcpp_cppMultilayerBuildInterface(
     Rcpp::List x,
     Rcpp::NumericVector y,
     Rcpp::NumericVector catCols,
+    Rcpp::NumericVector splitCols,
     Rcpp::NumericVector linCols,
     int numRows,
     int numColumns,
@@ -280,7 +297,7 @@ SEXP rcpp_cppMultilayerBuildInterface(
     bool middleSplit,
     int maxObs,
     Rcpp::NumericVector sampleWeights,
-    bool ridgeRF,
+    bool linear,
     double overfitPenalty,
     bool doubleTree,
     bool existing_dataframe_flag,
@@ -312,7 +329,7 @@ SEXP rcpp_cppMultilayerBuildInterface(
         verbose,
         middleSplit,
         (size_t) maxObs,
-        ridgeRF,
+        linear,
         (float) overfitPenalty,
         doubleTree
       );
@@ -615,6 +632,7 @@ Rcpp::List rcpp_reconstructree(
   Rcpp::List x,
   Rcpp::NumericVector y,
   Rcpp::NumericVector catCols,
+  Rcpp::NumericVector splitCols,
   Rcpp::NumericVector linCols,
   int numRows,
   int numColumns,
@@ -635,7 +653,7 @@ Rcpp::List rcpp_reconstructree(
   bool middleSplit,
   int maxObs,
   Rcpp::NumericVector sampleWeights,
-  bool ridgeRF,
+  bool linear,
   double overfitPenalty,
   bool doubleTree
 ){
@@ -716,6 +734,12 @@ Rcpp::List rcpp_reconstructree(
       )
   );
 
+  std::unique_ptr< std::vector<size_t> > splitFeats (
+      new std::vector<size_t>(
+          Rcpp::as< std::vector<size_t> >(splitCols)
+      )
+  );
+
   std::unique_ptr< std::vector<size_t> > linearFeats (
       new std::vector<size_t>(
           Rcpp::as< std::vector<size_t> >(linCols)
@@ -734,6 +758,7 @@ Rcpp::List rcpp_reconstructree(
     std::move(featureDataRcpp),
     std::move(outcomeDataRcpp),
     std::move(categoricalFeatureColsRcpp),
+    std::move(splitFeats),
     std::move(linearFeats),
     (size_t) numRows,
     (size_t) numColumns,
@@ -758,7 +783,7 @@ Rcpp::List rcpp_reconstructree(
     (bool) verbose,
     (bool) middleSplit,
     (int) maxObs,
-    (bool) ridgeRF,
+    (bool) linear,
     (float) overfitPenalty,
     doubleTree
   );

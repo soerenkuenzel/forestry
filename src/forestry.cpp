@@ -40,7 +40,7 @@ forestry::forestry(
   bool verbose,
   bool splitMiddle,
   size_t maxObs,
-  bool ridgeRF,
+  bool linear,
   float overfitPenalty,
   bool doubleTree
 ){
@@ -61,7 +61,7 @@ forestry::forestry(
   this->_verbose = verbose;
   this->_splitMiddle = splitMiddle;
   this->_maxObs = maxObs;
-  this->_ridgeRF = ridgeRF;
+  this->_linear = linear;
   this->_overfitPenalty = overfitPenalty;
   this->_doubleTree = doubleTree;
 
@@ -236,7 +236,7 @@ void forestry::addTrees(size_t ntree) {
                 random_number_generator,
                 getSplitMiddle(),
                 getMaxObs(),
-                getRidgeRF(),
+                getlinear(),
                 getOverfitPenalty()
               )
             );
@@ -258,7 +258,7 @@ void forestry::addTrees(size_t ntree) {
                     random_number_generator,
                     getSplitMiddle(),
                     getMaxObs(),
-                    getRidgeRF(),
+                    getlinear(),
                     getOverfitPenalty()
                  );
             }
@@ -375,7 +375,7 @@ std::unique_ptr< std::vector<float> > forestry::predict(
                   xNew,
                   getTrainingData(),
                   weightMatrix,
-                  getRidgeRF()
+                  getlinear()
               );
             } else {
               (*currentTree).predict(
@@ -384,7 +384,7 @@ std::unique_ptr< std::vector<float> > forestry::predict(
                 xNew,
                 getTrainingData(),
                 weightMatrix,
-                getRidgeRF()
+                getlinear()
               );
             }
 
@@ -825,7 +825,7 @@ void forestry::reconstructTrees(
                 getMinNodeSizeToSplitAvg(),
                 getMinSplitGain(),
                 getMaxDepth(),
-                getRidgeRF(),
+                getlinear(),
                 getOverfitPenalty(),
                 (*categoricalFeatureColsRcpp),
                 (*var_ids)[i],

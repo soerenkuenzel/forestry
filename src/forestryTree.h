@@ -31,7 +31,7 @@ public:
     std::mt19937_64& random_number_generator,
     bool splitMiddle,
     size_t maxObs,
-    bool ridgeRF,
+    bool linear,
     float overfitPenalty
   );
 
@@ -55,7 +55,7 @@ public:
     std::vector< std::vector<float> >* xNew,
     DataFrame* trainingData,
     arma::Mat<float>* weightMatrix = NULL,
-    bool ridgeRF = false
+    bool linear = false
   );
 
   std::unique_ptr<tree_info> getTreeInfo(
@@ -70,7 +70,7 @@ public:
       size_t minNodeSizeToSplitAvg,
       float minSplitGain,
       size_t maxDepth,
-      bool ridgeRF,
+      bool linear,
       float overfitPenalty,
       std::vector<size_t> categoricalFeatureColsRcpp,
       std::vector<int> var_ids,
@@ -97,7 +97,7 @@ public:
     size_t depth,
     bool splitMiddle,
     size_t maxObs,
-    bool ridgeRF,
+    bool linear,
     float overfitPenalty,
     std::vector<double>* benchmark,
     arma::Mat<double> gTotal,
@@ -119,14 +119,14 @@ public:
     std::mt19937_64& random_number_generator,
     bool splitMiddle,
     size_t maxObs,
-    bool ridgeRF,
+    bool linear,
     float overfitPenalty,
     std::vector<double>* benchmark,
     arma::Mat<double>& gTotal,
     arma::Mat<double>& sTotal
   );
 
-  void initializeRidgeRF(
+  void initializelinear(
       DataFrame* trainingData,
       arma::Mat<double>& gTotal,
       arma::Mat<double>& sTotal,
@@ -215,7 +215,7 @@ private:
   std::unique_ptr< std::vector<size_t> > _averagingSampleIndex;
   std::unique_ptr< std::vector<size_t> > _splittingSampleIndex;
   std::unique_ptr< RFNode > _root;
-  bool _ridgeRF;
+  bool _linear;
   float _overfitPenalty;
   std::vector<double>* _benchmark;
 };

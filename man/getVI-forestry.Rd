@@ -9,8 +9,13 @@ getVI(object, noWarning = FALSE)
 \arguments{
 \item{object}{A `forestry` object.}
 
-\item{noWarning}{flag to not display warnings}
+\item{noWarning}{flag to not display warnings or display warnings}
 }
 \description{
-Calculate increase in OOB for each shuffled feature for forest.
+Calculate variable importance for `forestry` object as
+  introduced in (Breiman 2001). Returns a list of percentage increases in
+  OOB error when shuffling each feature values and getting OOB error.
+}
+\seealso{
+\code{\link{forestry}}
 }

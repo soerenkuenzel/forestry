@@ -44,7 +44,7 @@ public:
     std::vector< std::vector<float> >* xNew,
     DataFrame* trainingData,
     arma::Mat<float>* weightMatrix,
-    bool ridgeRF,
+    bool linear,
     float lambda
   );
 

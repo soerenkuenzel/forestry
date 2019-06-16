@@ -32,7 +32,7 @@ multilayerForestry::multilayerForestry(
   bool verbose,
   bool splitMiddle,
   size_t maxObs,
-  bool ridgeRF,
+  bool linear,
   float overfitPenalty,
   bool doubleTree
 ){
@@ -55,7 +55,7 @@ multilayerForestry::multilayerForestry(
   this->_verbose = verbose;
   this->_splitMiddle = splitMiddle;
   this->_maxObs = maxObs;
-  this->_ridgeRF = ridgeRF;
+  this->_linear = linear;
   this->_overfitPenalty = overfitPenalty;
   this->_doubleTree = doubleTree;
 
@@ -92,6 +92,9 @@ void multilayerForestry::addForests(size_t ntree) {
     std::unique_ptr< std::vector<size_t> > residualCatCols_(
         new std::vector<size_t>(*(trainingData->getCatCols()))
     );
+    std::unique_ptr< std::vector<size_t> > residualSplitCols_(
+        new std::vector<size_t>(*(trainingData->getLinCols()))
+    );
     std::unique_ptr< std::vector<size_t> > residualLinCols_(
         new std::vector<size_t>(*(trainingData->getLinCols()))
     );
@@ -103,6 +106,7 @@ void multilayerForestry::addForests(size_t ntree) {
       residualFeatureData_,
       std::move(residuals_),
       std::move(residualCatCols_),
+      std::move(residualSplitCols_),
       std::move(residualLinCols_),
       trainingData->getNumRows(),
       trainingData->getNumColumns(),
@@ -127,7 +131,7 @@ void multilayerForestry::addForests(size_t ntree) {
       _verbose,
       _splitMiddle,
       _maxObs,
-      _ridgeRF,
+      _linear,
       _overfitPenalty,
       _doubleTree
     );
