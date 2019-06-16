@@ -12,7 +12,7 @@ multilayerForestry(x, y, ntree = 500, nrounds = 1, eta = 0.3,
   nodesizeStrictAvg = max(round(nrow(x)/128), 1), minSplitGain = 0,
   maxDepth = 99, splitratio = 1, seed = as.integer(runif(1) * 1000),
   verbose = FALSE, nthread = 0, splitrule = "variance",
-  middleSplit = TRUE, maxObs = length(y), ridgeRF = FALSE,
+  middleSplit = TRUE, maxObs = length(y), linear = FALSE,
   splitFeats = 1:(ncol(x)), linFeats = 1:(ncol(x)),
   overfitPenalty = 1, doubleTree = FALSE, reuseforestry = NULL,
   saveable = TRUE)
@@ -90,7 +90,7 @@ less than nrow(x), at each split point, maxObs split points will be
 randomly sampled to test as potential splitting points instead of every
 feature value (default).}
 
-\item{ridgeRF}{Fit the model with a split function optimizing for a linear
+\item{linear}{Fit the model with a split function optimizing for a linear
 aggregation function instead of a constant aggregation function. (default
 is FALSE).}
 
@@ -98,10 +98,10 @@ is FALSE).}
 (defaults to use all features).}
 
 \item{linFeats}{Specify which features to split linearly on when using
-ridgeRF (defaults to use all numerical features)}
+linear (defaults to use all numerical features)}
 
 \item{overfitPenalty}{Value to determine how much to penalize magnitude of
-coefficients in ridge regression when using ridgeRF (default is 1).}
+coefficients in ridge regression when using linear (default is 1).}
 
 \item{doubleTree}{Indicate whether the number of tree is doubled as averaging
 and splitting data can be exchanged to create decorrelated trees.

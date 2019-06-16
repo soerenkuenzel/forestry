@@ -11,7 +11,7 @@ forestry(x, y, ntree = 500, replace = TRUE, sampsize = if (replace)
   maxDepth = round(nrow(x)/2) + 1, splitratio = 1,
   seed = as.integer(runif(1) * 1000), verbose = FALSE, nthread = 0,
   splitrule = "variance", middleSplit = FALSE, maxObs = length(y),
-  ridgeRF = FALSE, splitFeats = 1:(ncol(x)), linFeats = 1:(ncol(x)),
+  linear = FALSE, splitFeats = 1:(ncol(x)), linFeats = 1:(ncol(x)),
   overfitPenalty = 1, doubleTree = FALSE, reuseforestry = NULL,
   saveable = TRUE)
 }
@@ -84,7 +84,7 @@ less than nrow(x), at each split point, maxObs split points will be
 randomly sampled to test as potential splitting points instead of every
 feature value (default).}
 
-\item{ridgeRF}{Fit the model with a split function optimizing for a linear
+\item{linear}{Fit the model with a split function optimizing for a linear
 aggregation function instead of a constant aggregation function. (default
 is FALSE).}
 
@@ -92,10 +92,10 @@ is FALSE).}
 (defaults to use all features).}
 
 \item{linFeats}{Specify which features to split linearly on when using
-ridgeRF (defaults to use all numerical features)}
+linear (defaults to use all numerical features)}
 
 \item{overfitPenalty}{Value to determine how much to penalize magnitude of
-coefficients in ridge regression when using ridgeRF (default is 1).}
+coefficients in ridge regression when using linear (default is 1).}
 
 \item{doubleTree}{Indicate whether the number of tree is doubled as averaging
 and splitting data can be exchanged to create decorrelated trees.
@@ -121,7 +121,7 @@ forestry is a fast implementation of a variety of tree-based
   implemented to scale well with very large datasets.
 }
 \details{
-For Linear Random Forests, set the ridgeRF option to TRUE, and
+For Linear Random Forests, set the linear option to TRUE, and
   specify lambda for ridge regression with overfitPenalty parameter. For
   gradient boosting and gradient boosting forests, see mulitlater-forestry.
 }
@@ -156,7 +156,7 @@ forest <- forestry(
           replace = TRUE,
           nodesizeStrictSpl = 5,
           nodesizeStrictAvg = 5,
-          ridgeRF = TRUE
+          linear = TRUE
           )
 
 predict(forest, x)

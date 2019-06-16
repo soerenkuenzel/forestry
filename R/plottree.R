@@ -32,7 +32,7 @@
 #'   mtry = 4,
 #'   ntree = 1000,
 #'   minSplitGain = .004,
-#'   ridgeRF = TRUE,
+#'   linear = TRUE,
 #'   overfitPenalty = 1.65,
 #'   linFeats = 1:2)
 #'
@@ -233,7 +233,7 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
   dta_y <- forestry_tree@processed_dta$y
 
   glmn_coefs <- list()
-  if (forestry_tree@ridgeRF) {
+  if (forestry_tree@linear) {
     # ridge forest
     for (leaf_id in node_info$node_id[node_info$is_leaf]) {
       # leaf_id = 1

@@ -43,7 +43,7 @@ ridge_rf <- forestry(
   mtry = 4,
   ntree = 1000,
   minSplitGain = .004,
-  ridgeRF = TRUE,
+  linear = TRUE,
   overfitPenalty = 1.65,
   linFeats = 1:2)
 
