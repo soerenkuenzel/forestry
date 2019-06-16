@@ -2,9 +2,9 @@
 #' @importFrom caret createFolds
 NULL
 
-#' compute detachment indicies' percentiles
+#' compute detachment indices' percentiles
 #' @name evaluate_detachments-forestry
-#' @title compute detachment indicies' percentiles
+#' @title compute detachment indices' percentiles
 #' @rdname evaluate_detachments-forestry
 #' @description Computes and returns the detachments levels of new observations in
 #' specified dimensions.
@@ -31,7 +31,7 @@ NULL
 #'
 #' features <- c("Sepal.Width", "Petal.Length", "Petal.Width", "Species")
 #'
-#' # Evaluate the test observations' detachment indicies
+#' # Evaluate the test observations' detachment indices
 #' trust <- evaluate_detachments(object = rf,
 #'                               feature.new = x_test,
 #'                               feature = features,
@@ -67,7 +67,6 @@ evaluate_detachments <- function(object,
 
   eval <- data.frame(1:nrow(feature.new))
   for (feat in feat.name) {
-    print(feat)
     # Compute detachment indices for new data
     detachments <- compute_detachments(object = object,
                                        feature.new = feature.new,
