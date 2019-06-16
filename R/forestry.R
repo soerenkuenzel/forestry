@@ -1,5 +1,6 @@
 #' @useDynLib forestry, .registration = TRUE
 #' @importFrom Rcpp sourceCpp
+#' @importFrom stats predict runif
 NULL
 
 
@@ -10,6 +11,7 @@ NULL
 #' @rdname training_data_checker-forestry
 #' @description Check the input to forestry constructor
 #' @inheritParams forestry
+#' @noRd
 training_data_checker <- function(x,
                                   y,
                                   ntree,
@@ -224,6 +226,7 @@ training_data_checker <- function(x,
 #' @name testing_data_checker-forestry
 #' @description Check the testing data to do prediction
 #' @param feature.new A data frame of testing predictors.
+#' @noRd
 testing_data_checker <- function(feature.new) {
   feature.new <- as.data.frame(feature.new)
   if (any(is.na(feature.new))) {
@@ -970,7 +973,7 @@ multilayerForestry <- function(x,
 predict.forestry <- function(object,
                              feature.new,
                              aggregation = "average",
-                             localVariableImportance = FALSE,...) {
+                             localVariableImportance = FALSE, ...) {
   # Preprocess the data
   testing_data_checker(feature.new)
 
@@ -1157,221 +1160,6 @@ addTrees <- function(object,
   }
 
 
-
-# -- Auto-Tune -----------------------------------------------------------------
-#' autoforestry-forestry
-#' @rdname autoforestry-forestry
-#' @inheritParams forestry
-#' @param sampsize The size of total samples to draw for the training data.
-#' @param num_iter Maximum iterations/epochs per configuration. Default is 1024.
-#' @param eta Downsampling rate. Default value is 2.
-#' @param verbose if tuning process in verbose mode
-#' @param seed random seed
-#' @param nthread Number of threads to train and predict theforest. The default
-#'   number is 0 which represents using all cores.
-#' @return A `forestry` object
-#' @import stats
-#' @export
-autoforestry <- function(x,
-                         y,
-                         sampsize = as.integer(nrow(x) * 0.75),
-                         num_iter = 1024,
-                         eta = 2,
-                         verbose = FALSE,
-                         seed = 24750371,
-                         nthread = 0) {
-  if (verbose) {
-    print("Start auto-tuning.")
-  }
-
-  # Creat a dummy tree just to reuse its data.
-  dummy_tree <-
-    forestry(
-      x,
-      y,
-      ntree = 1,
-      nodesizeSpl = nrow(x),
-      nodesizeAvg = nrow(x)
-    )
-
-  # Number of unique executions of Successive Halving (minus one)
-  s_max <- as.integer(log(num_iter) / log(eta))
-
-  # Total number of iterations (without reuse) per execution of
-  # successive halving (n,r)
-  B <- (s_max + 1) * num_iter
-
-  if (verbose) {
-    print(
-      paste(
-        "Hyperband will run successive halving in",
-        s_max,
-        "times, with",
-        B,
-        "iterations per execution."
-      )
-    )
-  }
-
-  # Begin finite horizon hyperband outlerloop
-  models <- vector("list", s_max + 1)
-  models_OOB <- vector("list", s_max + 1)
-
-  set.seed(seed)
-
-  for (s in s_max:0) {
-    if (verbose) {
-      print(paste("Hyperband successive halving round", s_max + 1 - s))
-    }
-
-    # Initial number of configurations
-    n <- as.integer(ceiling(B / num_iter / (s + 1) * eta ^ s))
-
-    # Initial number of iterations to run configurations for
-    r <- num_iter * eta ^ (-s)
-
-    if (verbose) {
-      print(paste(">>> Total number of configurations:", n))
-      print(paste(
-        ">>> Number of iterations per configuration:",
-        as.integer(r)
-      ))
-    }
-
-    # Begin finite horizon successive halving with (n,r)
-    # Generate parameters:
-    allConfigs <- data.frame(
-      mtry = sample(1:ncol(x), n, replace = TRUE),
-      min_node_size_spl = NA, #sample(1:min(30, nrow(x)), n, replace = TRUE),
-      min_node_size_ave = NA, #sample(1:min(30, nrow(x)), n, replace = TRUE),
-      splitratio = runif(n, min = 0.1, max = 1),
-      replace = sample(c(TRUE, FALSE), n, replace = TRUE),
-      middleSplit = sample(c(TRUE, FALSE), n, replace = TRUE)
-    )
-
-    min_node_size_spl_raw <- floor(allConfigs$splitratio * sampsize *
-                                     rbeta(n, 1, 3))
-    allConfigs$min_node_size_spl <- ifelse(min_node_size_spl_raw == 0, 1,
-                                           min_node_size_spl_raw)
-    min_node_size_ave <- floor((1 - allConfigs$splitratio) * sampsize *
-                                 rbeta(n, 1, 3))
-    allConfigs$min_node_size_ave <- ifelse(min_node_size_ave == 0, 1,
-                                           min_node_size_ave)
-
-    if (verbose) {
-      print(paste(">>>", n, " configurations have been generated."))
-    }
-
-    val_models <- vector("list", nrow(allConfigs))
-    r_old <- 1
-    for (j in 1:nrow(allConfigs)) {
-      tryCatch({
-        val_models[[j]] <- forestry(
-          x = x,
-          y = y,
-          ntree = r_old,
-          mtry = allConfigs$mtry[j],
-          nodesizeSpl = allConfigs$min_node_size_spl[j],
-          nodesizeAvg = allConfigs$min_node_size_ave[j],
-          splitratio = allConfigs$splitratio[j],
-          replace = allConfigs$replace[j],
-          sampsize = sampsize,
-          nthread = nthread,
-          middleSplit = allConfigs$middleSplit[j],
-          reuseforestry = dummy_tree
-        )
-      }, error = function(err) {
-        val_models[[j]] <- NULL
-      })
-    }
-
-    if (s != 0) {
-      for (i in 0:(s - 1)) {
-        # Run each of the n_i configs for r_i iterations and keep best
-        # n_i/eta
-        n_i <- as.integer(n * eta ^ (-i))
-        r_i <- as.integer(r * eta ^ i)
-        r_new <- r_i - r_old
-
-        # if (verbose) {
-        #   print(paste("Iterations", i))
-        #   print(paste("Total number of configurations:", n_i))
-        #   print(paste("Number of iterations per configuration:", r_i))
-        # }
-
-        val_losses <- vector("list", nrow(allConfigs))
-
-        # Iterate to evaluate each parameter combination and cut the
-        # parameter pools in half every iteration based on its score
-        for (j in 1:nrow(allConfigs)) {
-          if (r_new > 0 && !is.null(val_models[[j]])) {
-            val_models[[j]] <- addTrees(val_models[[j]], r_new)
-          }
-          if (!is.null(val_models[[j]])) {
-            val_losses[[j]] <- getOOB(val_models[[j]], noWarning = TRUE)
-            if (is.na(val_losses[[j]])) {
-              val_losses[[j]] <- Inf
-            }
-          } else {
-            val_losses[[j]] <- Inf
-          }
-        }
-
-        r_old <- r_i
-
-        val_losses_idx <-
-          sort(unlist(val_losses), index.return = TRUE)
-        val_top_idx <- val_losses_idx$ix[0:as.integer(n_i / eta)]
-        allConfigs <- allConfigs[val_top_idx,]
-        val_models <- val_models[val_top_idx]
-        gc()
-        rownames(allConfigs) <- 1:nrow(allConfigs)
-
-        # if (verbose) {
-        #   print(paste(length(val_losses_idx$ix) - nrow(allConfigs),
-        #               "configurations have been eliminated."))
-        # }
-      }
-    }
-    # End finite horizon successive halving with (n,r)
-    if (!is.null(val_models[[1]])) {
-      best_OOB <- getOOB(val_models[[1]], noWarning = TRUE)
-      if (is.na(best_OOB)) {
-        stop()
-        best_OOB <- Inf
-      }
-    } else {
-      stop()
-      best_OOB <- Inf
-    }
-    if (verbose) {
-      print(paste(">>> Successive halving ends and the best model is saved."))
-      print(paste(">>> OOB:", best_OOB))
-    }
-
-    if (!is.null(val_models[[1]]))
-      models[[s + 1]] <- val_models[[1]]
-    models_OOB[[s + 1]] <- best_OOB
-
-  }
-
-  # End finite horizon hyperband outlerloop and sort by performance
-  model_losses_idx <- sort(unlist(models_OOB), index.return = TRUE)
-
-  if (verbose) {
-    print(
-      paste(
-        "Best model is selected from best-performed model in",
-        s_max,
-        "successive halving, with OOB",
-        models_OOB[model_losses_idx$ix[1]]
-      )
-    )
-  }
-
-  return(models[[model_losses_idx$ix[1]]])
-}
-
 # -- Translate C++ to R --------------------------------------------------------
 #' @title Cpp to R translator
 #' @description Add more trees to the existing forest.
@@ -1379,7 +1167,7 @@ autoforestry <- function(x,
 #'   object
 #' @return A list of lists. Each sublist contains the information to span a
 #'   tree.
-#' @export
+#' @noRd
 CppToR_translator <- function(object) {
     tryCatch({
       return(rcpp_CppToR_translator(object))

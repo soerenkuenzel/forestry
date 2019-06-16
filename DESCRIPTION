@@ -35,6 +35,5 @@ Collate:
     'R_preprocessing.R'
     'RcppExports.R'
     'forestry.R'
-    'backwards_compatible.R'
     'compute_rf_lp.R'
     'plottree.R'
