@@ -230,13 +230,13 @@ std::vector<size_t> sampleFeatures(
     std::set_intersection(numCols->begin(), numCols->end(),
                           splitCols->begin(), splitCols->end(), back_inserter(splitNumCols));
 
-    std::vector<size_t> splitWeights;
+    std::vector<float> splitWeights;
     for (size_t splitIndex: splitNumCols) {
       splitWeights.push_back(weights->at(splitIndex));
     }
 
     std::discrete_distribution<size_t> discrete_dist(
-        splitWeights.begin(), splitWeights.end()
+      splitWeights.begin(), splitWeights.end()
     );
 
     size_t mtrySplit = std::min(mtry, splitNumCols.size());
@@ -254,8 +254,7 @@ std::vector<size_t> sampleFeatures(
     }
 
   } else {
-    std::vector<size_t> splitWeights;
-
+    std::vector<float> splitWeights;
     for (size_t splitIndex: *splitCols) {
       splitWeights.push_back(weights->at(splitIndex));
     }
