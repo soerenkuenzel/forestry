@@ -254,8 +254,14 @@ std::vector<size_t> sampleFeatures(
     }
 
   } else {
+    std::vector<size_t> splitWeights;
+
+    for (size_t splitIndex: *splitCols) {
+      splitWeights.push_back(weights->at(splitIndex));
+    }
+
     std::discrete_distribution<size_t> discrete_dist(
-        weights->begin(), weights->end()
+      splitWeights.begin(), splitWeights.end()
     );
 
     size_t mtrySplit = std::min(mtry, splitCols->size());
