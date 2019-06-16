@@ -11,12 +11,8 @@ Encoding: UTF-8
 LazyData: true
 Imports:
     Rcpp (>= 0.12.9),
-    foreach,
-    doParallel,
     parallel,
     plyr,
-    MASS (>= 7.3.0),
-    rBayesianOptimization,
     methods,
     visNetwork, 
     glmnet, 
