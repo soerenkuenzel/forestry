@@ -38,3 +38,4 @@ Collate:
     'backwards_compatible.R'
     'compute_rf_lp.R'
     'plottree.R'
+    'quantileForest.R'

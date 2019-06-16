@@ -1,0 +1,129 @@
+#' @include quantileForest.R
+#' @importFrom caret createFolds
+NULL
+
+#' compute lp levels
+#' @name evaluate_lp-forestry
+#' @title compute trust levels
+#' @rdname evaluate_lp-forestry
+#' @description Computes and returns the lp levels of new observations in
+#' specified dimensions.
+#' @inheritParams compute_lp
+#' @param object A `forestry` object.
+#' @param feature.new A data frame of testing predictors.
+#' @param feat.name a list of features for computing the levels with respect to.
+#' @param verbose Print out the steps in the algorithm.
+#' @param num.CV Number of folds in the CV to compute the detachement
+#' @return A data frame of quantiles of in response variable conditional on the
+#' test observations.
+#' @examples
+#' # Set seed for reproductivity
+#' set.seed(292313)
+#' # Use Iris Data
+#' test_idx <- sample(nrow(iris), 10)
+#'
+#' # Select, for example, sepal sength as the response variable
+#' index <- which(colnames(iris) == "Sepal.Length")
+#' x_train <- iris[-test_idx, -index]
+#' y_train <- iris[-test_idx, index]
+#' x_test <- iris[test_idx, -index]
+#' rf <- forestry(x = x_train, y = y_train)
+#'
+#' features <- c("Sepal.Width", "Petal.Length", "Petal.Width", "Species")
+#'
+#' # Evaluate the test observations' lp distances
+#' trust <- evaluate_lp(object = rf,
+#'                      feature.new = x_test,
+#'                      feature = features,
+#'                      p = 1)
+#' @export
+evaluate_lp <- function(object,
+                        feature.new,
+                        feat.name,
+                        p = 1,
+                        verbose = TRUE,
+                        num.CV = 10) {
+
+
+  # Checks and parsing:
+  if (class(object) != "forestry") {
+    stop("The object submitted is not a forestry random forest")
+  }
+
+  feature.new <- as.data.frame(feature.new)
+  x_train <- slot(object, "processed_dta")$processed_x
+  y_train <- slot(object, "processed_dta")$y
+
+  feature.new <- preprocess_testing(feature.new,
+                                    object@featureNames,
+                                    object@categoricalFeatureCols,
+                                    object@categoricalFeatureMapping)
+
+  # Get appropropriate weight matrix
+  y_weights <- predict(object = object,
+                       feature.new = feature.new,
+                       aggregation = "weightMatrix")$weightMatrix
+
+
+  eval <- data.frame(1:nrow(feature.new))
+  for (feat in feat.name) {
+    # Compute lp distances for new data
+    lp_distances <- compute_lp(object = object,
+                               feature.new = feature.new,
+                               distance.feat = feat,
+                               p = p)
+
+    # Compute lp distances for the training data using OOB observations:
+    folds <- caret::createFolds(y_train, k = num.CV, list = TRUE,
+                                returnTrain = FALSE)
+
+    # Create a vector of lp distances for training observations to be filled
+    x_train_lp <- rep(NA, nrow(x_train))
+
+    for (k in 1:num.CV) {
+      if (verbose) {
+        print(paste("Running fold", k, "out of", num.CV))
+      }
+      fold_ids <- folds[[k]]
+      rf <- forestry(x = x_train[-fold_ids, ],
+                     y = y_train[-fold_ids],
+                     ntree = object@ntree,
+                     replace = object@replace,
+                     sample.fraction = object@sampsize / length(y_train),
+                     mtry = object@mtry,
+                     nodesizeAvg = object@nodesizeAvg,
+                     nodesizeStrictSpl = object@nodesizeStrictSpl,
+                     nodesizeStrictAvg = object@nodesizeStrictAvg,
+                     minSplitGain = object@minSplitGain,
+                     maxDepth = object@maxDepth,
+                     splitratio = object@splitratio,
+                     middleSplit = object@middleSplit,
+                     maxObs = object@maxObs,
+                     ridgeRF = object@ridgeRF,
+                     linFeats = object@linFeats + 1,
+                     overfitPenalty = object@overfitPenalty,
+                     doubleTree = object@doubleTree)
+
+      x_train_lp[fold_ids] <- compute_lp(object = rf,
+                                         feature.new = x_train[fold_ids, ],
+                                         distance.feat = feat,
+                                         p = p)
+    }
+
+    # Get conditional probabilities for new data
+    probs <- get_conditional_dist_bnd(y_weights = y_weights,
+                                      train_y = x_train_lp,
+                                      vals = lp_distances)
+    probs <- as.data.frame(probs)
+
+    colnames(probs)[1] <- feat
+    eval <- cbind(eval, probs)
+  }
+
+  eval <- eval[ ,-1]
+  return(eval)
+}
+
+
+
+
