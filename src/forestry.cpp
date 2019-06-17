@@ -309,6 +309,9 @@ std::unique_ptr< std::vector<float> > forestry::predict(
   arma::Mat<float>* localVIMatrix,
   predict_info predictInfo
 ){
+  // Update isRidgeRF in predictInfo
+  predictInfo.isRidgeRF = getRidgeRF();
+
   std::vector<float> prediction;
   size_t numObservations = (*xNew)[0].size();
   for (size_t j=0; j<numObservations; j++) {

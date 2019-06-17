@@ -40,7 +40,7 @@ struct predict_info{
   float overfitPenalty;
   // contains the overfit penalty (lambda)
   float power;
-  // contains the power for the rf distances
+  // contains the power for computing the detachment indices
   int distanceNumCol;
   // contains the column number for the feature in which the rf distances
   // will be computed
