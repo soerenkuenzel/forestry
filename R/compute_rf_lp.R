@@ -5,8 +5,8 @@
 #' @name compute_lp-forestry
 #' @title compute lp distances
 #' @rdname compute_lp-forestry
-#' @description return lp ditances of selected test observations.
-#' @param object A `forestry` object.
+#' @description Return lp distances of selected test observations.
+#' @param object A trained model object of class "forestry".
 #' @param feature.new A data frame of testing predictors.
 #' @param feature A string denoting the dimension for computing lp distances.
 #' @param p A positive real number determining the norm p-norm used.

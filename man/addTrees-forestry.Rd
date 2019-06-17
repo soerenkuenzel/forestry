@@ -7,13 +7,13 @@
 addTrees(object, ntree)
 }
 \arguments{
-\item{object}{A `forestry` object.}
+\item{object}{A trained model object of class "forestry".}
 
-\item{ntree}{Number of new trees to add}
+\item{ntree}{Number of new trees to add.}
 }
 \value{
-A `forestry` object
+A trained model object of class "forestry".
 }
 \description{
-Add more trees to the existing forest.
+Add more trees to an existing forest.
 }

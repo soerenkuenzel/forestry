@@ -8,15 +8,15 @@
 make_savable(object)
 }
 \arguments{
-\item{object}{an object of class `forestry`}
+\item{object}{A trained model object of class "forestry".}
 }
 \value{
 A list of lists. Each sublist contains the information to span a
   tree.
 }
 \description{
-When a `foresty` object is saved and then reloaded the Cpp
-  pointers for the data set and the Cpp forest have to be reconstructed
+When a `foresty` object is saved and then reloaded ,the Cpp
+  pointers for the data set and the Cpp forest have to be reconstructed.
 }
 \examples{
 set.seed(323652639)

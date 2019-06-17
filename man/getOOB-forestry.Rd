@@ -3,18 +3,19 @@
 \name{getOOB-forestry}
 \alias{getOOB-forestry}
 \alias{getOOB}
-\alias{getOOB,forestry-method}
+\alias{getOOB,}
+\alias{forestry-method}
 \title{getOOB-forestry}
 \usage{
 getOOB(object, noWarning)
 }
 \arguments{
-\item{object}{A `forestry` object.}
+\item{object}{A trained model object of class "forestry".}
 
-\item{noWarning}{flag to not display warnings}
+\item{noWarning}{Flag to not display warnings.}
 }
 \value{
-The OOB error of the forest.
+The out-of-bag error of the forest.
 }
 \description{
 Calculate the out-of-bag error of a given forest.

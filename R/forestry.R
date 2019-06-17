@@ -332,7 +332,7 @@ setClass(
 #'   to follow strictly. The default value is 1.
 #' @param minSplitGain Minimum loss reduction to split a node further in a tree.
 #'   specifically this is the percentage R squared increase which each potential
-#'   split must give to be considered (default is 0).
+#'   split must give to be considered. The default value is 0.
 #' @param maxDepth Maximum depth of a tree. The default value is 99.
 #' @param splitratio Proportion of the training data used as the splitting
 #'   dataset. It is a ratio between 0 and 1. If the ratio is 1, then essentially
@@ -346,13 +346,13 @@ setClass(
 #'   number is 0 which represents using all cores.
 #' @param splitrule Only variance is implemented at this point and it
 #'   specifies the loss function according to which the splits of random forest
-#'   should be made
+#'   should be made.
 #' @param middleSplit Flag to indicate whether the split value takes the average
 #'   of two feature values. If false, it will take a point based on a uniform
-#'   distribution between two feature values. (Default = FALSE)
+#'   distribution between two feature values. The default value is FALSE.
 #' @param doubleTree Indicate whether the number of tree is doubled as averaging
 #'   and splitting data can be exchanged to create decorrelated trees.
-#'   (Default = FALSE)
+#'   The default value is FALSE.
 #' @param reuseforestry Pass in a `forestry` object which will recycle the
 #'   dataframe the old object created. It will save some space working on the
 #'   same dataset.
@@ -366,8 +366,8 @@ setClass(
 #'   training many RF, it makes a lot of sense to set this to FALSE to save
 #'   time and memory.
 #' @param linear Fit the model with a split function optimizing for a linear
-#'   aggregation function instead of a constant aggregation function. (default
-#'   is FALSE).
+#'   aggregation function instead of a constant aggregation function. The default
+#'   value is FALSE.
 #' @param splitFeats Specify which features to split on when creating a tree
 #'   (defaults to use all features).
 #' @param linFeats Specify which features to split linearly on when using
@@ -375,15 +375,15 @@ setClass(
 #' @param sampleWeights Specify weights for weighted uniform distribution used
 #'   to randomly sample features.
 #' @param overfitPenalty Value to determine how much to penalize magnitude of
-#'   coefficients in ridge regression when using linear (default is 1).
+#'   coefficients in ridge regression when using linear. The default value is 1.
 #' @return A `forestry` object.
 #' @description forestry is a fast implementation of a variety of tree-based
 #'   estimators. Implemented estimators include CART trees, randoms forests,
 #'   boosted trees and forests, and linear trees and forests. All estimators are
 #'   implemented to scale well with very large datasets.
-#' @details For Linear Random Forests, set the linear option to TRUE, and
+#' @details For Linear Random Forests, set the linear option to TRUE and
 #'   specify lambda for ridge regression with overfitPenalty parameter. For
-#'   gradient boosting and gradient boosting forests, see mulitlater-forestry.
+#'   gradient boosting and gradient boosting forests, see mulitlayer-forestry.
 #' @seealso \code{\link{predict.forestry}}
 #' @seealso \code{\link{multilayer-forestry}}
 #' @seealso \code{\link{predict-multilayer-forestry}}
@@ -699,11 +699,11 @@ forestry <- function(x,
 #' @name multilayer-forestry
 #' @title Multilayer forestry
 #' @rdname multilayer-forestry
-#' @description Construct a gradient boosted random forest.
+#' @description Constructs a gradient boosted random forest.
 #' @inheritParams forestry
 #' @param nrounds Number of iterations used for gradient boosting.
 #' @param eta Step size shrinkage used in gradient boosting update.
-#' @return A `multilayerForestry` object.
+#' @return A trained model object of class "multilayerForestry".
 #' @seealso \code{\link{forestry}}
 #' @export
 multilayerForestry <- function(x,
@@ -959,7 +959,7 @@ multilayerForestry <- function(x,
 #' @name predict-forestry
 #' @rdname predict-forestry
 #' @description Return the prediction from the forest.
-#' @param object A `forestry` object.
+#' @param object A trained model object of class "forestry".
 #' @param feature.new A data frame of testing predictors.
 #' @param aggregation How shall the leaf be aggregated. The default is to return
 #'   the mean of the leave `average`. Other options are `weightMatrix`.
@@ -967,7 +967,7 @@ multilayerForestry <- function(x,
 #'   importance for each prediction.
 #' @param ... additional arguments.
 #' @return A vector of predicted responses.
-#' @details This is where we describe the features of predict
+#' @details Allows for different methods of prediction on new data.
 #' @seealso \code{\link{forestry}}
 #' @export
 predict.forestry <- function(object,
@@ -1062,10 +1062,10 @@ predict.multilayerForestry <- function(object,
 #' @name getOOB-forestry
 #' @rdname getOOB-forestry
 #' @description Calculate the out-of-bag error of a given forest.
-#' @param object A `forestry` object.
-#' @param noWarning flag to not display warnings
-#' @aliases getOOB,forestry-method
-#' @return The OOB error of the forest.
+#' @param object A trained model object of class "forestry".
+#' @param noWarning Flag to not display warnings.
+#' @aliases getOOB, forestry-method
+#' @return The out-of-bag error of the forest.
 #' @seealso \code{\link{forestry}}
 #' @export
 getOOB <- function(object,
@@ -1099,10 +1099,11 @@ getOOB <- function(object,
 #' getVI-forestry
 #' @rdname getVI-forestry
 #' @description Calculate variable importance for `forestry` object as
-#'   introduced in (Breiman 2001). Returns a list of percentage increases in
-#'   OOB error when shuffling each feature values and getting OOB error.
-#' @param object A `forestry` object.
-#' @param noWarning flag to not display warnings or display warnings
+#'   introduced by Breiman (2001). Returns a list of percentage increases in
+#'   out-of-bag error when shuffling each feature values and getting
+#'   out-of-bag error.
+#' @param object A trained model object of class "forestry".
+#' @param noWarning Flag to not display warnings or display warnings.
 #' @seealso \code{\link{forestry}}
 #' @export
 getVI <- function(object,
@@ -1137,10 +1138,10 @@ getVI <- function(object,
 # -- Add More Trees ------------------------------------------------------------
 #' addTrees-forestry
 #' @rdname addTrees-forestry
-#' @description Add more trees to the existing forest.
-#' @param object A `forestry` object.
-#' @param ntree Number of new trees to add
-#' @return A `forestry` object
+#' @description Add more trees to an existing forest.
+#' @param object A trained model object of class "forestry".
+#' @param ntree Number of new trees to add.
+#' @return A trained model object of class "forestry".
 #' @export
 addTrees <- function(object,
                      ntree) {
@@ -1237,9 +1238,9 @@ relinkCPP_prt <- function(object) {
 #' make_savable
 #' @name make_savable
 #' @rdname make_savable
-#' @description When a `foresty` object is saved and then reloaded the Cpp
-#'   pointers for the data set and the Cpp forest have to be reconstructed
-#' @param object an object of class `forestry`
+#' @description When a `foresty` object is saved and then reloaded ,the Cpp
+#'   pointers for the data set and the Cpp forest have to be reconstructed.
+#' @param object A trained model object of class "forestry".
 #' @examples
 #' set.seed(323652639)
 #' x <- iris[, -1]

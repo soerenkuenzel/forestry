@@ -5,14 +5,14 @@
 #' @name plot-forestry
 #' @title visualize a tree
 #' @rdname plot-forestry
-#' @description plots a tree in the forest.
-#' @param x A forestry x.
-#' @param tree.id Specifies the tree number that should be visulaized.
+#' @description Plots a single tree in the forest.
+#' @param x A trained model object of class "forestry".
+#' @param tree.id Specifies the tree number that should be visualized
 #' @param print.meta_dta Should the data for the plot be printed?
 #' @param beta.char.len The length of the beta values in leaf node
 #' representation.
-#' @param return.plot.dta if TRUE no plot will be generated, but instead a list
-#'   with all the plot data is returned
+#' @param return.plot.dta If TRUE no plot will be generated, but instead a list
+#'   with all the plot data is returned.
 #' @param ... additional arguments that are not used.
 #' @import glmnet
 #' @examples
