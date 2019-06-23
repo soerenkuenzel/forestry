@@ -162,7 +162,8 @@ void RFNode::predict(
             updateIndex,
             &outputPrediction,
             predictInfo.trainVector,
-            predictInfo.testVector
+            predictInfo.testVector,
+            predictInfo.isCategoricalOutcome
         );
 
       }

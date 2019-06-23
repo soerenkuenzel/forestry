@@ -54,7 +54,8 @@ public:
       std::vector<size_t>* updateIndex,
       std::vector<float>* outputPrediction,
       std::vector<float> trainVector,
-      std::vector<float> testVector
+      std::vector<float> testVector,
+      bool isCategoricalOutcome
   );
 
   std::vector< std::vector<float> >* getAllFeatureData() {

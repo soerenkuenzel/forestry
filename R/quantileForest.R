@@ -109,7 +109,9 @@ get_conditional_quantiles <- function(object,
 #' probs <- get_conditional_distribution(rf, feature.new = x_test, vals)
 #' @export
 
-conditional_distribution <- function(object, feature.new, vals) {
+conditional_distribution <- function(object,
+                                     feature.new,
+                                     vals) {
 
   # Checks and parsing:
   if (class(object) != "forestry") {
@@ -125,21 +127,38 @@ conditional_distribution <- function(object, feature.new, vals) {
 
   train_y <- slot(object, "processed_dta")$y
 
-  return (conditional_dist_bnd(object, processed_x, train_y, vals))
+  return (conditional_dist_bnd(object,
+                               processed_x,
+                               train_y,
+                               vals))
 
 }
 
 conditional_dist_bnd <- function(object,
                                  processed_x,
                                  train_vector,
-                                 test_vector){
+                                 test_vector,
+                                 isCategoricalOutcome = FALSE){
+
+  # Ensure that categorical outcomes are encoded
+  if(is.factor(train_vector) | is.character(train_vector)){
+    trainer <- preprocess_training(train_vector, train_vector)
+    train_vector <- trainer$x[ ,1]
+    test_vector <- preprocess_testing(test_vector,
+                                      featureNames = "x",
+                                      trainer$categoricalFeatureCols,
+                                      trainer$categoricalFeatureMapping)[ ,1]
+    isCategoricalOutcome <- TRUE
+  }
+
   rcppPrediction <- tryCatch({
     rcpp_cppPredictInterface(object@forest,
                              processed_x,
                              aggregation = "average",
                              localVariableImportance = FALSE,
                              trainVec = train_vector,
-                             testVec = test_vector)
+                             testVec = test_vector,
+                             isCatOutcome = isCategoricalOutcome)
   }, error = function(err) {
     print(err)
     return(NULL)

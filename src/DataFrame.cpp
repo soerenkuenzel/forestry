@@ -200,12 +200,11 @@ void DataFrame::conditionalDistribution(
     std::vector<size_t>* updateIndex,
     std::vector<float>* outputPrediction,
     std::vector<float> trainVector,
-    std::vector<float> testVector
+    std::vector<float> testVector,
+    bool isCategoricalOutcome
 ){
 
   size_t totalSampleSize = (*sampleIndex).size();
-
-  // bool isCategoricalVariable =
 
   for (
       std::vector<size_t>::iterator it = (*updateIndex).begin();
@@ -215,17 +214,24 @@ void DataFrame::conditionalDistribution(
 
     float accummulatedSum = 0;
     float itsFeatureValue = testVector[*it];
+
     for (
         std::vector<size_t>::iterator bit = (*sampleIndex).begin();
         bit != (*sampleIndex).end();
         ++bit
     ) {
       float addition;
-      addition = (float)(trainVector[*bit] <= itsFeatureValue);
+      if(isCategoricalOutcome){
+        addition = (float)(trainVector[*bit] != itsFeatureValue);
+      } else {
+        addition = (float)(trainVector[*bit] <= itsFeatureValue);
+      }
       accummulatedSum += addition;
+
     }
     (*outputPrediction)[*it] = accummulatedSum / totalSampleSize;
   }
+
 }
 
 std::vector<size_t> DataFrame::get_all_row_idx(
