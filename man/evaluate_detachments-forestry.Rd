@@ -24,8 +24,8 @@ A data frame of quantiles of in response variable conditional on the
 test observations.
 }
 \description{
-Computes and returns the detachments levels of new observations in
-specified dimensions.
+Computes and returns the detachments percentiles of new observations
+in specified dimensions.
 }
 \details{
 compute detachment indices' percentiles

@@ -6,8 +6,8 @@ NULL
 #' @name evaluate_detachments-forestry
 #' @title compute detachment indices' percentiles
 #' @rdname evaluate_detachments-forestry
-#' @description Computes and returns the detachments levels of new observations in
-#' specified dimensions.
+#' @description Computes and returns the detachments percentiles of new observations
+#' in specified dimensions.
 #' @inheritParams compute_detachments
 #' @param object A `forestry` object.
 #' @param feature.new A data frame of testing predictors.
@@ -42,7 +42,7 @@ evaluate_detachments <- function(object,
                                  feat.name,
                                  p = 1,
                                  verbose = TRUE,
-                                 num.CV = 10) {
+                                 num.CV = 2) {
 
   # Checks and parsing:
   if (class(object) != "forestry") {

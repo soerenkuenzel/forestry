@@ -2,7 +2,6 @@
 
 # Dependencies
 library(dplyr)
-library(roxygen2)
 library(forestry)
 library(ggplot2)
 
