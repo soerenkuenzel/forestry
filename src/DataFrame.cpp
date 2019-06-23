@@ -195,6 +195,39 @@ void DataFrame::computeTreeDistances(
   }
 }
 
+void DataFrame::conditionalDistribution(
+    std::vector<size_t>* sampleIndex,
+    std::vector<size_t>* updateIndex,
+    std::vector<float>* outputPrediction,
+    std::vector<float> trainVector,
+    std::vector<float> testVector
+){
+
+  size_t totalSampleSize = (*sampleIndex).size();
+
+  // bool isCategoricalVariable =
+
+  for (
+      std::vector<size_t>::iterator it = (*updateIndex).begin();
+      it != (*updateIndex).end();
+      ++it
+  ) {
+
+    float accummulatedSum = 0;
+    float itsFeatureValue = testVector[*it];
+    for (
+        std::vector<size_t>::iterator bit = (*sampleIndex).begin();
+        bit != (*sampleIndex).end();
+        ++bit
+    ) {
+      float addition;
+      addition = (float)(trainVector[*bit] <= itsFeatureValue);
+      accummulatedSum += addition;
+    }
+    (*outputPrediction)[*it] = accummulatedSum / totalSampleSize;
+  }
+}
+
 std::vector<size_t> DataFrame::get_all_row_idx(
     std::vector<size_t>* sampleIndex
 ){

@@ -344,10 +344,11 @@ Rcpp::List rcpp_cppPredictInterface(
   std::string aggregation,
   bool localVariableImportance,
   float power = -1,
-  int distanceNumCol = -1
+  int distanceNumCol = -1,
+  Rcpp::NumericVector trainVec = Rcpp::NumericVector::create(),
+  Rcpp::NumericVector testVec = Rcpp::NumericVector::create()
 ){
   try {
-
     Rcpp::XPtr< forestry > testFullForest(forest) ;
 
     std::vector< std::vector<float> > featureData =
@@ -359,10 +360,16 @@ Rcpp::List rcpp_cppPredictInterface(
     predict_info predictInfo = {};
     predictInfo.isPredict = true;
     predictInfo.isWeightMatrix = (aggregation == "weightMatrix");
+
     predictInfo.power = power;
     predictInfo.distanceNumCol = distanceNumCol;
     predictInfo.isRFdistance = (predictInfo.power != -1 &&
                                 predictInfo.distanceNumCol != -1);
+
+    predictInfo.trainVector = Rcpp::as< std::vector<float> >(trainVec);
+    predictInfo.testVector = Rcpp::as< std::vector<float> >(testVec);
+    predictInfo.isConditionalDist = (!predictInfo.trainVector.empty() &&
+                                     !predictInfo.testVector.empty());
 
     arma::Mat<float> weightMatrix;
     arma::Mat<float> localVIMatrix;

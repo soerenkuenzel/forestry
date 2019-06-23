@@ -33,6 +33,8 @@ struct predict_info{
   bool isWeightMatrix;
   bool isRidgeRF;
   bool isRFdistance;
+  bool isConditionalDist;
+  bool isCategoricalOutcome;
   // Booleans contain the desired prediction method
 
   arma::Mat<float>* weightMatrix;
@@ -42,7 +44,11 @@ struct predict_info{
   float power;
   // contains the power for computing the detachment indices
   int distanceNumCol;
-  // contains the column number for the feature in which the rf distances
-  // will be computed
+  // contains the column number for the feature in which the detachment
+  // indices will be computed
+  std::vector<float> trainVector;
+  // the vector of the training set in a conditional quantile computation
+  std::vector<float> testVector;
+  // the vector of the new set in a conditional quantile computation
 };
 #endif //FORESTRYCPP_UTILS_H

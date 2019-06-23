@@ -135,8 +135,8 @@ void RFNode::predict(
 
       if (predictInfo.isRidgeRF) {
 
-      //Use ridgePredict (fit linear model on leaf avging obs + evaluate it)
-      ridgePredict(outputPrediction,
+        //Use ridgePredict (fit linear model on leaf avging obs + evaluate it)
+       ridgePredict(outputPrediction,
                    updateIndex,
                    xNew,
                    trainingData,
@@ -145,14 +145,28 @@ void RFNode::predict(
       } else if(predictInfo.isRFdistance){
 
         // Compute the detachment indices within a single tree
-        (*trainingData).computeTreeDistances(getAveragingIndex(),
-                                             predictInfo.power,
-                                             predictInfo.distanceNumCol,
-                                             updateIndex,
-                                             xNew,
-                                             &outputPrediction);
+        (*trainingData).computeTreeDistances(
+            getAveragingIndex(),
+            predictInfo.power,
+            predictInfo.distanceNumCol,
+            updateIndex,
+            xNew,
+            &outputPrediction
+        );
 
-      } else {
+      } else if(predictInfo.isConditionalDist){
+
+        // Compute the conditional distributions
+        (*trainingData).conditionalDistribution(
+            getAveragingIndex(),
+            updateIndex,
+            &outputPrediction,
+            predictInfo.trainVector,
+            predictInfo.testVector
+        );
+
+      }
+      else {
 
         // Calculate the mean of current node
         float predictedMean = (*trainingData).partitionMean(getAveragingIndex());

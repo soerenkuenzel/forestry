@@ -108,6 +108,58 @@ get_conditional_quantiles <- function(object,
 #' # Compute the conditional probabilities associated with values
 #' probs <- get_conditional_distribution(rf, feature.new = x_test, vals)
 #' @export
+
+conditional_distribution <- function(object, feature.new, vals) {
+
+  # Checks and parsing:
+  if (class(object) != "forestry") {
+    stop("The object submitted is not a forestry random forest")
+  }
+
+  # Preprocess the data
+  testing_data_checker(feature.new)
+  processed_x <- preprocess_testing(feature.new,
+                                    object@featureNames,
+                                    object@categoricalFeatureCols,
+                                    object@categoricalFeatureMapping)
+
+  train_y <- slot(object, "processed_dta")$y
+
+  return (conditional_dist_bnd(object, processed_x, train_y, vals))
+
+}
+
+conditional_dist_bnd <- function(object,
+                                 processed_x,
+                                 train_vector,
+                                 test_vector){
+  rcppPrediction <- tryCatch({
+    rcpp_cppPredictInterface(object@forest,
+                             processed_x,
+                             aggregation = "average",
+                             localVariableImportance = FALSE,
+                             trainVec = train_vector,
+                             testVec = test_vector)
+  }, error = function(err) {
+    print(err)
+    return(NULL)
+  })
+  return(rcppPrediction$prediction)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 get_conditional_distribution <-function(object, feature.new, vals){
 
   # Checks and parsing:
@@ -158,5 +210,8 @@ get_conditional_dist_bnd <- function(y_weights, train_y, vals){
   probs[probs < 0] <- 0
   return(probs)
 }
+
+
+
 
 

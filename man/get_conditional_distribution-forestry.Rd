@@ -2,10 +2,10 @@
 % Please edit documentation in R/quantileForest.R
 \name{get_conditional_distribution-forestry}
 \alias{get_conditional_distribution-forestry}
-\alias{get_conditional_distribution}
+\alias{conditional_distribution}
 \title{compute conditional distribution}
 \usage{
-get_conditional_distribution(object, feature.new, vals)
+conditional_distribution(object, feature.new, detachment.feat, p)
 }
 \arguments{
 \item{object}{A `forestry` object.}

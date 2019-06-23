@@ -102,8 +102,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // rcpp_cppPredictInterface
-Rcpp::List rcpp_cppPredictInterface(SEXP forest, Rcpp::List x, std::string aggregation, bool localVariableImportance, float power, int distanceNumCol);
-RcppExport SEXP _forestry_rcpp_cppPredictInterface(SEXP forestSEXP, SEXP xSEXP, SEXP aggregationSEXP, SEXP localVariableImportanceSEXP, SEXP powerSEXP, SEXP distanceNumColSEXP) {
+Rcpp::List rcpp_cppPredictInterface(SEXP forest, Rcpp::List x, std::string aggregation, bool localVariableImportance, float power, int distanceNumCol, Rcpp::NumericVector trainVec, Rcpp::NumericVector testVec);
+RcppExport SEXP _forestry_rcpp_cppPredictInterface(SEXP forestSEXP, SEXP xSEXP, SEXP aggregationSEXP, SEXP localVariableImportanceSEXP, SEXP powerSEXP, SEXP distanceNumColSEXP, SEXP trainVecSEXP, SEXP testVecSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -113,7 +113,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type localVariableImportance(localVariableImportanceSEXP);
     Rcpp::traits::input_parameter< float >::type power(powerSEXP);
     Rcpp::traits::input_parameter< int >::type distanceNumCol(distanceNumColSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_cppPredictInterface(forest, x, aggregation, localVariableImportance, power, distanceNumCol));
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type trainVec(trainVecSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type testVec(testVecSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_cppPredictInterface(forest, x, aggregation, localVariableImportance, power, distanceNumCol, trainVec, testVec));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -226,7 +228,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_forestry_rcpp_cppDataFrameInterface", (DL_FUNC) &_forestry_rcpp_cppDataFrameInterface, 7},
     {"_forestry_rcpp_cppBuildInterface", (DL_FUNC) &_forestry_rcpp_cppBuildInterface, 28},
     {"_forestry_rcpp_cppMultilayerBuildInterface", (DL_FUNC) &_forestry_rcpp_cppMultilayerBuildInterface, 30},
-    {"_forestry_rcpp_cppPredictInterface", (DL_FUNC) &_forestry_rcpp_cppPredictInterface, 6},
+    {"_forestry_rcpp_cppPredictInterface", (DL_FUNC) &_forestry_rcpp_cppPredictInterface, 8},
     {"_forestry_rcpp_cppMultilayerPredictInterface", (DL_FUNC) &_forestry_rcpp_cppMultilayerPredictInterface, 3},
     {"_forestry_rcpp_OBBPredictInterface", (DL_FUNC) &_forestry_rcpp_OBBPredictInterface, 1},
     {"_forestry_rcpp_VariableImportanceInterface", (DL_FUNC) &_forestry_rcpp_VariableImportanceInterface, 1},
