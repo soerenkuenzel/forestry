@@ -35,7 +35,7 @@ struct predict_info{
   bool isRFdistance;
   bool isConditionalDist;
   bool isCategoricalOutcome;
-  // Booleans contain the desired prediction method
+  // Booleans contain the desired method computed through the prediction pipeline
 
   arma::Mat<float>* weightMatrix;
   // contains the address of the weight matrix

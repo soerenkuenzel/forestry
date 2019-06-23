@@ -111,10 +111,11 @@ evaluate_detachments <- function(object,
                             p = p)
     }
 
-    # Get conditional probabilities for new data
-    probs <- get_conditional_dist_bnd(y_weights = y_weights,
-                                      train_y = x_train_detachments,
-                                      vals = detachments)
+    # Get conditional percentiles for new data
+    probs <- conditional_dist_bnd(object,
+                                  processed_x = feature.new,
+                                  train_vector = x_train_detachments,
+                                  test_vector = detachments)
     probs <- as.data.frame(probs)
 
     colnames(probs)[1] <- feat

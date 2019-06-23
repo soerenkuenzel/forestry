@@ -107,9 +107,10 @@ get_conditional_quantiles <- function(object,
 #'
 #' # Compute the conditional probabilities associated with values
 #' probs <- get_conditional_distribution(rf, feature.new = x_test, vals)
+#'
 #' @export
 
-conditional_distribution <- function(object,
+get_conditional_distribution <- function(object,
                                      feature.new,
                                      vals) {
 
@@ -163,72 +164,15 @@ conditional_dist_bnd <- function(object,
     print(err)
     return(NULL)
   })
-  return(rcppPrediction$prediction)
-}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-get_conditional_distribution <-function(object, feature.new, vals){
-
-  # Checks and parsing:
-  if (class(object) != "forestry") {
-    stop("The object submitted is not a forestry random forest")
-  }
-
-  feature.new <- as.data.frame(feature.new)
-  if (length(vals) != nrow(feature.new)){
-    stop("The number of values does not match the number of obervations")
-  }
-
-  train_y <- slot(object, "processed_dta")$y
-
-  feature.new <- preprocess_testing(feature.new,
-                                    object@featureNames,
-                                    object@categoricalFeatureCols,
-                                    object@categoricalFeatureMapping)
-
-  y_weights <- predict(object = object,
-                       feature.new = feature.new,
-                       aggregation = "weightMatrix")$weightMatrix
-
-  probs <- get_conditional_dist_bnd(y_weights = y_weights,
-                                    train_y = train_y,
-                                    vals = vals)
-  probs <- as.data.frame(probs)
-  return(probs)
-}
-
-
-# Backend conditional distribution function
-get_conditional_dist_bnd <- function(y_weights, train_y, vals){
-
-  # I_ij = 1 if y_i <= val j
-  I_mat <- matrix(train_y,
-                  nrow = length(train_y),
-                  ncol = length(vals),
-                  byrow = FALSE) <=
-           matrix(vals,
-                  nrow = length(train_y),
-                  ncol = length(vals),
-                  byrow = TRUE)
-  I_mat[I_mat] <- 1
-
-  probs <- diag(y_weights %*% I_mat)
+  probs <- rcppPrediction$prediction
   probs[probs > 1] <- 1
   probs[probs < 0] <- 0
-  return(probs)
+  return (as.data.frame(probs))
 }
+
+
+
 
 
 
