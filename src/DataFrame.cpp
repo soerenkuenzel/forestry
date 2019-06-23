@@ -153,19 +153,17 @@ float DataFrame::partitionMean(
   return accummulatedSum / totalSampleSize;
 }
 
-void DataFrame::computeTreeDistances(
-  std::vector<size_t>* sampleIndex,
-  float power,
-  size_t distanceColIndex,
-  std::vector<size_t>* updateIndex,
-  std::vector< std::vector<float> >* xNew,
-  std::vector<float>* outputPrediction
+void DataFrame::computeTreeDetachments(
+    std::vector<size_t>* sampleIndex,
+    float power,
+    std::vector<size_t>* updateIndex,
+    std::vector<float>* outputPrediction,
+    std::vector<float> trainVector,
+    std::vector<float> testVector,
+    bool isCategoricalDimension
 ){
 
   size_t totalSampleSize = (*sampleIndex).size();
-  std::vector<float> featureColumn = *getFeatureData(distanceColIndex - 1);
-  bool isCategoricalVariable =
-    std::count((*getCatCols()).begin(), (*getCatCols()).end(), distanceColIndex - 1);
 
   for (
       std::vector<size_t>::iterator it = (*updateIndex).begin();
@@ -174,7 +172,7 @@ void DataFrame::computeTreeDistances(
   ) {
 
     float accummulatedSum = 0;
-    float itsFeatureValue = (*xNew)[distanceColIndex - 1][*it];
+    float itsFeatureValue = testVector[*it];
 
     for (
         std::vector<size_t>::iterator bit = (*sampleIndex).begin();
@@ -183,11 +181,12 @@ void DataFrame::computeTreeDistances(
     ) {
 
       float addition;
-      if(isCategoricalVariable){
-        addition = (float)(featureColumn[*bit] != itsFeatureValue);
-      }else{
-        addition = pow((float) fabs(featureColumn[*bit] - itsFeatureValue), power);
+      if(isCategoricalDimension){
+        addition = (float)(trainVector[*bit] != itsFeatureValue);
+      } else {
+        addition = pow(fabs(trainVector[*bit] - itsFeatureValue), power);
       }
+
       accummulatedSum += addition;
 
     }
@@ -201,7 +200,7 @@ void DataFrame::conditionalDistribution(
     std::vector<float>* outputPrediction,
     std::vector<float> trainVector,
     std::vector<float> testVector,
-    bool isCategoricalOutcome
+    bool isCategoricalDimension
 ){
 
   size_t totalSampleSize = (*sampleIndex).size();
@@ -221,7 +220,7 @@ void DataFrame::conditionalDistribution(
         ++bit
     ) {
       float addition;
-      if(isCategoricalOutcome){
+      if(isCategoricalDimension){
         addition = (float)(trainVector[*bit] != itsFeatureValue);
       } else {
         addition = (float)(trainVector[*bit] <= itsFeatureValue);

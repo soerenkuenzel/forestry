@@ -139,7 +139,7 @@ conditional_dist_bnd <- function(object,
                                  processed_x,
                                  train_vector,
                                  test_vector,
-                                 isCategoricalOutcome = FALSE){
+                                 isCategoricalDimension = FALSE){
 
   # Ensure that categorical outcomes are encoded
   if(is.factor(train_vector) | is.character(train_vector)){
@@ -149,7 +149,7 @@ conditional_dist_bnd <- function(object,
                                       featureNames = "x",
                                       trainer$categoricalFeatureCols,
                                       trainer$categoricalFeatureMapping)[ ,1]
-    isCategoricalOutcome <- TRUE
+    isCategoricalDimension <- TRUE
   }
 
   rcppPrediction <- tryCatch({
@@ -159,7 +159,7 @@ conditional_dist_bnd <- function(object,
                              localVariableImportance = FALSE,
                              trainVec = train_vector,
                              testVec = test_vector,
-                             isCatOutcome = isCategoricalOutcome)
+                             isCatDimension = isCategoricalDimension)
   }, error = function(err) {
     print(err)
     return(NULL)

@@ -1,7 +1,7 @@
 #' @include forestry.R
 
 # ---Computing detachment indices-----------------------------------------------------
-#' comptute_lp
+#' compute_detachments
 #' @name compute_detachments-forestry
 #' @title compute detachment indices
 #' @rdname compute_detachments-forestry
@@ -50,19 +50,46 @@ compute_detachments <- function(object, feature.new, detachment.feat, p) {
                                     object@categoricalFeatureMapping)
 
   # Get the feature column index in the R dataframe
-  feat.num = which(colnames(processed_x) == detachment.feat)
+  feat.num <- which(colnames(processed_x) == detachment.feat)
+  train_vector <- slot(object,"processed_dta")$processed_x[ ,feat.num]
+  test_vector <- processed_x[ ,feat.num]
 
-  # Set the aggregation to be average, and Local varaiable importace as False
-  localVariableImportance = FALSE
-  aggregation = "average"
+  return (compute_detachments_bnd(object,
+                                 processed_x = processed_x,
+                                 train_vector = train_vector,
+                                 test_vector = test_vector,
+                                 p = p))
+}
+
+
+compute_detachments_bnd <- function(object,
+                                    processed_x,
+                                    train_vector,
+                                    test_vector,
+                                    p,
+                                    isCategoricalDimension = FALSE){
+
+  # Ensure that categorical outcomes are encoded
+  if(is.factor(train_vector) | is.character(train_vector)){
+    trainer <- preprocess_training(train_vector, train_vector)
+    train_vector <- trainer$x[ ,1]
+    test_vector <- preprocess_testing(test_vector,
+                                      featureNames = "x",
+                                      trainer$categoricalFeatureCols,
+                                      trainer$categoricalFeatureMapping)[ ,1]
+    isCategoricalDimension <- TRUE
+  }
 
   rcppPrediction <- tryCatch({
     rcpp_cppPredictInterface(object@forest,
                              processed_x,
-                             aggregation,
-                             localVariableImportance,
-                             p,
-                             feat.num)
+                             aggregation = "average",
+                             localVariableImportance = FALSE,
+                             power = p,
+                             trainVec = train_vector,
+                             testVec = test_vector,
+                             isCatDimension = isCategoricalDimension
+                             )
 
   }, error = function(err) {
     print(err)
@@ -71,5 +98,3 @@ compute_detachments <- function(object, feature.new, detachment.feat, p) {
 
   return(rcppPrediction$prediction)
 }
-
-

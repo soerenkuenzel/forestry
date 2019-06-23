@@ -21,19 +21,19 @@ test_that("Tests that compute the detachment indices are working correctly", {
   # Create a random forest
   rf <- forestry(x = x_train, y = y_train)
 
-  # Compute the l-4.5 detachments in the "Species" dimension
+  # Compute the 4.5th order detachments in the "Species" dimension
   detachments_1 <- compute_detachments(object = rf,
                             feature.new = x_test,
                             detachment.feat = "Species",
                             p = 4.5)
 
-  # Compute the l-2 detachments in the "Petal.Length" dimension
+  # Compute the 2nd order detachments in the "Petal.Length" dimension
   detachments_2 <- compute_detachments(object = rf,
                             feature.new = x_test,
                             detachment.feat = "Sepal.Width",
                             p = 2)
 
-  # Compute the l-3 detachments in the "Petal.Length" dimension
+  # Compute the 3rd order detachments in the "Petal.Length" dimension
   detachments_3 <- compute_detachments(object = rf,
                             feature.new = x_test,
                             detachment.feat = "Sepal.Width",

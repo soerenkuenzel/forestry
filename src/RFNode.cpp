@@ -142,16 +142,17 @@ void RFNode::predict(
                    trainingData,
                    predictInfo.overfitPenalty);
 
-      } else if(predictInfo.isRFdistance){
+      } else if(predictInfo.isDetachment){
 
         // Compute the detachment indices within a single tree
-        (*trainingData).computeTreeDistances(
-            getAveragingIndex(),
-            predictInfo.power,
-            predictInfo.distanceNumCol,
-            updateIndex,
-            xNew,
-            &outputPrediction
+        (*trainingData).computeTreeDetachments(
+          getAveragingIndex(),
+          predictInfo.power,
+          updateIndex,
+          &outputPrediction,
+          predictInfo.trainVector,
+          predictInfo.testVector,
+          predictInfo.isCategoricalDimension
         );
 
       } else if(predictInfo.isConditionalDist){
@@ -163,7 +164,7 @@ void RFNode::predict(
             &outputPrediction,
             predictInfo.trainVector,
             predictInfo.testVector,
-            predictInfo.isCategoricalOutcome
+            predictInfo.isCategoricalDimension
         );
 
       }

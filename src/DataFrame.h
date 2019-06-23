@@ -40,14 +40,15 @@ public:
 
   float partitionMean(std::vector<size_t>* sampleIndex);
 
-  void computeTreeDistances(
+  void computeTreeDetachments(
       std::vector<size_t>* sampleIndex,
       float power,
-      size_t distColIndex,
       std::vector<size_t>* updateIndex,
-      std::vector< std::vector<float> >* xNew,
-      std::vector<float>* outputPrediction
-    );
+      std::vector<float>* outputPrediction,
+      std::vector<float> trainVector,
+      std::vector<float> testVector,
+      bool isCategoricalDimension
+  );
 
   void conditionalDistribution(
       std::vector<size_t>* sampleIndex,
@@ -55,8 +56,9 @@ public:
       std::vector<float>* outputPrediction,
       std::vector<float> trainVector,
       std::vector<float> testVector,
-      bool isCategoricalOutcome
+      bool isCategoricalDimension
   );
+
 
   std::vector< std::vector<float> >* getAllFeatureData() {
     return _featureData.get();
