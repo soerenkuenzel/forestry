@@ -15,6 +15,7 @@ Imports:
     plyr,
     methods,
     visNetwork, 
+    caret,
     glmnet, 
     grDevices,
     onehot
