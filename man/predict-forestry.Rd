@@ -9,7 +9,7 @@
   localVariableImportance = FALSE, ...)
 }
 \arguments{
-\item{object}{A `forestry` object.}
+\item{object}{A trained model object of class "forestry".}
 
 \item{feature.new}{A data frame of testing predictors.}
 
@@ -26,4 +26,10 @@ A vector of predicted responses.
 }
 \description{
 Return the prediction from the forest.
+}
+\details{
+Allows for different methods of prediction on new data.
+}
+\seealso{
+\code{\link{forestry}}
 }

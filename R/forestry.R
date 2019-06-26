@@ -1,5 +1,6 @@
 #' @useDynLib forestry, .registration = TRUE
 #' @importFrom Rcpp sourceCpp
+#' @importFrom stats predict runif
 NULL
 
 
@@ -10,6 +11,7 @@ NULL
 #' @rdname training_data_checker-forestry
 #' @description Check the input to forestry constructor
 #' @inheritParams forestry
+#' @noRd
 training_data_checker <- function(x,
                                   y,
                                   ntree,
@@ -28,7 +30,8 @@ training_data_checker <- function(x,
                                   doubleTree,
                                   splitFeats,
                                   linFeats,
-                                  ridgeRF) {
+                                  sampleWeights,
+                                  linear) {
   x <- as.data.frame(x)
   nfeatures <- ncol(x)
 
@@ -98,12 +101,23 @@ training_data_checker <- function(x,
   if (minSplitGain < 0) {
     stop("minSplitGain must be greater than or equal to 0.")
   }
-  if (minSplitGain > 0 && !ridgeRF) {
-    stop("minSplitGain cannot be set without setting ridgeRF to be true.")
+  if (minSplitGain > 0 && !linear) {
+    stop("minSplitGain cannot be set without setting linear to be true.")
   }
   if (maxDepth <= 0 || maxDepth %% 1 != 0) {
     stop("maxDepth must be a positive integer.")
   }
+  if (length(sampleWeights) != ncol(x)) {
+    stop("Must have sample weight length equal to columns in data")
+  }
+  if (min(sampleWeights < 0)) {
+    stop("sampleWeights must be greater than 0")
+  }
+  if (min(sampleWeights) <= .001*max(sampleWeights)) {
+    stop("MAX(sampleWeights):MIN(sampleWeights) must be < 1000")
+  }
+
+  sampleWeights <- (sampleWeights / sum(sampleWeights))
 
   # if the splitratio is 1, then we use adaptive rf and avgSampleSize is the
   # equal to the total sampsize
@@ -204,13 +218,15 @@ training_data_checker <- function(x,
               "middleSplit" = middleSplit,
               "doubleTree" = doubleTree,
               "splitFeats" = splitFeats,
-              "linFeats" = linFeats))
+              "linFeats" = linFeats,
+              "sampleWeights" = sampleWeights))
 }
 
 #' @title Test data check
 #' @name testing_data_checker-forestry
 #' @description Check the testing data to do prediction
 #' @param feature.new A data frame of testing predictors.
+#' @noRd
 testing_data_checker <- function(feature.new) {
   feature.new <- as.data.frame(feature.new)
   if (any(is.na(feature.new))) {
@@ -243,9 +259,10 @@ setClass(
     middleSplit = "logical",
     y = "vector",
     maxObs = "numeric",
-    ridgeRF = "logical",
+    linear = "logical",
     splitFeats = "numeric",
     linFeats = "numeric",
+    sampleWeights = "numeric",
     overfitPenalty = "numeric",
     doubleTree = "logical"
   )
@@ -277,9 +294,10 @@ setClass(
     middleSplit = "logical",
     y = "vector",
     maxObs = "numeric",
-    ridgeRF = "logical",
+    linear = "logical",
     splitFeats = "numeric",
     linFeats = "numeric",
+    sampleWeights = "numeric",
     overfitPenalty = "numeric",
     doubleTree = "logical"
   )
@@ -298,7 +316,7 @@ setClass(
 #'   sampling with replacement, the default value is the length of the training
 #'   data. If samplying without replacement, the default value is two-third of
 #'   the length of the training data.
-#' @param sample.fraction if this is given, then sampsize is ignored and set to
+#' @param sample.fraction If this is given, then sampsize is ignored and set to
 #'   be round(length(y) * sample.fraction). It must be a real number between 0
 #'   and 1
 #' @param mtry The number of variables randomly selected at each split point.
@@ -313,6 +331,8 @@ setClass(
 #' @param nodesizeStrictAvg Minimum size of terminal nodes for averaging dataset
 #'   to follow strictly. The default value is 1.
 #' @param minSplitGain Minimum loss reduction to split a node further in a tree.
+#'   specifically this is the percentage R squared increase which each potential
+#'   split must give to be considered. The default value is 0.
 #' @param maxDepth Maximum depth of a tree. The default value is 99.
 #' @param splitratio Proportion of the training data used as the splitting
 #'   dataset. It is a ratio between 0 and 1. If the ratio is 1, then essentially
@@ -320,35 +340,56 @@ setClass(
 #'   dataset is empty. If the ratio is 0, then the splitting data set is empty
 #'   and all the data is used for the averaging data set (This is not a good
 #'   usage however since there will be no data available for splitting).
-#' @param seed random seed
-#' @param verbose if training process in verbose mode
+#' @param seed Seed for random number generator.
+#' @param verbose Flag to indicate if training process is verbose.
 #' @param nthread Number of threads to train and predict the forest. The default
 #'   number is 0 which represents using all cores.
-#' @param splitrule only variance is implemented at this point and it contains
+#' @param splitrule Only variance is implemented at this point and it
 #'   specifies the loss function according to which the splits of random forest
-#'   should be made
-#' @param middleSplit if the split value is taking the average of two feature
-#'   values. If false, it will take a point based on a uniform distribution
-#'   between two feature values. (Default = FALSE)
-#' @param doubleTree if the number of tree is doubled as averaging and splitting
-#'   data can be exchanged to create decorrelated trees. (Default = FALSE)
-#' @param reuseforestry pass in an `forestry` object which will recycle the
+#'   should be made.
+#' @param middleSplit Flag to indicate whether the split value takes the average
+#'   of two feature values. If false, it will take a point based on a uniform
+#'   distribution between two feature values. The default value is FALSE.
+#' @param doubleTree Indicate whether the number of tree is doubled as averaging
+#'   and splitting data can be exchanged to create decorrelated trees.
+#'   The default value is FALSE.
+#' @param reuseforestry Pass in a `forestry` object which will recycle the
 #'   dataframe the old object created. It will save some space working on the
 #'   same dataset.
-#' @param maxObs The max number of observations to split on
+#' @param maxObs The max number of observations to split on. If set to a number
+#'   less than nrow(x), at each split point, maxObs split points will be
+#'   randomly sampled to test as potential splitting points instead of every
+#'   feature value (default).
 #' @param saveable If TRUE, then RF is created in such a way that it can be
 #'   saved and loaded using save(...) and load(...). Setting it to TRUE
 #'   (default) will, however, take longer and it will use more memory. When
 #'   training many RF, it makes a lot of sense to set this to FALSE to save
 #'   time and memory.
-#' @param ridgeRF Fit the model with a ridge regression or not
+#' @param linear Fit the model with a split function optimizing for a linear
+#'   aggregation function instead of a constant aggregation function. The default
+#'   value is FALSE.
 #' @param splitFeats Specify which features to split on when creating a tree
-#'   (defaults to use all features)
+#'   (defaults to use all features).
 #' @param linFeats Specify which features to split linearly on when using
-#'   ridgeRF (defaults to use all numerical features)
+#'   linear (defaults to use all numerical features)
+#' @param sampleWeights Specify weights for weighted uniform distribution used
+#'   to randomly sample features.
 #' @param overfitPenalty Value to determine how much to penalize magnitude of
-#' coefficients in ridge regression
+#'   coefficients in ridge regression when using linear. The default value is 1.
 #' @return A `forestry` object.
+#' @description forestry is a fast implementation of a variety of tree-based
+#'   estimators. Implemented estimators include CART trees, randoms forests,
+#'   boosted trees and forests, and linear trees and forests. All estimators are
+#'   implemented to scale well with very large datasets.
+#' @details For Linear Random Forests, set the linear option to TRUE and
+#'   specify lambda for ridge regression with overfitPenalty parameter. For
+#'   gradient boosting and gradient boosting forests, see mulitlayer-forestry.
+#' @seealso \code{\link{predict.forestry}}
+#' @seealso \code{\link{multilayer-forestry}}
+#' @seealso \code{\link{predict-multilayer-forestry}}
+#' @seealso \code{\link{getVI}}
+#' @seealso \code{\link{getOOB}}
+#' @seealso \code{\link{make_savable}}
 #' @examples
 #' set.seed(292315)
 #' library(forestry)
@@ -380,7 +421,7 @@ setClass(
 #'           replace = TRUE,
 #'           nodesizeStrictSpl = 5,
 #'           nodesizeStrictAvg = 5,
-#'           ridgeRF = TRUE
+#'           linear = TRUE
 #'           )
 #'
 #' predict(forest, x)
@@ -408,9 +449,10 @@ forestry <- function(x,
                      splitrule = "variance",
                      middleSplit = FALSE,
                      maxObs = length(y),
-                     ridgeRF = FALSE,
+                     linear = FALSE,
                      splitFeats = 1:(ncol(x)),
                      linFeats = 1:(ncol(x)),
+                     sampleWeights = rep((1/ncol(x)), ncol(x)),
                      overfitPenalty = 1,
                      doubleTree = FALSE,
                      reuseforestry = NULL,
@@ -444,7 +486,8 @@ forestry <- function(x,
       doubleTree = doubleTree,
       splitFeats = splitFeats,
       linFeats = linFeats,
-      ridgeRF = ridgeRF)
+      sampleWeights = sampleWeights,
+      linear = linear)
 
   for (variable in names(updated_variables)) {
     assign(x = variable, value = updated_variables[[variable]],
@@ -482,7 +525,8 @@ forestry <- function(x,
                                                   splitFeats,
                                                   linFeats,
                                                   nObservations,
-                                                  numColumns)
+                                                  numColumns,
+                                                  sampleWeights)
 
       rcppForest <- rcpp_cppBuildInterface(
         processed_x,
@@ -508,7 +552,8 @@ forestry <- function(x,
         verbose,
         middleSplit,
         maxObs,
-        ridgeRF,
+        sampleWeights,
+        linear,
         overfitPenalty,
         doubleTree,
         TRUE,
@@ -548,7 +593,8 @@ forestry <- function(x,
           splitratio = splitratio,
           middleSplit = middleSplit,
           maxObs = maxObs,
-          ridgeRF = ridgeRF,
+          sampleWeights = sampleWeights,
+          linear = linear,
           splitFeats = splitFeats,
           linFeats = linFeats,
           overfitPenalty = overfitPenalty,
@@ -600,7 +646,8 @@ forestry <- function(x,
         verbose,
         middleSplit,
         maxObs,
-        ridgeRF,
+        sampleWeights,
+        linear,
         overfitPenalty,
         doubleTree,
         TRUE,
@@ -630,7 +677,8 @@ forestry <- function(x,
           splitratio = splitratio,
           middleSplit = middleSplit,
           maxObs = maxObs,
-          ridgeRF = ridgeRF,
+          sampleWeights = sampleWeights,
+          linear = linear,
           splitFeats = splitFeats,
           linFeats = linFeats,
           overfitPenalty = overfitPenalty,
@@ -651,11 +699,12 @@ forestry <- function(x,
 #' @name multilayer-forestry
 #' @title Multilayer forestry
 #' @rdname multilayer-forestry
-#' @description Construct a gradient boosted random forest.
+#' @description Constructs a gradient boosted random forest.
 #' @inheritParams forestry
 #' @param nrounds Number of iterations used for gradient boosting.
 #' @param eta Step size shrinkage used in gradient boosting update.
-#' @return A `multilayerForestry` object.
+#' @return A trained model object of class "multilayerForestry".
+#' @seealso \code{\link{forestry}}
 #' @export
 multilayerForestry <- function(x,
                      y,
@@ -679,9 +728,10 @@ multilayerForestry <- function(x,
                      splitrule = "variance",
                      middleSplit = TRUE,
                      maxObs = length(y),
-                     ridgeRF = FALSE,
+                     linear = FALSE,
                      splitFeats = 1:(ncol(x)),
                      linFeats = 1:(ncol(x)),
+                     sampleWeights = rep((1/ncol(x)), ncol(x)),
                      overfitPenalty = 1,
                      doubleTree = FALSE,
                      reuseforestry = NULL,
@@ -697,7 +747,7 @@ multilayerForestry <- function(x,
   training_data_checker(x, y, ntree,replace, sampsize, mtry, nodesizeSpl,
                         nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg,
                         minSplitGain, maxDepth, splitratio, nthread, middleSplit,
-                        doubleTree, splitFeats, linFeats)
+                        doubleTree, splitFeats, linFeats, sampleWeights)
   # Total number of obervations
   nObservations <- length(y)
   numColumns <- ncol(x)
@@ -729,7 +779,8 @@ multilayerForestry <- function(x,
                                                   splitFeats,
                                                   linFeats,
                                                   nObservations,
-                                                  numColumns)
+                                                  numColumns,
+                                                  sampleWeights)
 
       rcppForest <- rcpp_cppMultilayerBuildInterface(
         processed_x,
@@ -757,7 +808,8 @@ multilayerForestry <- function(x,
         verbose,
         middleSplit,
         maxObs,
-        ridgeRF,
+        sampleWeights,
+        linear,
         overfitPenalty,
         doubleTree,
         TRUE,
@@ -799,7 +851,8 @@ multilayerForestry <- function(x,
           splitratio = splitratio,
           middleSplit = middleSplit,
           maxObs = maxObs,
-          ridgeRF = ridgeRF,
+          sampleWeights = sampleWeights,
+          linear = linear,
           splitFeats = splitFeats,
           linFeats = linFeats,
           overfitPenalty = overfitPenalty,
@@ -853,7 +906,8 @@ multilayerForestry <- function(x,
         verbose,
         middleSplit,
         maxObs,
-        ridgeRF,
+        sampleWeights,
+        linear,
         overfitPenalty,
         doubleTree,
         TRUE,
@@ -882,7 +936,8 @@ multilayerForestry <- function(x,
           splitratio = splitratio,
           middleSplit = middleSplit,
           maxObs = maxObs,
-          ridgeRF = ridgeRF,
+          sampleWeights = sampleWeights,
+          linear = linear,
           splitFeats = splitFeats,
           linFeats = linFeats,
           overfitPenalty = overfitPenalty,
@@ -904,7 +959,7 @@ multilayerForestry <- function(x,
 #' @name predict-forestry
 #' @rdname predict-forestry
 #' @description Return the prediction from the forest.
-#' @param object A `forestry` object.
+#' @param object A trained model object of class "forestry".
 #' @param feature.new A data frame of testing predictors.
 #' @param aggregation How shall the leaf be aggregated. The default is to return
 #'   the mean of the leave `average`. Other options are `weightMatrix`.
@@ -912,11 +967,13 @@ multilayerForestry <- function(x,
 #'   importance for each prediction.
 #' @param ... additional arguments.
 #' @return A vector of predicted responses.
+#' @details Allows for different methods of prediction on new data.
+#' @seealso \code{\link{forestry}}
 #' @export
 predict.forestry <- function(object,
                              feature.new,
                              aggregation = "average",
-                             localVariableImportance = FALSE,...) {
+                             localVariableImportance = FALSE, ...) {
   # Preprocess the data
   testing_data_checker(feature.new)
 
@@ -929,6 +986,10 @@ predict.forestry <- function(object,
     stop("Aggregation must be set to weightMatrix if localVariableImportance is true.")
   }
 
+  if ((!(object@linear)) && (aggregation == "coefs")) {
+    stop("Aggregation can only be linear with setting the parameter linear = TRUE.")
+  }
+
   rcppPrediction <- tryCatch({
     rcpp_cppPredictInterface(object@forest, processed_x, aggregation, localVariableImportance)
   }, error = function(err) {
@@ -936,9 +997,20 @@ predict.forestry <- function(object,
     return(NULL)
   })
 
+  # In the case aggregation is set to "linear"
+  # rccpPrediction is a list with an entry $coef
+  # which gives pointwise regression coeffficients averaged across the forest
+  if (aggregation == "coefs") {
+    coef_names <- colnames(feature.new)[object@linFeats + 1]
+    coef_names <- c(coef_names, "Intercept")
+    colnames(rcppPrediction$coef) <- coef_names
+  }
+
   if (aggregation == "average") {
     return(rcppPrediction$prediction)
   } else if (aggregation == "weightMatrix") {
+    return(rcppPrediction)
+  } else if (aggregation == "coefs") {
     return(rcppPrediction)
   }
 }
@@ -955,6 +1027,7 @@ predict.forestry <- function(object,
 #'   the mean of the leave `average`. Other options are `weightMatrix`.
 #' @param ... additional arguments.
 #' @return A vector of predicted responses.
+#' @seealso \code{\link{forestry}}
 #' @export
 predict.multilayerForestry <- function(object,
                              feature.new,
@@ -989,10 +1062,11 @@ predict.multilayerForestry <- function(object,
 #' @name getOOB-forestry
 #' @rdname getOOB-forestry
 #' @description Calculate the out-of-bag error of a given forest.
-#' @param object A `forestry` object.
-#' @param noWarning flag to not display warnings
-#' @aliases getOOB,forestry-method
-#' @return The OOB error of the forest.
+#' @param object A trained model object of class "forestry".
+#' @param noWarning Flag to not display warnings.
+#' @aliases getOOB, forestry-method
+#' @return The out-of-bag error of the forest.
+#' @seealso \code{\link{forestry}}
 #' @export
 getOOB <- function(object,
                    noWarning) {
@@ -1024,9 +1098,13 @@ getOOB <- function(object,
 # -- Calculate Variable Importance ---------------------------------------------
 #' getVI-forestry
 #' @rdname getVI-forestry
-#' @description Calculate increase in OOB for each shuffled feature for forest.
-#' @param object A `forestry` object.
-#' @param noWarning flag to not display warnings
+#' @description Calculate variable importance for `forestry` object as
+#'   introduced by Breiman (2001). Returns a list of percentage increases in
+#'   out-of-bag error when shuffling each feature values and getting
+#'   out-of-bag error.
+#' @param object A trained model object of class "forestry".
+#' @param noWarning Flag to not display warnings or display warnings.
+#' @seealso \code{\link{forestry}}
 #' @export
 getVI <- function(object,
                   noWarning = FALSE) {
@@ -1060,10 +1138,10 @@ getVI <- function(object,
 # -- Add More Trees ------------------------------------------------------------
 #' addTrees-forestry
 #' @rdname addTrees-forestry
-#' @description Add more trees to the existing forest.
-#' @param object A `forestry` object.
-#' @param ntree Number of new trees to add
-#' @return A `forestry` object
+#' @description Add more trees to an existing forest.
+#' @param object A trained model object of class "forestry".
+#' @param ntree Number of new trees to add.
+#' @return A trained model object of class "forestry".
 #' @export
 addTrees <- function(object,
                      ntree) {
@@ -1083,221 +1161,6 @@ addTrees <- function(object,
   }
 
 
-
-# -- Auto-Tune -----------------------------------------------------------------
-#' autoforestry-forestry
-#' @rdname autoforestry-forestry
-#' @inheritParams forestry
-#' @param sampsize The size of total samples to draw for the training data.
-#' @param num_iter Maximum iterations/epochs per configuration. Default is 1024.
-#' @param eta Downsampling rate. Default value is 2.
-#' @param verbose if tuning process in verbose mode
-#' @param seed random seed
-#' @param nthread Number of threads to train and predict theforest. The default
-#'   number is 0 which represents using all cores.
-#' @return A `forestry` object
-#' @import stats
-#' @export
-autoforestry <- function(x,
-                         y,
-                         sampsize = as.integer(nrow(x) * 0.75),
-                         num_iter = 1024,
-                         eta = 2,
-                         verbose = FALSE,
-                         seed = 24750371,
-                         nthread = 0) {
-  if (verbose) {
-    print("Start auto-tuning.")
-  }
-
-  # Creat a dummy tree just to reuse its data.
-  dummy_tree <-
-    forestry(
-      x,
-      y,
-      ntree = 1,
-      nodesizeSpl = nrow(x),
-      nodesizeAvg = nrow(x)
-    )
-
-  # Number of unique executions of Successive Halving (minus one)
-  s_max <- as.integer(log(num_iter) / log(eta))
-
-  # Total number of iterations (without reuse) per execution of
-  # successive halving (n,r)
-  B <- (s_max + 1) * num_iter
-
-  if (verbose) {
-    print(
-      paste(
-        "Hyperband will run successive halving in",
-        s_max,
-        "times, with",
-        B,
-        "iterations per execution."
-      )
-    )
-  }
-
-  # Begin finite horizon hyperband outlerloop
-  models <- vector("list", s_max + 1)
-  models_OOB <- vector("list", s_max + 1)
-
-  set.seed(seed)
-
-  for (s in s_max:0) {
-    if (verbose) {
-      print(paste("Hyperband successive halving round", s_max + 1 - s))
-    }
-
-    # Initial number of configurations
-    n <- as.integer(ceiling(B / num_iter / (s + 1) * eta ^ s))
-
-    # Initial number of iterations to run configurations for
-    r <- num_iter * eta ^ (-s)
-
-    if (verbose) {
-      print(paste(">>> Total number of configurations:", n))
-      print(paste(
-        ">>> Number of iterations per configuration:",
-        as.integer(r)
-      ))
-    }
-
-    # Begin finite horizon successive halving with (n,r)
-    # Generate parameters:
-    allConfigs <- data.frame(
-      mtry = sample(1:ncol(x), n, replace = TRUE),
-      min_node_size_spl = NA, #sample(1:min(30, nrow(x)), n, replace = TRUE),
-      min_node_size_ave = NA, #sample(1:min(30, nrow(x)), n, replace = TRUE),
-      splitratio = runif(n, min = 0.1, max = 1),
-      replace = sample(c(TRUE, FALSE), n, replace = TRUE),
-      middleSplit = sample(c(TRUE, FALSE), n, replace = TRUE)
-    )
-
-    min_node_size_spl_raw <- floor(allConfigs$splitratio * sampsize *
-                                     rbeta(n, 1, 3))
-    allConfigs$min_node_size_spl <- ifelse(min_node_size_spl_raw == 0, 1,
-                                           min_node_size_spl_raw)
-    min_node_size_ave <- floor((1 - allConfigs$splitratio) * sampsize *
-                                 rbeta(n, 1, 3))
-    allConfigs$min_node_size_ave <- ifelse(min_node_size_ave == 0, 1,
-                                           min_node_size_ave)
-
-    if (verbose) {
-      print(paste(">>>", n, " configurations have been generated."))
-    }
-
-    val_models <- vector("list", nrow(allConfigs))
-    r_old <- 1
-    for (j in 1:nrow(allConfigs)) {
-      tryCatch({
-        val_models[[j]] <- forestry(
-          x = x,
-          y = y,
-          ntree = r_old,
-          mtry = allConfigs$mtry[j],
-          nodesizeSpl = allConfigs$min_node_size_spl[j],
-          nodesizeAvg = allConfigs$min_node_size_ave[j],
-          splitratio = allConfigs$splitratio[j],
-          replace = allConfigs$replace[j],
-          sampsize = sampsize,
-          nthread = nthread,
-          middleSplit = allConfigs$middleSplit[j],
-          reuseforestry = dummy_tree
-        )
-      }, error = function(err) {
-        val_models[[j]] <- NULL
-      })
-    }
-
-    if (s != 0) {
-      for (i in 0:(s - 1)) {
-        # Run each of the n_i configs for r_i iterations and keep best
-        # n_i/eta
-        n_i <- as.integer(n * eta ^ (-i))
-        r_i <- as.integer(r * eta ^ i)
-        r_new <- r_i - r_old
-
-        # if (verbose) {
-        #   print(paste("Iterations", i))
-        #   print(paste("Total number of configurations:", n_i))
-        #   print(paste("Number of iterations per configuration:", r_i))
-        # }
-
-        val_losses <- vector("list", nrow(allConfigs))
-
-        # Iterate to evaluate each parameter combination and cut the
-        # parameter pools in half every iteration based on its score
-        for (j in 1:nrow(allConfigs)) {
-          if (r_new > 0 && !is.null(val_models[[j]])) {
-            val_models[[j]] <- addTrees(val_models[[j]], r_new)
-          }
-          if (!is.null(val_models[[j]])) {
-            val_losses[[j]] <- getOOB(val_models[[j]], noWarning = TRUE)
-            if (is.na(val_losses[[j]])) {
-              val_losses[[j]] <- Inf
-            }
-          } else {
-            val_losses[[j]] <- Inf
-          }
-        }
-
-        r_old <- r_i
-
-        val_losses_idx <-
-          sort(unlist(val_losses), index.return = TRUE)
-        val_top_idx <- val_losses_idx$ix[0:as.integer(n_i / eta)]
-        allConfigs <- allConfigs[val_top_idx,]
-        val_models <- val_models[val_top_idx]
-        gc()
-        rownames(allConfigs) <- 1:nrow(allConfigs)
-
-        # if (verbose) {
-        #   print(paste(length(val_losses_idx$ix) - nrow(allConfigs),
-        #               "configurations have been eliminated."))
-        # }
-      }
-    }
-    # End finite horizon successive halving with (n,r)
-    if (!is.null(val_models[[1]])) {
-      best_OOB <- getOOB(val_models[[1]], noWarning = TRUE)
-      if (is.na(best_OOB)) {
-        stop()
-        best_OOB <- Inf
-      }
-    } else {
-      stop()
-      best_OOB <- Inf
-    }
-    if (verbose) {
-      print(paste(">>> Successive halving ends and the best model is saved."))
-      print(paste(">>> OOB:", best_OOB))
-    }
-
-    if (!is.null(val_models[[1]]))
-      models[[s + 1]] <- val_models[[1]]
-    models_OOB[[s + 1]] <- best_OOB
-
-  }
-
-  # End finite horizon hyperband outlerloop and sort by performance
-  model_losses_idx <- sort(unlist(models_OOB), index.return = TRUE)
-
-  if (verbose) {
-    print(
-      paste(
-        "Best model is selected from best-performed model in",
-        s_max,
-        "successive halving, with OOB",
-        models_OOB[model_losses_idx$ix[1]]
-      )
-    )
-  }
-
-  return(models[[model_losses_idx$ix[1]]])
-}
-
 # -- Translate C++ to R --------------------------------------------------------
 #' @title Cpp to R translator
 #' @description Add more trees to the existing forest.
@@ -1305,7 +1168,7 @@ autoforestry <- function(x,
 #'   object
 #' @return A list of lists. Each sublist contains the information to span a
 #'   tree.
-#' @export
+#' @noRd
 CppToR_translator <- function(object) {
     tryCatch({
       return(rcpp_CppToR_translator(object))
@@ -1351,7 +1214,8 @@ relinkCPP_prt <- function(object) {
         verbose = FALSE,
         middleSplit = object@middleSplit,
         maxObs = object@maxObs,
-        ridgeRF = object@ridgeRF,
+        sampleWeights = object@sampleWeights,
+        linear = object@linear,
         overfitPenalty = object@overfitPenalty,
         doubleTree = object@doubleTree)
 
@@ -1374,9 +1238,9 @@ relinkCPP_prt <- function(object) {
 #' make_savable
 #' @name make_savable
 #' @rdname make_savable
-#' @description When a `foresty` object is saved and then reloaded the Cpp
-#'   pointers for the data set and the Cpp forest have to be reconstructed
-#' @param object an object of class `forestry`
+#' @description When a `foresty` object is saved and then reloaded ,the Cpp
+#'   pointers for the data set and the Cpp forest have to be reconstructed.
+#' @param object A trained model object of class "forestry".
 #' @examples
 #' set.seed(323652639)
 #' x <- iris[, -1]
@@ -1395,6 +1259,7 @@ relinkCPP_prt <- function(object) {
 #' file.remove("forest.Rda")
 #' @return A list of lists. Each sublist contains the information to span a
 #'   tree.
+#' @seealso \code{\link{forestry}}
 #' @aliases make_savable,forestry-method
 #' @export
 make_savable <- function(object) {

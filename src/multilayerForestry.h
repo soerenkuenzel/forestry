@@ -38,7 +38,7 @@ public:
     bool verbose,
     bool splitMiddle,
     size_t maxObs,
-    bool ridgeRF,
+    bool linear,
     float overfitPenalty,
     bool doubleTree
   );
@@ -131,8 +131,8 @@ public:
     return _maxObs;
   }
 
-  bool getRidgeRF() {
-    return _ridgeRF;
+  bool getlinear() {
+    return _linear;
   }
 
   float getOverfitPenalty() {
@@ -178,7 +178,7 @@ private:
   std::unique_ptr< std::vector<float> > _variableImportance;
   bool _splitMiddle;
   size_t _maxObs;
-  bool _ridgeRF;
+  bool _linear;
   float _overfitPenalty;
   bool _doubleTree;
 

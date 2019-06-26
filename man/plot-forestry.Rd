@@ -9,22 +9,22 @@
   beta.char.len = 30, return.plot.dta = FALSE, ...)
 }
 \arguments{
-\item{x}{A forestry x.}
+\item{x}{A trained model object of class "forestry".}
 
-\item{tree.id}{Specifies the tree number that should be visulaized.}
+\item{tree.id}{Specifies the tree number that should be visualized}
 
 \item{print.meta_dta}{Should the data for the plot be printed?}
 
 \item{beta.char.len}{The length of the beta values in leaf node
 representation.}
 
-\item{return.plot.dta}{if TRUE no plot will be generated, but instead a list
-with all the plot data is returned}
+\item{return.plot.dta}{If TRUE no plot will be generated, but instead a list
+with all the plot data is returned.}
 
 \item{...}{additional arguments that are not used.}
 }
 \description{
-plots a tree in the forest.
+Plots a single tree in the forest.
 }
 \examples{
 set.seed(292315)
@@ -43,7 +43,7 @@ ridge_rf <- forestry(
   mtry = 4,
   ntree = 1000,
   minSplitGain = .004,
-  ridgeRF = TRUE,
+  linear = TRUE,
   overfitPenalty = 1.65,
   linFeats = 1:2)
 

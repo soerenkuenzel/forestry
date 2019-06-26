@@ -7,10 +7,16 @@
 getVI(object, noWarning = FALSE)
 }
 \arguments{
-\item{object}{A `forestry` object.}
+\item{object}{A trained model object of class "forestry".}
 
-\item{noWarning}{flag to not display warnings}
+\item{noWarning}{Flag to not display warnings or display warnings.}
 }
 \description{
-Calculate increase in OOB for each shuffled feature for forest.
+Calculate variable importance for `forestry` object as
+  introduced by Breiman (2001). Returns a list of percentage increases in
+  out-of-bag error when shuffling each feature values and getting
+  out-of-bag error.
+}
+\seealso{
+\code{\link{forestry}}
 }

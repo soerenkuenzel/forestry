@@ -29,20 +29,20 @@ struct tree_info {
 };
 
 struct predict_info{
+  // Booleans contain the desired prediction method
   bool isPredict;
   bool isWeightMatrix;
   bool isRidgeRF;
   bool isRFdistance;
-  // Booleans contain the desired prediction method
 
-  arma::Mat<float>* weightMatrix;
   // contains the address of the weight matrix
-  float overfitPenalty;
+  arma::Mat<float>* weightMatrix;
   // contains the overfit penalty (lambda)
-  float power;
+  float overfitPenalty;
   // contains the power for computing the detachment indices
-  int distanceNumCol;
+  float power;
   // contains the column number for the feature in which the rf distances
   // will be computed
+  int distanceNumCol;
 };
 #endif //FORESTRYCPP_UTILS_H

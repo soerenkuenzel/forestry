@@ -15,6 +15,7 @@ NULL
 #' @import plyr
 #' @return A list of two datasets along with necessary information that encoding
 #'   the preprocessing.
+#' @noRd
 preprocess_training <- function(x, y) {
   x <- as.data.frame(x)
 
@@ -86,6 +87,7 @@ preprocess_training <- function(x, y) {
 #'   corresponding numeric representation.
 #' @import plyr
 #' @return A preprocessed training dataaset x
+#' @noRd
 preprocess_testing <- function(x,
                                featureNames,
                                categoricalFeatureCols,

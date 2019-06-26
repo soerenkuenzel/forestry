@@ -40,7 +40,7 @@ forestry::forestry(
   bool verbose,
   bool splitMiddle,
   size_t maxObs,
-  bool ridgeRF,
+  bool linear,
   float overfitPenalty,
   bool doubleTree
 ){
@@ -61,7 +61,7 @@ forestry::forestry(
   this->_verbose = verbose;
   this->_splitMiddle = splitMiddle;
   this->_maxObs = maxObs;
-  this->_ridgeRF = ridgeRF;
+  this->_linear = linear;
   this->_overfitPenalty = overfitPenalty;
   this->_doubleTree = doubleTree;
 
@@ -236,7 +236,7 @@ void forestry::addTrees(size_t ntree) {
                 random_number_generator,
                 getSplitMiddle(),
                 getMaxObs(),
-                getRidgeRF(),
+                getlinear(),
                 getOverfitPenalty()
               )
             );
@@ -258,7 +258,7 @@ void forestry::addTrees(size_t ntree) {
                     random_number_generator,
                     getSplitMiddle(),
                     getMaxObs(),
-                    getRidgeRF(),
+                    getlinear(),
                     getOverfitPenalty()
                  );
             }
@@ -307,15 +307,30 @@ void forestry::addTrees(size_t ntree) {
 std::unique_ptr< std::vector<float> > forestry::predict(
   std::vector< std::vector<float> >* xNew,
   arma::Mat<float>* localVIMatrix,
+  arma::Mat<float>* coefficients,
   predict_info predictInfo
 ){
   // Update isRidgeRF in predictInfo
-  predictInfo.isRidgeRF = getRidgeRF();
+  predictInfo.isRidgeRF = getlinear();
 
   std::vector<float> prediction;
   size_t numObservations = (*xNew)[0].size();
   for (size_t j=0; j<numObservations; j++) {
     prediction.push_back(0);
+  }
+
+  if (coefficients) {
+    // Create coefficient vector of vectors of zeros
+    std::vector< std::vector<float> > coef;
+    size_t numObservations = (*xNew)[0].size();
+    size_t numCol = (*coefficients).n_cols;
+    for (size_t i=0; i<numObservations; i++) {
+      std::vector<float> row;
+      for (size_t j = 0; j<numCol; j++) {
+        row.push_back(0);
+      }
+      coef.push_back(row);
+    }
   }
 
   #if DOPARELLEL
@@ -348,12 +363,22 @@ std::unique_ptr< std::vector<float> > forestry::predict(
   #endif
           try {
             std::vector<float> currentTreePrediction(numObservations);
+            std::vector< std::vector<float> > currentTreeCoefficients(numObservations);
             forestryTree *currentTree = (*getForest())[i].get();
+
+            //Return coefficients and predictions
+            if (coefficients) {
+              for (size_t l=0; l<numObservations; l++) {
+                currentTreeCoefficients[l] = std::vector<float>(coefficients->n_cols);
+              }
+            }
+
             (*currentTree).predict(
-              currentTreePrediction,
-              xNew,
-              getTrainingData(),
-              predictInfo
+                currentTreePrediction,
+                currentTreeCoefficients,
+                xNew,
+                getTrainingData(),
+                predictInfo
             );
 
             #if DOPARELLEL
@@ -362,6 +387,14 @@ std::unique_ptr< std::vector<float> > forestry::predict(
 
             for (size_t j = 0; j < numObservations; j++) {
               prediction[j] += currentTreePrediction[j];
+            }
+
+            if (coefficients) {
+              for (size_t k = 0; k < numObservations; k++) {
+                for (size_t l = 0; l < coefficients->n_cols; l++) {
+                  (*coefficients)(k,l) += currentTreeCoefficients[k][l];
+                }
+              }
             }
 
           } catch (std::runtime_error &err) {
@@ -390,6 +423,15 @@ std::unique_ptr< std::vector<float> > forestry::predict(
     prediction[j] /= getNtree();
     if(predictInfo.isRFdistance){
       prediction[j] = pow(prediction[j], 1 / predictInfo.power);
+    }
+  }
+
+  // Average coefficients across number of trees after aggregating
+  if (coefficients) {
+    for (size_t k = 0; k < numObservations; k++) {
+      for (size_t l = 0; l < coefficients->n_cols; l++) {
+        (*coefficients)(k,l) /= getNtree();;
+      }
     }
   }
 
@@ -779,7 +821,7 @@ void forestry::reconstructTrees(
                 getMinNodeSizeToSplitAvg(),
                 getMinSplitGain(),
                 getMaxDepth(),
-                getRidgeRF(),
+                getlinear(),
                 getOverfitPenalty(),
                 (*categoricalFeatureColsRcpp),
                 (*var_ids)[i],

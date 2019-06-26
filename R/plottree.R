@@ -5,14 +5,14 @@
 #' @name plot-forestry
 #' @title visualize a tree
 #' @rdname plot-forestry
-#' @description plots a tree in the forest.
-#' @param x A forestry x.
-#' @param tree.id Specifies the tree number that should be visulaized.
+#' @description Plots a single tree in the forest.
+#' @param x A trained model object of class "forestry".
+#' @param tree.id Specifies the tree number that should be visualized
 #' @param print.meta_dta Should the data for the plot be printed?
 #' @param beta.char.len The length of the beta values in leaf node
 #' representation.
-#' @param return.plot.dta if TRUE no plot will be generated, but instead a list
-#'   with all the plot data is returned
+#' @param return.plot.dta If TRUE no plot will be generated, but instead a list
+#'   with all the plot data is returned.
 #' @param ... additional arguments that are not used.
 #' @import glmnet
 #' @examples
@@ -32,7 +32,7 @@
 #'   mtry = 4,
 #'   ntree = 1000,
 #'   minSplitGain = .004,
-#'   ridgeRF = TRUE,
+#'   linear = TRUE,
 #'   overfitPenalty = 1.65,
 #'   linFeats = 1:2)
 #'
@@ -160,7 +160,7 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
           (!is.na(node_info$split_feat))
 
         node_info$cat_split_value[nodes_with_this_split] <-
-          as.character(cat_feat_map[[i]]$uniqueFeatureValues[
+          as.character(sort(cat_feat_map[[i]]$uniqueFeatureValues)[
             node_info$split_val[nodes_with_this_split]])
       }
     }
@@ -233,7 +233,7 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
   dta_y <- forestry_tree@processed_dta$y
 
   glmn_coefs <- list()
-  if (forestry_tree@ridgeRF) {
+  if (forestry_tree@linear) {
     # ridge forest
     for (leaf_id in node_info$node_id[node_info$is_leaf]) {
       # leaf_id = 1
@@ -309,7 +309,7 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
                                           alpha = .7)
   names(color_code) <- c(potential_split_feats, NA)
 
-  nodes$color <- color_code[node_info$feat_nm]
+  nodes$color <- color_code[node_info$feat_nm][1:length(node_info$feat_nm)]
   nodes$color[is.na(nodes$color)] <- color_code[length(color_code)]
   # Plot the actual node -------------------------------------------------------
   if (return.plot.dta) {
@@ -318,15 +318,15 @@ plot.forestry <- function(x, tree.id = 1, print.meta_dta = FALSE,
     ))
   } else {
     (p1 <-
-        visNetwork(
-          nodes,
-          edges,
-          width = "100%",
-          height = "800px",
-          main = paste("Tree", tree.id)
-        ) %>%
-        visEdges(arrows = "to") %>%
-        visHierarchicalLayout() %>% visExport(type = "pdf", name = "ridge_tree"))
+       visNetwork(
+         nodes,
+         edges,
+         width = "100%",
+         height = "800px",
+         main = paste("Tree", tree.id)
+       ) %>%
+       visEdges(arrows = "to") %>%
+       visHierarchicalLayout() %>% visExport(type = "pdf", name = "ridge_tree"))
 
     if (print.meta_dta)
       print(node_info)

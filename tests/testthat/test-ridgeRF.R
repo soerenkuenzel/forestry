@@ -1,5 +1,5 @@
-test_that("Tests if ridgeRF works", {
-  context('Tests RidgeRF')
+test_that("Tests if linear works", {
+  context('Tests linear')
 
   x <- iris[, c(1,2,3)]
   y <- iris[, 4]
@@ -24,7 +24,7 @@ test_that("Tests if ridgeRF works", {
     splitrule = "variance",
     splitratio = 1,
     nodesizeStrictAvg = 5,
-    ridgeRF = FALSE,
+    linear = FALSE,
     overfitPenalty = 50
   )
 
@@ -52,7 +52,7 @@ test_that("Tests if ridgeRF works", {
       splitrule = "variance",
       splitratio = 1,
       nodesizeStrictAvg = 5,
-      ridgeRF = TRUE,
+      linear = TRUE,
       overfitPenalty = 1000
     )
   }
@@ -69,7 +69,7 @@ test_that("Tests if ridgeRF works", {
     splitrule = "variance",
     splitratio = 1,
     nodesizeStrictAvg = 5,
-    ridgeRF = TRUE,
+    linear = TRUE,
     overfitPenalty = 1000
   )
   # Test predict
