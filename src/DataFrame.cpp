@@ -1,5 +1,5 @@
 #include "DataFrame.h"
-#include <math.h>
+#include <cmath>
 
 DataFrame::DataFrame():
   _featureData(nullptr), _outcomeData(nullptr), _rowNumbers(nullptr),
@@ -91,7 +91,6 @@ std::vector<float>* DataFrame::getFeatureData(
     return &(*getAllFeatureData())[colIndex];
   } else {
     throw std::runtime_error("Invalid colIndex.");
-    std::cout<< "HERE" << std::endl;
   }
 }
 

@@ -101,8 +101,6 @@ preprocess_testing <- function(x,
   }
 
   if (!(identical((featureNames), testingFeatureNames))) {
-    print(featureNames)
-    print(testingFeatureNames)
     stop("Training data and testing data column names must be the same.")
   }
 
