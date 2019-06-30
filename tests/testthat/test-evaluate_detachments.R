@@ -18,7 +18,8 @@ test_that("Tests that evaluate_detachments is working correctly", {
                                 feature.new = x_test,
                                 feat.name = features,
                                 p = 1,
-                                verbose = FALSE)
+                                verbose = FALSE,
+                                num.CV = 10)
 
   # Assertions
   expect_equal(trust$Sepal.Width,

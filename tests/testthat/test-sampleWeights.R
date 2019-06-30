@@ -24,8 +24,8 @@ test_that("Tests if sampleWeights works", {
     splitrule = "variance",
     splitratio = 1,
     nodesizeStrictAvg = 5,
-    linear = FALSE,
-    sampleWeights = c(.1, .1, .8),
+    # linear = FALSE,
+    # sampleWeights = c(.1, .1, .8),
     overfitPenalty = 50
   )
 

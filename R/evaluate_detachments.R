@@ -130,7 +130,7 @@ evaluate_detachments_alt <- function(object,
                                  feat.name,
                                  p = 1,
                                  verbose = TRUE,
-                                 num.CV = 10) {
+                                 num.CV = 2) {
 
   # Checks and parsing:
   if (class(object) != "forestry") {
@@ -154,6 +154,9 @@ evaluate_detachments_alt <- function(object,
 
   eval <- data.frame(1:nrow(feature.new))
   for (feat in feat.name) {
+    if (verbose) {
+      print(paste("Evaluating detachments for feature: ", feat))
+    }
     # Compute detachment indices for new data
     detachments <- compute_detachments(object = object,
                                        feature.new = feature.new,
