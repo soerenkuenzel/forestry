@@ -43,9 +43,9 @@ public:
 
   std::unique_ptr< std::vector<float> > predict(
     std::vector< std::vector<float> >* xNew,
-    arma::Mat<float>* weightMatrix,
     arma::Mat<float>* localVIMatrix,
-    arma::Mat<float>* coefficients
+    arma::Mat<float>* coefficients,
+    predict_info predictInfo = {true}
   );
 
   void fillinTreeInfo(
@@ -69,9 +69,9 @@ public:
 
   void calculateLocalVariableImportance(
     std::vector< std::vector<float> >* xNew,
-    arma::Mat<float>* weightMatrix,
     arma::Mat<float>* localVIMatrix,
-    std::vector<float> prediction
+    std::vector<float> prediction,
+    predict_info predictInfo
   );
 
   std::vector<float> getVariableImportance() {

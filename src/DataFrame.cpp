@@ -1,4 +1,5 @@
 #include "DataFrame.h"
+#include <cmath>
 
 DataFrame::DataFrame():
   _featureData(nullptr), _outcomeData(nullptr), _rowNumbers(nullptr),
@@ -71,6 +72,18 @@ float DataFrame::getOutcomePoint(size_t rowIndex) {
   }
 }
 
+float DataFrame::getFeaturePoint(size_t rowIndex, size_t colIndex) {
+  // Check if rowIndex is valid
+  if (rowIndex < getNumRows() && colIndex < getNumColumns()) {
+    return (*getAllFeatureData())[rowIndex][colIndex];
+    //return (*getOutcomeData())[rowIndex];
+  } else {
+    throw std::runtime_error("Invalid rowIndex or colIndex.");
+  }
+}
+
+// float
+
 std::vector<float>* DataFrame::getFeatureData(
   size_t colIndex
 ) {
@@ -139,6 +152,48 @@ float DataFrame::partitionMean(
     accummulatedSum += getOutcomePoint(*it);
   }
   return accummulatedSum / totalSampleSize;
+}
+
+void DataFrame::computeTreeDistances(
+  std::vector<size_t>* sampleIndex,
+  float power,
+  size_t distanceColIndex,
+  std::vector<size_t>* updateIndex,
+  std::vector< std::vector<float> >* xNew,
+  std::vector<float>* outputPrediction
+){
+
+  size_t totalSampleSize = (*sampleIndex).size();
+  std::vector<float> featureColumn = *getFeatureData(distanceColIndex - 1);
+  bool isCategoricalVariable =
+    std::count((*getCatCols()).begin(), (*getCatCols()).end(), distanceColIndex - 1);
+
+  for (
+      std::vector<size_t>::iterator it = (*updateIndex).begin();
+      it != (*updateIndex).end();
+      ++it
+  ) {
+
+    float accummulatedSum = 0;
+    float itsFeatureValue = (*xNew)[distanceColIndex - 1][*it];
+
+    for (
+        std::vector<size_t>::iterator bit = (*sampleIndex).begin();
+        bit != (*sampleIndex).end();
+        ++bit
+    ) {
+
+      float addition;
+      if(isCategoricalVariable){
+        addition = (float)(featureColumn[*bit] != itsFeatureValue);
+      }else{
+        addition = pow((float) fabs(featureColumn[*bit] - itsFeatureValue), power);
+      }
+      accummulatedSum += addition;
+
+    }
+    (*outputPrediction)[*it] = accummulatedSum / totalSampleSize;
+  }
 }
 
 std::vector<size_t> DataFrame::get_all_row_idx(

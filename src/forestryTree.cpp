@@ -197,10 +197,8 @@ void forestryTree::predict(
     std::vector< std::vector<float> > &outputCoefficients,
     std::vector< std::vector<float> >* xNew,
     DataFrame* trainingData,
-    arma::Mat<float>* weightMatrix,
-    bool linear
+    predict_info predictInfo
 ){
-  // If we are estimating the average in each leaf:
   struct rangeGenerator {
     size_t currentNumber;
     rangeGenerator(size_t startNumber): currentNumber(startNumber) {};
@@ -210,8 +208,13 @@ void forestryTree::predict(
   std::vector<size_t> updateIndex(outputPrediction.size());
   rangeGenerator _rangeGenerator(0);
   std::generate(updateIndex.begin(), updateIndex.end(), _rangeGenerator);
-  (*getRoot()).predict(outputPrediction, outputCoefficients, &updateIndex, xNew, trainingData,
-   weightMatrix, linear, getOverfitPenalty());
+  predictInfo.overfitPenalty = getOverfitPenalty();
+  (*getRoot()).predict(outputPrediction,
+   outputCoefficients,
+   &updateIndex,
+   xNew,
+   trainingData,
+   predictInfo);
 }
 
 

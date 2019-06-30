@@ -54,8 +54,7 @@ public:
     std::vector< std::vector<float> > &outputCoefficients,
     std::vector< std::vector<float> >* xNew,
     DataFrame* trainingData,
-    arma::Mat<float>* weightMatrix = NULL,
-    bool linear = false
+    predict_info predictInfo = {true}
   );
 
   std::unique_ptr<tree_info> getTreeInfo(

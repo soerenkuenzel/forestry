@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <RcppArmadillo.h>
 
 void print_vector(
   std::vector<size_t> v
@@ -27,4 +28,21 @@ struct tree_info {
   // contains the indices of the splitting set.
 };
 
+struct predict_info{
+  // Booleans contain the desired prediction method
+  bool isPredict;
+  bool isWeightMatrix;
+  bool isRidgeRF;
+  bool isRFdistance;
+
+  // contains the address of the weight matrix
+  arma::Mat<float>* weightMatrix;
+  // contains the overfit penalty (lambda)
+  float overfitPenalty;
+  // contains the power for computing the detachment indices
+  float power;
+  // contains the column number for the feature in which the rf distances
+  // will be computed
+  int distanceNumCol;
+};
 #endif //FORESTRYCPP_UTILS_H

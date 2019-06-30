@@ -43,9 +43,7 @@ public:
     std::vector<size_t>* updateIndex,
     std::vector< std::vector<float> >* xNew,
     DataFrame* trainingData,
-    arma::Mat<float>* weightMatrix,
-    bool linear,
-    float lambda
+    predict_info predictInfo
   );
 
   void write_node_info(

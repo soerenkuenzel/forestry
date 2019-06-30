@@ -28,6 +28,8 @@ public:
 
   float getOutcomePoint(size_t rowIndex);
 
+  float getFeaturePoint(size_t rowIndex, size_t colIndex);
+
   std::vector<float>* getFeatureData(size_t colIndex);
 
   std::vector<float> getLinObsData(size_t rowIndex);
@@ -38,6 +40,13 @@ public:
                                   size_t swapFeature, size_t swapIndex);
 
   float partitionMean(std::vector<size_t>* sampleIndex);
+
+  void computeTreeDistances(std::vector<size_t>* sampleIndex,
+                            float power,
+                            size_t distColIndex,
+                            std::vector<size_t>* updateIndex,
+                            std::vector< std::vector<float> >* xNew,
+                            std::vector<float>* outputPrediction);
 
   std::vector< std::vector<float> >* getAllFeatureData() {
     return _featureData.get();

@@ -2,7 +2,6 @@
 #include <RcppArmadillo.h>
 #include <mutex>
 #include <thread>
-#include "utils.h"
 
 std::mutex mutex_weightMatrix;
 
@@ -141,15 +140,13 @@ void RFNode::predict(
   std::vector<size_t>* updateIndex,
   std::vector< std::vector<float> >* xNew,
   DataFrame* trainingData,
-  arma::Mat<float>* weightMatrix,
-  bool linear,
-  float lambda
+  predict_info predictInfo
 ) {
 
   // If the node is a leaf, aggregate all its averaging data samples
   if (is_leaf()) {
 
-      if (linear) {
+      if (predictInfo.isRidgeRF) {
 
       //Use ridgePredict (fit linear model on leaf avging obs + evaluate it)
       ridgePredict(outputPrediction,
@@ -157,24 +154,36 @@ void RFNode::predict(
                    updateIndex,
                    xNew,
                    trainingData,
-                   lambda);
+                   predictInfo.overfitPenalty);
+
+      } else if(predictInfo.isRFdistance){
+
+        // Compute the detachment indices within a single tree
+        (*trainingData).computeTreeDistances(getAveragingIndex(),
+                                             predictInfo.power,
+                                             predictInfo.distanceNumCol,
+                                             updateIndex,
+                                             xNew,
+                                             &outputPrediction);
+
       } else {
 
-      // Calculate the mean of current node
-      float predictedMean = (*trainingData).partitionMean(getAveragingIndex());
+        // Calculate the mean of current node
+        float predictedMean = (*trainingData).partitionMean(getAveragingIndex());
 
-      // Give all updateIndex the mean of the node as prediction values
-      for (
-        std::vector<size_t>::iterator it = (*updateIndex).begin();
-        it != (*updateIndex).end();
-        ++it
-      ) {
-        outputPrediction[*it] = predictedMean;
+        // Give all updateIndex the mean of the node as prediction values
+        for (
+          std::vector<size_t>::iterator it = (*updateIndex).begin();
+          it != (*updateIndex).end();
+          ++it
+        ) {
+          outputPrediction[*it] = predictedMean;
+        }
+
       }
-    }
 
-    if(weightMatrix){
-      // If weightMatrix is not a NULL pointer, then we want to update it,
+    if(predictInfo.isWeightMatrix){
+      // If there is a weight matrix, then we want to update it,
       // because we have choosen aggregation = "weightmatrix".
       std::vector<size_t> idx_in_leaf =
         (*trainingData).get_all_row_idx(getAveragingIndex());
@@ -185,8 +194,8 @@ void RFNode::predict(
           it != (*updateIndex).end();
           ++it ) {
         for (size_t i = 0; i<idx_in_leaf.size(); i++) {
-          (*weightMatrix)(*it, idx_in_leaf[i] - 1) =
-          (*weightMatrix)(*it, idx_in_leaf[i] - 1) +
+          (*predictInfo.weightMatrix)(*it, idx_in_leaf[i] - 1) =
+          (*predictInfo.weightMatrix)(*it, idx_in_leaf[i] - 1) +
           (double) 1.0 / idx_in_leaf.size();
         }
       }
@@ -247,9 +256,7 @@ void RFNode::predict(
         leftPartitionIndex,
         xNew,
         trainingData,
-        weightMatrix,
-        linear,
-        lambda
+        predictInfo
       );
     }
     if ((*rightPartitionIndex).size() > 0) {
@@ -259,9 +266,7 @@ void RFNode::predict(
         rightPartitionIndex,
         xNew,
         trainingData,
-        weightMatrix,
-        linear,
-        lambda
+        predictInfo
       );
     }
 
