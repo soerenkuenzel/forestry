@@ -9,7 +9,7 @@ test_that("Tests that evaluate_detachments is working correctly", {
   x_train <- iris[-test_idx, -index]
   y_train <- iris[-test_idx, index]
   x_test <- iris[test_idx, -index]
-  rf <- forestry(x = x_train, y = y_train, nthread = 1)
+  rf <- forestry(x = x_train, y = y_train, ntree = 50, nthread = 1)
 
   # Select features to compute lp distances with respect to.
   features <- c("Sepal.Width", "Species")
@@ -19,14 +19,18 @@ test_that("Tests that evaluate_detachments is working correctly", {
                                 feat.name = features,
                                 p = 1,
                                 verbose = FALSE,
-                                num.CV = 10)
+                                num.CV = 2)
+
 
   # Assertions
   expect_equal(trust$Sepal.Width,
-               c(0.2304842, 0.4566183, 0.4179750, 0.4714608, 0.1065377),
+               c(0.2031064, 0.4957503, 0.4437268, 0.3337928, 0.1000588),
                tolerance = 1e-2)
   expect_equal(trust$Species,
-               c(0.3374607, 0.2840422, 0.4327882, 0.5381107, 0.3480015),
+               c(0.3453855, 0.4221628, 0.4566939, 0.4370547, 0.4604309),
                tolerance = 1e-2)
 
 })
+
+
+

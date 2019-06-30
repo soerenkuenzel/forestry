@@ -24,9 +24,10 @@ var_imp <- unlist(var_imp)
 #' important variables
 
 # Evaluate:
-trust <- evaluate_detachments(object = rf_forestry,
+trust <- evaluate_detachments_alt(object = rf_forestry,
                               feature.new = cars_test_sample %>% select(-y),
-                              feat.name = c("DateOfRegistration", "powerPS"))
+                              feat.name = c("DateOfRegistration", "powerPS"),
+                              num.CV = 10)
 
 pred <- predict(rf_forestry,
                 feature.new = cars_test_sample %>% select(-y))
