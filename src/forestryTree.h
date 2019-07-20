@@ -37,25 +37,25 @@ public:
 
   // This tree is only for testing purpose
   void setDummyTree(
-    size_t mtry,
-    size_t minNodeSizeSpt,
-    size_t minNodeSizeAvg,
-    size_t minNodeSizeToSplitSpt,
-    size_t minNodeSizeToSplitAvg,
-    float minSplitGain,
-    size_t maxDepth,
-    std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
-    std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
-    float overfitPenalty
+      size_t mtry,
+      size_t minNodeSizeSpt,
+      size_t minNodeSizeAvg,
+      size_t minNodeSizeToSplitSpt,
+      size_t minNodeSizeToSplitAvg,
+      float minSplitGain,
+      size_t maxDepth,
+      std::unique_ptr< std::vector<size_t> > splittingSampleIndex,
+      std::unique_ptr< std::vector<size_t> > averagingSampleIndex,
+      float overfitPenalty
   );
 
   void predict(
-    std::vector<float> &outputPrediction,
-    std::vector< std::vector<float> > &outputCoefficients,
-    std::vector< std::vector<float> >* xNew,
-    DataFrame* trainingData,
-    arma::Mat<float>* weightMatrix = NULL,
-    bool linear = false
+      std::vector<float> &outputPrediction,
+      std::vector< std::vector<float> > &outputCoefficients,
+      std::vector< std::vector<float> >* xNew,
+      DataFrame* trainingData,
+      arma::Mat<float>* weightMatrix = NULL,
+      bool linear = false
   );
 
   std::unique_ptr<tree_info> getTreeInfo(
@@ -89,41 +89,39 @@ public:
   );
 
   void recursivePartition(
-    RFNode* rootNode,
-    std::vector<size_t>* averagingSampleIndex,
-    std::vector<size_t>* splittingSampleIndex,
-    DataFrame* trainingData,
-    std::mt19937_64& random_number_generator,
-    size_t depth,
-    bool splitMiddle,
-    size_t maxObs,
-    bool linear,
-    float overfitPenalty,
-    std::vector<double>* benchmark,
-    arma::Mat<double> gTotal,
-    arma::Mat<double> sTotal
+      RFNode* rootNode,
+      std::vector<size_t>* averagingSampleIndex,
+      std::vector<size_t>* splittingSampleIndex,
+      DataFrame* trainingData,
+      std::mt19937_64& random_number_generator,
+      size_t depth,
+      bool splitMiddle,
+      size_t maxObs,
+      bool linear,
+      float overfitPenalty,
+      std::shared_ptr< arma::Mat<double> > gtotal,
+      std::shared_ptr< arma::Mat<double> > stotal
   );
 
   void selectBestFeature(
-    size_t& bestSplitFeature,
-    double& bestSplitValue,
-    float& bestSplitLoss,
-    arma::Mat<double> &bestSplitGL,
-    arma::Mat<double> &bestSplitGR,
-    arma::Mat<double> &bestSplitSL,
-    arma::Mat<double> &bestSplitSR,
-    std::vector<size_t>* featureList,
-    std::vector<size_t>* averagingSampleIndex,
-    std::vector<size_t>* splittingSampleIndex,
-    DataFrame* trainingData,
-    std::mt19937_64& random_number_generator,
-    bool splitMiddle,
-    size_t maxObs,
-    bool linear,
-    float overfitPenalty,
-    std::vector<double>* benchmark,
-    arma::Mat<double>& gTotal,
-    arma::Mat<double>& sTotal
+      size_t& bestSplitFeature,
+      double& bestSplitValue,
+      float& bestSplitLoss,
+      arma::Mat<double> &bestSplitGL,
+      arma::Mat<double> &bestSplitGR,
+      arma::Mat<double> &bestSplitSL,
+      arma::Mat<double> &bestSplitSR,
+      std::vector<size_t>* featureList,
+      std::vector<size_t>* averagingSampleIndex,
+      std::vector<size_t>* splittingSampleIndex,
+      DataFrame* trainingData,
+      std::mt19937_64& random_number_generator,
+      bool splitMiddle,
+      size_t maxObs,
+      bool linear,
+      float overfitPenalty,
+      std::shared_ptr< arma::Mat<double> > gtotal,
+      std::shared_ptr< arma::Mat<double> > sTotal
   );
 
   void initializelinear(
@@ -139,14 +137,14 @@ public:
   void trainTiming();
 
   void getOOBindex(
-    std::vector<size_t> &outputOOBIndex,
-    size_t nRows
+      std::vector<size_t> &outputOOBIndex,
+      size_t nRows
   );
 
   void getOOBPrediction(
-    std::vector<float> &outputOOBPrediction,
-    std::vector<size_t> &outputOOBCount,
-    DataFrame* trainingData
+      std::vector<float> &outputOOBPrediction,
+      std::vector<size_t> &outputOOBCount,
+      DataFrame* trainingData
   );
 
   void getShuffledOOBPrediction(
@@ -200,10 +198,6 @@ public:
     return _overfitPenalty;
   }
 
-  std::vector<double>* getBenchmark() {
-    return _benchmark;
-  }
-
 private:
   size_t _mtry;
   size_t _minNodeSizeSpt;
@@ -217,7 +211,6 @@ private:
   std::unique_ptr< RFNode > _root;
   bool _linear;
   float _overfitPenalty;
-  std::vector<double>* _benchmark;
 };
 
 
