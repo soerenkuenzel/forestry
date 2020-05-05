@@ -5,8 +5,14 @@
 \alias{plot.forestry}
 \title{visualize a tree}
 \usage{
-\method{plot}{forestry}(x, tree.id = 1, print.meta_dta = FALSE,
-  beta.char.len = 30, return.plot.dta = FALSE, ...)
+\method{plot}{forestry}(
+  x,
+  tree.id = 1,
+  print.meta_dta = FALSE,
+  beta.char.len = 30,
+  return.plot.dta = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x}{A trained model object of class "forestry".}

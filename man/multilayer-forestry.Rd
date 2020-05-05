@@ -5,17 +5,38 @@
 \alias{multilayerForestry}
 \title{Multilayer forestry}
 \usage{
-multilayerForestry(x, y, ntree = 500, nrounds = 1, eta = 0.3,
-  replace = FALSE, sampsize = nrow(x), sample.fraction = NULL,
-  mtry = ncol(x), nodesizeSpl = 3, nodesizeAvg = 3,
+multilayerForestry(
+  x,
+  y,
+  ntree = 500,
+  nrounds = 1,
+  eta = 0.3,
+  replace = FALSE,
+  sampsize = nrow(x),
+  sample.fraction = NULL,
+  mtry = ncol(x),
+  nodesizeSpl = 3,
+  nodesizeAvg = 3,
   nodesizeStrictSpl = max(round(nrow(x)/128), 1),
-  nodesizeStrictAvg = max(round(nrow(x)/128), 1), minSplitGain = 0,
-  maxDepth = 99, splitratio = 1, seed = as.integer(runif(1) * 1000),
-  verbose = FALSE, nthread = 0, splitrule = "variance",
-  middleSplit = TRUE, maxObs = length(y), linear = FALSE,
-  splitFeats = 1:(ncol(x)), linFeats = 1:(ncol(x)),
-  sampleWeights = rep((1/ncol(x)), ncol(x)), overfitPenalty = 1,
-  doubleTree = FALSE, reuseforestry = NULL, saveable = TRUE)
+  nodesizeStrictAvg = max(round(nrow(x)/128), 1),
+  minSplitGain = 0,
+  maxDepth = 99,
+  splitratio = 1,
+  seed = as.integer(runif(1) * 1000),
+  verbose = FALSE,
+  nthread = 0,
+  splitrule = "variance",
+  middleSplit = TRUE,
+  maxObs = length(y),
+  linear = FALSE,
+  splitFeats = 1:(ncol(x)),
+  linFeats = 1:(ncol(x)),
+  sampleWeights = rep((1/ncol(x)), ncol(x)),
+  overfitPenalty = 1,
+  doubleTree = FALSE,
+  reuseforestry = NULL,
+  saveable = TRUE
+)
 }
 \arguments{
 \item{x}{A data frame of all training predictors.}

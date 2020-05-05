@@ -5,8 +5,7 @@
 \alias{predict.multilayerForestry}
 \title{predict-multilayer-forestry}
 \usage{
-\method{predict}{multilayerForestry}(object, feature.new,
-  aggregation = "average", ...)
+\method{predict}{multilayerForestry}(object, feature.new, aggregation = "average", ...)
 }
 \arguments{
 \item{object}{A `multilayerForestry` object.}

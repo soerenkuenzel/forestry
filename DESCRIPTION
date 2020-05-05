@@ -20,7 +20,7 @@ Imports:
     onehot
 LinkingTo: Rcpp,
   RcppArmadillo
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.0
 SystemRequirements: C++11
 Suggests:
     testthat,

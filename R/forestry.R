@@ -962,7 +962,8 @@ multilayerForestry <- function(x,
 #' @param object A trained model object of class "forestry".
 #' @param feature.new A data frame of testing predictors.
 #' @param aggregation How shall the leaf be aggregated. The default is to return
-#'   the mean of the leave `average`. Other options are `weightMatrix`.
+#'   the mean of the leave `average`. Other options are `weightMatrix` and `coefs`
+#'   to return the ridge regression coefficients when doing Linear Random Forest.
 #' @param localVariableImportance Returns a matrix providing local variable
 #'   importance for each prediction.
 #' @param ... additional arguments.
@@ -1001,6 +1002,9 @@ predict.forestry <- function(object,
   # rccpPrediction is a list with an entry $coef
   # which gives pointwise regression coeffficients averaged across the forest
   if (aggregation == "coefs") {
+    if(length(object@linFeats) == 1) {
+      feature.new <- data.frame(feature.new)
+    }
     coef_names <- colnames(feature.new)[object@linFeats + 1]
     coef_names <- c(coef_names, "Intercept")
     colnames(rcppPrediction$coef) <- coef_names

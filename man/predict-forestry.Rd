@@ -5,8 +5,13 @@
 \alias{predict.forestry}
 \title{predict-forestry}
 \usage{
-\method{predict}{forestry}(object, feature.new, aggregation = "average",
-  localVariableImportance = FALSE, ...)
+\method{predict}{forestry}(
+  object,
+  feature.new,
+  aggregation = "average",
+  localVariableImportance = FALSE,
+  ...
+)
 }
 \arguments{
 \item{object}{A trained model object of class "forestry".}
@@ -14,7 +19,8 @@
 \item{feature.new}{A data frame of testing predictors.}
 
 \item{aggregation}{How shall the leaf be aggregated. The default is to return
-the mean of the leave `average`. Other options are `weightMatrix`.}
+the mean of the leave `average`. Other options are `weightMatrix` and `coefs`
+to return the ridge regression coefficients when doing Linear Random Forest.}
 
 \item{localVariableImportance}{Returns a matrix providing local variable
 importance for each prediction.}

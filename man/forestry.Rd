@@ -4,16 +4,36 @@
 \alias{forestry}
 \title{forestry}
 \usage{
-forestry(x, y, ntree = 500, replace = TRUE, sampsize = if (replace)
-  nrow(x) else ceiling(0.632 * nrow(x)), sample.fraction = NULL,
-  mtry = max(floor(ncol(x)/3), 1), nodesizeSpl = 3, nodesizeAvg = 3,
-  nodesizeStrictSpl = 1, nodesizeStrictAvg = 1, minSplitGain = 0,
-  maxDepth = round(nrow(x)/2) + 1, splitratio = 1,
-  seed = as.integer(runif(1) * 1000), verbose = FALSE, nthread = 0,
-  splitrule = "variance", middleSplit = FALSE, maxObs = length(y),
-  linear = FALSE, splitFeats = 1:(ncol(x)), linFeats = 1:(ncol(x)),
-  sampleWeights = rep((1/ncol(x)), ncol(x)), overfitPenalty = 1,
-  doubleTree = FALSE, reuseforestry = NULL, saveable = TRUE)
+forestry(
+  x,
+  y,
+  ntree = 500,
+  replace = TRUE,
+  sampsize = if (replace) nrow(x) else ceiling(0.632 * nrow(x)),
+  sample.fraction = NULL,
+  mtry = max(floor(ncol(x)/3), 1),
+  nodesizeSpl = 3,
+  nodesizeAvg = 3,
+  nodesizeStrictSpl = 1,
+  nodesizeStrictAvg = 1,
+  minSplitGain = 0,
+  maxDepth = round(nrow(x)/2) + 1,
+  splitratio = 1,
+  seed = as.integer(runif(1) * 1000),
+  verbose = FALSE,
+  nthread = 0,
+  splitrule = "variance",
+  middleSplit = FALSE,
+  maxObs = length(y),
+  linear = FALSE,
+  splitFeats = 1:(ncol(x)),
+  linFeats = 1:(ncol(x)),
+  sampleWeights = rep((1/ncol(x)), ncol(x)),
+  overfitPenalty = 1,
+  doubleTree = FALSE,
+  reuseforestry = NULL,
+  saveable = TRUE
+)
 }
 \arguments{
 \item{x}{A data frame of all training predictors.}
