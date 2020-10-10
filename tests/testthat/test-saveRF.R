@@ -63,12 +63,12 @@ test_that("Tests that saving RF and laoding it works", {
 
   # -- Actual saving and loading -----------------------------------------------
   y_pred_before <- predict(forest, x)
-  forest <- make_savable(forest)
+
   save(forest, file = "forest.Rda")
   rm(forest)
-  load("forest.Rda", verbose = FALSE)
-  forest <- relinkCPP_prt(forest)
-  y_pred_after <- predict(forest, x)
+  forest_after <- load("forest.Rda")
+
+  y_pred_after <- predict(forest_after, x)
   testthat::expect_equal(y_pred_before, y_pred_after, tolerance = 1e-6)
 
   file.remove("forest.Rda")

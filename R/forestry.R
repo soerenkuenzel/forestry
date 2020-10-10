@@ -1182,6 +1182,35 @@ CppToR_translator <- function(object) {
     })
   }
 
+# -- Save RF -----------------------------------------------------
+#' save RF
+#' @rdname save-forestry
+#' @description This wrapper function checks the forestry object, makes it
+#'  saveable if needed, and then saves it.
+#' @param object an object of class `forestry`
+#' @param file a filename in which to store the `forestry` object
+#' @export
+save <- function(object, filename){
+    # First we need to make sure the object is saveable
+    forest <- make_savable(object)
+    base::save(forest, file = filename)
+}
+
+# -- Load RF -----------------------------------------------------
+#' load RF
+#' @rdname load-forestry
+#' @description This wrapper function checks the forestry object, makes it
+#'  saveable if needed, and then saves it.
+#' @param filename a filename in which to store the `forestry` object
+#' @export
+load <- function(filename){
+  # First we need to make sure the object is saveable
+  name <- base::load(file = filename, envir = environment())
+  rf <- get(name)
+  rf <- relinkCPP_prt(rf)
+  return(rf)
+}
+
 
 # -- relink forest CPP ptr -----------------------------------------------------
 #' relink CPP ptr
