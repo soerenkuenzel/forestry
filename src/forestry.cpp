@@ -40,6 +40,7 @@ forestry::forestry(
   bool verbose,
   bool splitMiddle,
   size_t maxObs,
+  float maxProp,
   bool linear,
   float overfitPenalty,
   bool doubleTree
@@ -61,6 +62,7 @@ forestry::forestry(
   this->_verbose = verbose;
   this->_splitMiddle = splitMiddle;
   this->_maxObs = maxObs;
+  this->_maxProp = maxProp;
   this->_linear = linear;
   this->_overfitPenalty = overfitPenalty;
   this->_doubleTree = doubleTree;
@@ -236,6 +238,7 @@ void forestry::addTrees(size_t ntree) {
                 random_number_generator,
                 getSplitMiddle(),
                 getMaxObs(),
+                getMaxProp(),
                 getlinear(),
                 getOverfitPenalty()
               )
@@ -258,6 +261,7 @@ void forestry::addTrees(size_t ntree) {
                     random_number_generator,
                     getSplitMiddle(),
                     getMaxObs(),
+                    getMaxProp(),
                     getlinear(),
                     getOverfitPenalty()
                  );

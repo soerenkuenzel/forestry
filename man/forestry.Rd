@@ -25,6 +25,7 @@ forestry(
   splitrule = "variance",
   middleSplit = FALSE,
   maxObs = length(y),
+  maxProp = 1,
   linear = FALSE,
   splitFeats = 1:(ncol(x)),
   linFeats = 1:(ncol(x)),
@@ -103,6 +104,15 @@ distribution between two feature values. The default value is FALSE.}
 less than nrow(x), at each split point, maxObs split points will be
 randomly sampled to test as potential splitting points instead of every
 feature value (default).}
+
+\item{maxProp}{A complementary option to `maxObs`, `maxProp` allows one to
+specify the proportion of possible split points which are downsampled at
+each point to test potential splitting points. For example, a value of .35
+will randomly select 35% of the possible splitting points to be potential
+splitting poimts at each split. If values of `maxProp` and `maxObs` are
+both supplied, the value of `maxProp` will take precedent.
+At the lower levels of the tree, we will select
+Max(`maxProp`* n, nodesizeSpl) splitting observations.}
 
 \item{linear}{Fit the model with a split function optimizing for a linear
 aggregation function instead of a constant aggregation function. The default

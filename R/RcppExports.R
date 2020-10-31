@@ -5,12 +5,12 @@ rcpp_cppDataFrameInterface <- function(x, y, catCols, splitCols, linCols, numRow
     .Call(`_forestry_rcpp_cppDataFrameInterface`, x, y, catCols, splitCols, linCols, numRows, numColumns, sampleWeights)
 }
 
-rcpp_cppBuildInterface <- function(x, y, catCols, splitCols, linCols, numRows, numColumns, ntree, replace, sampsize, mtry, splitratio, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, minSplitGain, maxDepth, seed, nthread, verbose, middleSplit, maxObs, sampleWeights, linear, overfitPenalty, doubleTree, existing_dataframe_flag, existing_dataframe) {
-    .Call(`_forestry_rcpp_cppBuildInterface`, x, y, catCols, splitCols, linCols, numRows, numColumns, ntree, replace, sampsize, mtry, splitratio, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, minSplitGain, maxDepth, seed, nthread, verbose, middleSplit, maxObs, sampleWeights, linear, overfitPenalty, doubleTree, existing_dataframe_flag, existing_dataframe)
+rcpp_cppBuildInterface <- function(x, y, catCols, splitCols, linCols, numRows, numColumns, ntree, replace, sampsize, mtry, splitratio, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, minSplitGain, maxDepth, seed, nthread, verbose, middleSplit, maxObs, maxProp, sampleWeights, linear, overfitPenalty, doubleTree, existing_dataframe_flag, existing_dataframe) {
+    .Call(`_forestry_rcpp_cppBuildInterface`, x, y, catCols, splitCols, linCols, numRows, numColumns, ntree, replace, sampsize, mtry, splitratio, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, minSplitGain, maxDepth, seed, nthread, verbose, middleSplit, maxObs, maxProp, sampleWeights, linear, overfitPenalty, doubleTree, existing_dataframe_flag, existing_dataframe)
 }
 
-rcpp_cppMultilayerBuildInterface <- function(x, y, catCols, splitCols, linCols, numRows, numColumns, ntree, nrounds, eta, replace, sampsize, mtry, splitratio, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, minSplitGain, maxDepth, seed, nthread, verbose, middleSplit, maxObs, sampleWeights, linear, overfitPenalty, doubleTree, existing_dataframe_flag, existing_dataframe) {
-    .Call(`_forestry_rcpp_cppMultilayerBuildInterface`, x, y, catCols, splitCols, linCols, numRows, numColumns, ntree, nrounds, eta, replace, sampsize, mtry, splitratio, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, minSplitGain, maxDepth, seed, nthread, verbose, middleSplit, maxObs, sampleWeights, linear, overfitPenalty, doubleTree, existing_dataframe_flag, existing_dataframe)
+rcpp_cppMultilayerBuildInterface <- function(x, y, catCols, splitCols, linCols, numRows, numColumns, ntree, nrounds, eta, replace, sampsize, mtry, splitratio, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, minSplitGain, maxDepth, seed, nthread, verbose, middleSplit, maxObs, maxProp, sampleWeights, linear, overfitPenalty, doubleTree, existing_dataframe_flag, existing_dataframe) {
+    .Call(`_forestry_rcpp_cppMultilayerBuildInterface`, x, y, catCols, splitCols, linCols, numRows, numColumns, ntree, nrounds, eta, replace, sampsize, mtry, splitratio, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, minSplitGain, maxDepth, seed, nthread, verbose, middleSplit, maxObs, maxProp, sampleWeights, linear, overfitPenalty, doubleTree, existing_dataframe_flag, existing_dataframe)
 }
 
 rcpp_cppPredictInterface <- function(forest, x, aggregation, localVariableImportance) {
@@ -41,7 +41,7 @@ rcpp_CppToR_translator <- function(forest) {
     .Call(`_forestry_rcpp_CppToR_translator`, forest)
 }
 
-rcpp_reconstructree <- function(x, y, catCols, splitCols, linCols, numRows, numColumns, R_forest, replace, sampsize, splitratio, mtry, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, minSplitGain, maxDepth, seed, nthread, verbose, middleSplit, maxObs, sampleWeights, linear, overfitPenalty, doubleTree) {
-    .Call(`_forestry_rcpp_reconstructree`, x, y, catCols, splitCols, linCols, numRows, numColumns, R_forest, replace, sampsize, splitratio, mtry, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, minSplitGain, maxDepth, seed, nthread, verbose, middleSplit, maxObs, sampleWeights, linear, overfitPenalty, doubleTree)
+rcpp_reconstructree <- function(x, y, catCols, splitCols, linCols, numRows, numColumns, R_forest, replace, sampsize, splitratio, mtry, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, minSplitGain, maxDepth, seed, nthread, verbose, middleSplit, maxObs, maxProp, sampleWeights, linear, overfitPenalty, doubleTree) {
+    .Call(`_forestry_rcpp_reconstructree`, x, y, catCols, splitCols, linCols, numRows, numColumns, R_forest, replace, sampsize, splitratio, mtry, nodesizeSpl, nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg, minSplitGain, maxDepth, seed, nthread, verbose, middleSplit, maxObs, maxProp, sampleWeights, linear, overfitPenalty, doubleTree)
 }
 

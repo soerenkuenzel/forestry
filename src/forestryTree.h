@@ -31,6 +31,7 @@ public:
     std::mt19937_64& random_number_generator,
     bool splitMiddle,
     size_t maxObs,
+    float maxProp,
     bool linear,
     float overfitPenalty
   );
@@ -97,6 +98,7 @@ public:
       size_t depth,
       bool splitMiddle,
       size_t maxObs,
+      float maxProp,
       bool linear,
       float overfitPenalty,
       std::shared_ptr< arma::Mat<double> > gtotal,
@@ -118,6 +120,7 @@ public:
       std::mt19937_64& random_number_generator,
       bool splitMiddle,
       size_t maxObs,
+      float maxProp,
       bool linear,
       float overfitPenalty,
       std::shared_ptr< arma::Mat<double> > gtotal,

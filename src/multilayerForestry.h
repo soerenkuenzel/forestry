@@ -38,6 +38,7 @@ public:
     bool verbose,
     bool splitMiddle,
     size_t maxObs,
+    float maxProp,
     bool linear,
     float overfitPenalty,
     bool doubleTree
@@ -178,6 +179,7 @@ private:
   std::unique_ptr< std::vector<float> > _variableImportance;
   bool _splitMiddle;
   size_t _maxObs;
+  float _maxProp;
   bool _linear;
   float _overfitPenalty;
   bool _doubleTree;

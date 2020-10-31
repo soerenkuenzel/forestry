@@ -27,6 +27,8 @@ training_data_checker <- function(x,
                                   splitratio,
                                   nthread,
                                   middleSplit,
+                                  maxObs,
+                                  maxProp,
                                   doubleTree,
                                   splitFeats,
                                   linFeats,
@@ -118,6 +120,20 @@ training_data_checker <- function(x,
   }
 
   sampleWeights <- (sampleWeights / sum(sampleWeights))
+
+  if (maxObs < 1 || maxObs > nrow(x)) {
+    stop("maxObs must be greater than one and less than N")
+  }
+
+  if (maxProp <= 0 || maxProp > 1) {
+    stop("maxProp must be between 0 and 1")
+  }
+
+  # We want maxProp to take precedent over maxObs
+  if (maxProp != 1 && maxObs != nrow(x)) {
+    warning("maxProp is set != 1, setting maxObs = nrow(x)")
+    maxObs <- nrow(x)
+  }
 
   # if the splitratio is 1, then we use adaptive rf and avgSampleSize is the
   # equal to the total sampsize
@@ -216,6 +232,8 @@ training_data_checker <- function(x,
               "splitratio" = splitratio,
               "nthread" = nthread,
               "middleSplit" = middleSplit,
+              "maxObs" = maxObs,
+              "maxProp" = maxProp,
               "doubleTree" = doubleTree,
               "splitFeats" = splitFeats,
               "linFeats" = linFeats,
@@ -259,6 +277,7 @@ setClass(
     middleSplit = "logical",
     y = "vector",
     maxObs = "numeric",
+    maxProp = "numeric",
     linear = "logical",
     splitFeats = "numeric",
     linFeats = "numeric",
@@ -294,6 +313,7 @@ setClass(
     middleSplit = "logical",
     y = "vector",
     maxObs = "numeric",
+    maxProp = "numeric",
     linear = "logical",
     splitFeats = "numeric",
     linFeats = "numeric",
@@ -360,6 +380,14 @@ setClass(
 #'   less than nrow(x), at each split point, maxObs split points will be
 #'   randomly sampled to test as potential splitting points instead of every
 #'   feature value (default).
+#' @param maxProp A complementary option to `maxObs`, `maxProp` allows one to
+#'   specify the proportion of possible split points which are downsampled at
+#'   each point to test potential splitting points. For example, a value of .35
+#'   will randomly select 35% of the possible splitting points to be potential
+#'   splitting poimts at each split. If values of `maxProp` and `maxObs` are
+#'   both supplied, the value of `maxProp` will take precedent.
+#'   At the lower levels of the tree, we will select
+#'   Max(`maxProp`* n, nodesizeSpl) splitting observations.
 #' @param saveable If TRUE, then RF is created in such a way that it can be
 #'   saved and loaded using save(...) and load(...). Setting it to TRUE
 #'   (default) will, however, take longer and it will use more memory. When
@@ -449,6 +477,7 @@ forestry <- function(x,
                      splitrule = "variance",
                      middleSplit = FALSE,
                      maxObs = length(y),
+                     maxProp = 1,
                      linear = FALSE,
                      splitFeats = 1:(ncol(x)),
                      linFeats = 1:(ncol(x)),
@@ -483,6 +512,8 @@ forestry <- function(x,
       splitratio = splitratio,
       nthread = nthread,
       middleSplit = middleSplit,
+      maxObs = maxObs,
+      maxProp = maxProp,
       doubleTree = doubleTree,
       splitFeats = splitFeats,
       linFeats = linFeats,
@@ -552,6 +583,7 @@ forestry <- function(x,
         verbose,
         middleSplit,
         maxObs,
+        maxProp,
         sampleWeights,
         linear,
         overfitPenalty,
@@ -593,6 +625,7 @@ forestry <- function(x,
           splitratio = splitratio,
           middleSplit = middleSplit,
           maxObs = maxObs,
+          maxProp = maxProp,
           sampleWeights = sampleWeights,
           linear = linear,
           splitFeats = splitFeats,
@@ -646,6 +679,7 @@ forestry <- function(x,
         verbose,
         middleSplit,
         maxObs,
+        maxProp,
         sampleWeights,
         linear,
         overfitPenalty,
@@ -677,6 +711,7 @@ forestry <- function(x,
           splitratio = splitratio,
           middleSplit = middleSplit,
           maxObs = maxObs,
+          maxProp = maxProp,
           sampleWeights = sampleWeights,
           linear = linear,
           splitFeats = splitFeats,
@@ -728,6 +763,7 @@ multilayerForestry <- function(x,
                      splitrule = "variance",
                      middleSplit = TRUE,
                      maxObs = length(y),
+                     maxProp = 1,
                      linear = FALSE,
                      splitFeats = 1:(ncol(x)),
                      linFeats = 1:(ncol(x)),
@@ -747,7 +783,8 @@ multilayerForestry <- function(x,
   training_data_checker(x, y, ntree,replace, sampsize, mtry, nodesizeSpl,
                         nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg,
                         minSplitGain, maxDepth, splitratio, nthread, middleSplit,
-                        doubleTree, splitFeats, linFeats, sampleWeights)
+                        maxObs, maxProp, doubleTree, splitFeats,
+                        linFeats, sampleWeights)
   # Total number of obervations
   nObservations <- length(y)
   numColumns <- ncol(x)
@@ -808,6 +845,7 @@ multilayerForestry <- function(x,
         verbose,
         middleSplit,
         maxObs,
+        maxProp,
         sampleWeights,
         linear,
         overfitPenalty,
@@ -851,6 +889,7 @@ multilayerForestry <- function(x,
           splitratio = splitratio,
           middleSplit = middleSplit,
           maxObs = maxObs,
+          maxProp = maxProp,
           sampleWeights = sampleWeights,
           linear = linear,
           splitFeats = splitFeats,
@@ -906,6 +945,7 @@ multilayerForestry <- function(x,
         verbose,
         middleSplit,
         maxObs,
+        maxProp,
         sampleWeights,
         linear,
         overfitPenalty,
@@ -936,6 +976,7 @@ multilayerForestry <- function(x,
           splitratio = splitratio,
           middleSplit = middleSplit,
           maxObs = maxObs,
+          maxProp = maxProp,
           sampleWeights = sampleWeights,
           linear = linear,
           splitFeats = splitFeats,
@@ -1247,6 +1288,7 @@ relinkCPP_prt <- function(object) {
         verbose = FALSE,
         middleSplit = object@middleSplit,
         maxObs = object@maxObs,
+        maxProp = object@maxProp,
         sampleWeights = object@sampleWeights,
         linear = object@linear,
         overfitPenalty = object@overfitPenalty,
