@@ -104,6 +104,10 @@ void multilayerForestry::addForests(size_t ntree) {
         new std::vector<float>(*(trainingData->getSampleWeights()))
     );
 
+    std::unique_ptr< std::vector<int> > monotonicConstraintsRcpp(
+        new std::vector<int>(*(trainingData->getMonotonicConstraints()))
+    );
+
     DataFrame* residualDataFrame = new DataFrame(
       residualFeatureData_,
       std::move(residuals_),
@@ -112,7 +116,8 @@ void multilayerForestry::addForests(size_t ntree) {
       std::move(residualLinCols_),
       trainingData->getNumRows(),
       trainingData->getNumColumns(),
-      std::move(residualSampleWeights_)
+      std::move(residualSampleWeights_),
+      std::move(monotonicConstraintsRcpp)
     );
 
     forestry *residualForest = new forestry(

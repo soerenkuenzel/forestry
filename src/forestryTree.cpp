@@ -156,6 +156,21 @@ forestryTree::forestryTree(
   }
 
 
+  /* We check the monotonicity to see if we need to take this into account when
+   * splitting
+   */
+  bool monotone_splits = !std::all_of(trainingData->getMonotonicConstraints()->begin(),
+                                     trainingData->getMonotonicConstraints()->end(),
+                                     [](int i) { return i==0; });;
+  struct monotonic_info monotonic_details;
+
+  if (monotone_splits) {
+    monotonic_details.monotonic_constraints = (*trainingData->getMonotonicConstraints());
+    monotonic_details.uncle_mean = std::numeric_limits<float>::quiet_NaN();
+    monotonic_details.left_node = true;
+    //Rcpp::Rcout << "Monotone splitting";
+  }
+
   /* Recursively grow the tree */
   recursivePartition(
     getRoot(),
@@ -170,7 +185,9 @@ forestryTree::forestryTree(
     linear,
     overfitPenalty,
     g_ptr,
-    s_ptr
+    s_ptr,
+    monotone_splits,
+    monotonic_details
   );
 
   //this->_root->printSubtree();
@@ -296,6 +313,9 @@ void splitDataIntoTwoParts(
     float splitValue,
     std::vector<size_t>* leftPartitionIndex,
     std::vector<size_t>* rightPartitionIndex,
+    float &leftPartitionMean,
+    float &rightPartitionMean,
+    bool calculate_means,
     bool categoical
 ){
   for (
@@ -303,21 +323,48 @@ void splitDataIntoTwoParts(
       it != (*sampleIndex).end();
       ++it
   ) {
+    float leftSum = 0;
+    float rightSum = 0;
+    size_t numLeft = 0;
+    size_t numRight = 0;
+
     if (categoical) {
       // categorical, split by (==) or (!=)
       if ((*trainingData).getPoint(*it, splitFeature) == splitValue) {
         (*leftPartitionIndex).push_back(*it);
+        if (calculate_means) {
+          leftSum += trainingData->getOutcomePoint(*it);
+          numLeft++;
+        }
       } else {
         (*rightPartitionIndex).push_back(*it);
+        if (calculate_means) {
+          rightSum += trainingData->getOutcomePoint(*it);
+          numRight++;
+        }
       }
     } else {
       // Non-categorical, split to left (<) and right (>=) according to the
       if ((*trainingData).getPoint(*it, splitFeature) < splitValue) {
         (*leftPartitionIndex).push_back(*it);
+        if (calculate_means) {
+          leftSum += trainingData->getOutcomePoint(*it);
+          numLeft++;
+        }
       } else {
         (*rightPartitionIndex).push_back(*it);
+        if (calculate_means) {
+          rightSum += trainingData->getOutcomePoint(*it);
+          numRight++;
+        }
       }
     }
+
+    if (calculate_means) {
+      leftPartitionMean = leftSum / numLeft;
+      rightPartitionMean = rightSum / numRight;
+    }
+
   }
 }
 
@@ -331,6 +378,9 @@ void splitData(
     std::vector<size_t>* averagingRightPartitionIndex,
     std::vector<size_t>* splittingLeftPartitionIndex,
     std::vector<size_t>* splittingRightPartitionIndex,
+    float &leftPartitionMean,
+    float &rightPartitionMean,
+    bool monotone_splits,
     bool categoical
 ){
   // averaging data
@@ -341,6 +391,9 @@ void splitData(
     splitValue,
     averagingLeftPartitionIndex,
     averagingRightPartitionIndex,
+    leftPartitionMean,
+    rightPartitionMean,
+    false,
     categoical
   );
   // splitting data
@@ -351,6 +404,9 @@ void splitData(
     splitValue,
     splittingLeftPartitionIndex,
     splittingRightPartitionIndex,
+    leftPartitionMean,
+    rightPartitionMean,
+    monotone_splits,
     categoical
   );
 }
@@ -438,7 +494,9 @@ void forestryTree::recursivePartition(
     bool linear,
     float overfitPenalty,
     std::shared_ptr< arma::Mat<double> > gtotal,
-    std::shared_ptr< arma::Mat<double> > stotal
+    std::shared_ptr< arma::Mat<double> > stotal,
+    bool monotone_splits,
+    monotonic_info monotone_details
 ){
 
   if ((*averagingSampleIndex).size() < getMinNodeSizeAvg() ||
@@ -469,7 +527,6 @@ void forestryTree::recursivePartition(
     trainingData->getSampleWeights()
   );
 
-
   // Select best feature
   size_t bestSplitFeature;
   double bestSplitValue;
@@ -480,7 +537,6 @@ void forestryTree::recursivePartition(
   arma::Mat<double> bestSplitGR;
   arma::Mat<double> bestSplitSL;
   arma::Mat<double> bestSplitSR;
-
 
   /* IF LINEAR set size of Arma splitting matrices correctly */
   if (linear) {
@@ -509,7 +565,9 @@ void forestryTree::recursivePartition(
     linear,
     overfitPenalty,
     gtotal,
-    stotal
+    stotal,
+    monotone_splits,
+    monotone_details
   );
 
   // Create a leaf node if the current bestSplitValue is NA
@@ -534,6 +592,10 @@ void forestryTree::recursivePartition(
     std::vector<size_t> splittingRightPartitionIndex;
     std::vector<size_t> categorialCols = *(*trainingData).getCatCols();
 
+    // We want to record the partition means if
+    float leftPartitionMean;
+    float rightPartitionMean;
+
     // Create split for both averaging and splitting dataset based on
     // categorical feature or not
     splitData(
@@ -546,6 +608,9 @@ void forestryTree::recursivePartition(
       &averagingRightPartitionIndex,
       &splittingLeftPartitionIndex,
       &splittingRightPartitionIndex,
+      leftPartitionMean,
+      rightPartitionMean,
+      monotone_splits,
       std::find(
         categorialCols.begin(),
         categorialCols.end(),
@@ -599,6 +664,21 @@ void forestryTree::recursivePartition(
       s_ptr_l = nullptr;
     }
 
+    // If monotone splitting, we need to pass down the monotone constraints,
+    // uncle mean, and right and left child indicators
+    struct monotonic_info monotonic_details_left;
+    struct monotonic_info monotonic_details_right;
+
+    if (monotone_splits) {
+      monotonic_details_left.monotonic_constraints = (*trainingData->getMonotonicConstraints());
+      monotonic_details_left.uncle_mean = rightPartitionMean;
+      monotonic_details_left.left_node = true;
+
+      monotonic_details_right.monotonic_constraints = (*trainingData->getMonotonicConstraints());
+      monotonic_details_right.uncle_mean = leftPartitionMean;
+      monotonic_details_right.left_node = false;
+    }
+
     recursivePartition(
       leftChild.get(),
       &averagingLeftPartitionIndex,
@@ -612,7 +692,9 @@ void forestryTree::recursivePartition(
       linear,
       overfitPenalty,
       g_ptr_l,
-      s_ptr_l
+      s_ptr_l,
+      monotone_splits,
+      monotonic_details_left
     );
     recursivePartition(
       rightChild.get(),
@@ -627,7 +709,9 @@ void forestryTree::recursivePartition(
       linear,
       overfitPenalty,
       g_ptr_r,
-      s_ptr_r
+      s_ptr_r,
+      monotone_splits,
+      monotonic_details_right
     );
 
     (*rootNode).setSplitNode(
@@ -681,7 +765,9 @@ void forestryTree::selectBestFeature(
     bool linear,
     float overfitPenalty,
     std::shared_ptr< arma::Mat<double> > gtotal,
-    std::shared_ptr< arma::Mat<double> > stotal
+    std::shared_ptr< arma::Mat<double> > stotal,
+    bool monotone_splits,
+    monotonic_info &monotone_details
 ){
 
   // Get the number of total features
@@ -785,7 +871,9 @@ void forestryTree::selectBestFeature(
         random_number_generator,
         splitMiddle,
         maxObs,
-        maxProp
+        maxProp,
+        monotone_splits,
+        monotone_details
       );
     }
   }

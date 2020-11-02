@@ -22,11 +22,16 @@ void updateBestSplit(
     double* bestSplitValueAll,
     size_t* bestSplitFeatureAll,
     size_t* bestSplitCountAll,
+    float* bestSplitLmeanAll,
+    float* bestSplitRmeanAll,
     float currentSplitLoss,
     double currentSplitValue,
     size_t currentFeature,
     size_t bestSplitTableIndex,
-    std::mt19937_64& random_number_generator
+    std::mt19937_64& random_number_generator,
+    bool monotone_splits,
+    float currentSplitLmean,
+    float currentSplitRmean
 );
 
 void updateBestSplitS(
@@ -169,7 +174,9 @@ void findBestSplitValueNonCategorical(
     std::mt19937_64& random_number_generator,
     bool splitMiddle,
     size_t maxObs,
-    float maxProp
+    float maxProp,
+    bool monotone_splits,
+    monotonic_info monotone_details
 );
 
 void determineBestSplit(
@@ -184,5 +191,11 @@ void determineBestSplit(
     std::mt19937_64& random_number_generator
 );
 
+bool acceptMonotoneSplit(
+        monotonic_info &monotone_details,
+        size_t currentFeature,
+        float leftPartitionMean,
+        float rightPartitionMean
+);
 
 #endif //FORESTRYCPP_TREESPLIT_H

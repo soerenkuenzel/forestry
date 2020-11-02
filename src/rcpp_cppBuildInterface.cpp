@@ -36,7 +36,8 @@ SEXP rcpp_cppDataFrameInterface(
     Rcpp::NumericVector linCols,
     int numRows,
     int numColumns,
-    Rcpp::NumericVector sampleWeights
+    Rcpp::NumericVector sampleWeights,
+    Rcpp::NumericVector monotonicConstraints
 ){
 
   try {
@@ -76,6 +77,12 @@ SEXP rcpp_cppDataFrameInterface(
         )
     );
 
+    std::unique_ptr< std::vector<int> > monotonicConstraintsRcpp (
+        new std::vector<int>(
+            Rcpp::as< std::vector<int> >(monotonicConstraints)
+        )
+    );
+
     std::sort(linearFeats->begin(), linearFeats->end());
 
     DataFrame* trainingData = new DataFrame(
@@ -86,7 +93,8 @@ SEXP rcpp_cppDataFrameInterface(
         std::move(linearFeats),
         (size_t) numRows,
         (size_t) numColumns,
-        std::move(sampleWeightsRcpp)
+        std::move(sampleWeightsRcpp),
+        std::move(monotonicConstraintsRcpp)
     );
 
     Rcpp::XPtr<DataFrame> ptr(trainingData, true) ;
@@ -128,6 +136,7 @@ SEXP rcpp_cppBuildInterface(
   int maxObs,
   float maxProp,
   Rcpp::NumericVector sampleWeights,
+  Rcpp::NumericVector monotonicConstraints,
   bool linear,
   double overfitPenalty,
   bool doubleTree,
@@ -217,6 +226,12 @@ SEXP rcpp_cppBuildInterface(
           )
       );
 
+      std::unique_ptr< std::vector<int> > monotoneConstraintsRcpp (
+          new std::vector<int>(
+              Rcpp::as< std::vector<int> >(monotonicConstraints)
+          )
+      );
+
       std::sort(linearFeats->begin(), linearFeats->end());
 
       DataFrame* trainingData = new DataFrame(
@@ -227,7 +242,8 @@ SEXP rcpp_cppBuildInterface(
           std::move(linearFeats),
           (size_t) numRows,
           (size_t) numColumns,
-          std::move(sampleWeightsRcpp)
+          std::move(sampleWeightsRcpp),
+          std::move(monotoneConstraintsRcpp)
       );
 
       forestry* testFullForest = new forestry(
@@ -301,6 +317,7 @@ SEXP rcpp_cppMultilayerBuildInterface(
     int maxObs,
     float maxProp,
     Rcpp::NumericVector sampleWeights,
+    Rcpp::NumericVector monotonicConstraints,
     bool linear,
     double overfitPenalty,
     bool doubleTree,
@@ -659,6 +676,7 @@ Rcpp::List rcpp_reconstructree(
   int maxObs,
   float maxProp,
   Rcpp::NumericVector sampleWeights,
+  Rcpp::NumericVector monotonicConstraints,
   bool linear,
   double overfitPenalty,
   bool doubleTree
@@ -758,6 +776,12 @@ Rcpp::List rcpp_reconstructree(
       )
   );
 
+  std::unique_ptr< std::vector<int> > monotonicConstraintsRcpp (
+      new std::vector<int>(
+          Rcpp::as< std::vector<int> >(monotonicConstraints)
+      )
+  );
+
   std::sort(linearFeats->begin(), linearFeats->end());
 
   DataFrame* trainingData = new DataFrame(
@@ -768,7 +792,8 @@ Rcpp::List rcpp_reconstructree(
     std::move(linearFeats),
     (size_t) numRows,
     (size_t) numColumns,
-    std::move(sampleWeightsRcpp)
+    std::move(sampleWeightsRcpp),
+    std::move(monotonicConstraintsRcpp)
   );
 
   forestry* testFullForest = new forestry(

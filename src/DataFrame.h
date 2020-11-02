@@ -21,7 +21,8 @@ public:
     std::unique_ptr< std::vector<size_t> > linearCols,
     std::size_t numRows,
     std::size_t numColumns,
-    std::unique_ptr< std::vector<float> > sampleWeights
+    std::unique_ptr< std::vector<float> > sampleWeights,
+    std::shared_ptr< std::vector<int> > monotonicConstraints
   );
 
   float getPoint(size_t rowIndex, size_t colIndex);
@@ -75,6 +76,10 @@ public:
     return _sampleWeights.get();
   }
 
+  std::vector<int>* getMonotonicConstraints() {
+    return _monotonicConstraints.get();
+  }
+
   std::vector<size_t>* getRowNumbers() {
     return _rowNumbers.get();
   }
@@ -96,6 +101,7 @@ private:
   std::size_t _numRows;
   std::size_t _numColumns;
   std::unique_ptr< std::vector<float> > _sampleWeights;
+  std::shared_ptr< std::vector<int> > _monotonicConstraints;
 };
 
 

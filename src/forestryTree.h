@@ -102,7 +102,9 @@ public:
       bool linear,
       float overfitPenalty,
       std::shared_ptr< arma::Mat<double> > gtotal,
-      std::shared_ptr< arma::Mat<double> > stotal
+      std::shared_ptr< arma::Mat<double> > stotal,
+      bool monotone_splits,
+      monotonic_info monotone_details
   );
 
   void selectBestFeature(
@@ -124,7 +126,9 @@ public:
       bool linear,
       float overfitPenalty,
       std::shared_ptr< arma::Mat<double> > gtotal,
-      std::shared_ptr< arma::Mat<double> > sTotal
+      std::shared_ptr< arma::Mat<double> > sTotal,
+      bool monotone_splits,
+      monotonic_info &monotone_details
   );
 
   void initializelinear(

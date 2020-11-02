@@ -183,7 +183,6 @@ private:
   bool _linear;
   float _overfitPenalty;
   bool _doubleTree;
-
   std::unique_ptr<std::vector< forestry* > > _multilayerForests;
   std::vector<float> _gammas;
   float _meanOutcome;

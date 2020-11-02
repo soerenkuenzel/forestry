@@ -18,7 +18,8 @@ DataFrame::DataFrame(
   std::unique_ptr< std::vector<size_t> > linearFeatureCols,
   std::size_t numRows,
   std::size_t numColumns,
-  std::unique_ptr< std::vector<float> > sampleWeights
+  std::unique_ptr< std::vector<float> > sampleWeights,
+  std::shared_ptr< std::vector<int> > monotonicConstraints
 ) {
   this->_featureData = std::move(featureData);
   this->_outcomeData = std::move(outcomeData);
@@ -28,6 +29,7 @@ DataFrame::DataFrame(
   this->_numRows = numRows;
   this->_numColumns = numColumns;
   this->_sampleWeights = std::move(sampleWeights);
+  this->_monotonicConstraints = std::move(monotonicConstraints);
 
   // define the row numbers to be the numbers from 1 to nrow:
   std::vector<size_t> rowNumberss;

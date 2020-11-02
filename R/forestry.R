@@ -32,6 +32,7 @@ training_data_checker <- function(x,
                                   doubleTree,
                                   splitFeats,
                                   linFeats,
+                                  monotonicConstraints,
                                   sampleWeights,
                                   linear) {
   x <- as.data.frame(x)
@@ -68,6 +69,18 @@ training_data_checker <- function(x,
 
   if (max(linFeats) > nfeatures || any(linFeats < 1)) {
     stop("linFeats must be a positive integer less than or equal to ncol(x).")
+  }
+
+  if (length(monotonicConstraints) != ncol(x)) {
+    stop("monotoneConstraints must be the size of x")
+  }
+
+  if (any((monotonicConstraints != 1 ) & (monotonicConstraints != -1 ) & (monotonicConstraints != 0 ))) {
+    stop("monotonicConstraints must be either 1, 0, or -1")
+  }
+
+  if (any(monotonicConstraints != 0) && linear) {
+    stop("Cannot use linear splitting with monotoneConstraints")
   }
 
   if (!replace && sampsize > nrow(x)) {
@@ -237,6 +250,7 @@ training_data_checker <- function(x,
               "doubleTree" = doubleTree,
               "splitFeats" = splitFeats,
               "linFeats" = linFeats,
+              "monotonicConstraints" = monotonicConstraints,
               "sampleWeights" = sampleWeights))
 }
 
@@ -281,6 +295,7 @@ setClass(
     linear = "logical",
     splitFeats = "numeric",
     linFeats = "numeric",
+    monotonicConstraints = "numeric",
     sampleWeights = "numeric",
     overfitPenalty = "numeric",
     doubleTree = "logical"
@@ -317,6 +332,7 @@ setClass(
     linear = "logical",
     splitFeats = "numeric",
     linFeats = "numeric",
+    monotonicConstraints = "numeric",
     sampleWeights = "numeric",
     overfitPenalty = "numeric",
     doubleTree = "logical"
@@ -400,6 +416,11 @@ setClass(
 #'   (defaults to use all features).
 #' @param linFeats Specify which features to split linearly on when using
 #'   linear (defaults to use all numerical features)
+#' @param monotonicConstraints Specifies monotonic relationships between the
+#'   continuous features and the outcome. Supplied as a vector of length p with
+#'   entries in 1,0,-1 which 1 indicating an increasing monotonic relationship,
+#'   -1 indicating a decreasing monotonic relationship, and 0 indicating no
+#'   relationship. Constraints supplied for categorical will be ignored.
 #' @param sampleWeights Specify weights for weighted uniform distribution used
 #'   to randomly sample features.
 #' @param overfitPenalty Value to determine how much to penalize magnitude of
@@ -481,6 +502,7 @@ forestry <- function(x,
                      linear = FALSE,
                      splitFeats = 1:(ncol(x)),
                      linFeats = 1:(ncol(x)),
+                     monotonicConstraints = rep(0, ncol(x)),
                      sampleWeights = rep((1/ncol(x)), ncol(x)),
                      overfitPenalty = 1,
                      doubleTree = FALSE,
@@ -517,6 +539,7 @@ forestry <- function(x,
       doubleTree = doubleTree,
       splitFeats = splitFeats,
       linFeats = linFeats,
+      monotonicConstraints = monotonicConstraints,
       sampleWeights = sampleWeights,
       linear = linear)
 
@@ -544,6 +567,10 @@ forestry <- function(x,
     if (is.null(categoricalFeatureCols_cpp)) {
       categoricalFeatureCols_cpp <- vector(mode = "numeric", length = 0)
     } else {
+      # If we have monotonic constraints on any categorical features we need to
+      # zero these out as we cannot do monotonicity with categorical features
+
+      monotonicConstraints[categoricalFeatureCols_cpp] <- 0
       categoricalFeatureCols_cpp <- categoricalFeatureCols_cpp - 1
     }
 
@@ -557,7 +584,8 @@ forestry <- function(x,
                                                   linFeats,
                                                   nObservations,
                                                   numColumns,
-                                                  sampleWeights)
+                                                  sampleWeights,
+                                                  monotonicConstraints)
 
       rcppForest <- rcpp_cppBuildInterface(
         processed_x,
@@ -585,6 +613,7 @@ forestry <- function(x,
         maxObs,
         maxProp,
         sampleWeights,
+        monotonicConstraints,
         linear,
         overfitPenalty,
         doubleTree,
@@ -630,6 +659,7 @@ forestry <- function(x,
           linear = linear,
           splitFeats = splitFeats,
           linFeats = linFeats,
+          monotonicConstraints = monotonicConstraints,
           overfitPenalty = overfitPenalty,
           doubleTree = doubleTree
         )
@@ -681,6 +711,7 @@ forestry <- function(x,
         maxObs,
         maxProp,
         sampleWeights,
+        monotonicConstraints,
         linear,
         overfitPenalty,
         doubleTree,
@@ -716,6 +747,7 @@ forestry <- function(x,
           linear = linear,
           splitFeats = splitFeats,
           linFeats = linFeats,
+          monotonicConstraints = monotonicConstraints,
           overfitPenalty = overfitPenalty,
           doubleTree = doubleTree
         )
@@ -767,6 +799,7 @@ multilayerForestry <- function(x,
                      linear = FALSE,
                      splitFeats = 1:(ncol(x)),
                      linFeats = 1:(ncol(x)),
+                     monotonicConstraints = rep(0, ncol(x)),
                      sampleWeights = rep((1/ncol(x)), ncol(x)),
                      overfitPenalty = 1,
                      doubleTree = FALSE,
@@ -784,7 +817,7 @@ multilayerForestry <- function(x,
                         nodesizeAvg, nodesizeStrictSpl, nodesizeStrictAvg,
                         minSplitGain, maxDepth, splitratio, nthread, middleSplit,
                         maxObs, maxProp, doubleTree, splitFeats,
-                        linFeats, sampleWeights)
+                        linFeats,monotonicConstraints, sampleWeights)
   # Total number of obervations
   nObservations <- length(y)
   numColumns <- ncol(x)
@@ -804,6 +837,7 @@ multilayerForestry <- function(x,
     if (is.null(categoricalFeatureCols_cpp)) {
       categoricalFeatureCols_cpp <- vector(mode = "numeric", length = 0)
     } else {
+      monotonicConstraints[categoricalFeatureCols_cpp] <- 0
       categoricalFeatureCols_cpp <- categoricalFeatureCols_cpp - 1
     }
 
@@ -817,7 +851,8 @@ multilayerForestry <- function(x,
                                                   linFeats,
                                                   nObservations,
                                                   numColumns,
-                                                  sampleWeights)
+                                                  sampleWeights,
+                                                  monotonicConstraints)
 
       rcppForest <- rcpp_cppMultilayerBuildInterface(
         processed_x,
@@ -847,6 +882,7 @@ multilayerForestry <- function(x,
         maxObs,
         maxProp,
         sampleWeights,
+        monotonicConstraints,
         linear,
         overfitPenalty,
         doubleTree,
@@ -891,6 +927,7 @@ multilayerForestry <- function(x,
           maxObs = maxObs,
           maxProp = maxProp,
           sampleWeights = sampleWeights,
+          monotonicConstraints = monotonicConstraints,
           linear = linear,
           splitFeats = splitFeats,
           linFeats = linFeats,
@@ -981,6 +1018,7 @@ multilayerForestry <- function(x,
           linear = linear,
           splitFeats = splitFeats,
           linFeats = linFeats,
+          monotonicConstraints = monotonicConstraints,
           overfitPenalty = overfitPenalty,
           doubleTree = doubleTree
         )
@@ -1290,6 +1328,7 @@ relinkCPP_prt <- function(object) {
         maxObs = object@maxObs,
         maxProp = object@maxProp,
         sampleWeights = object@sampleWeights,
+        monotonicConstraints = object@monotonicConstraints,
         linear = object@linear,
         overfitPenalty = object@overfitPenalty,
         doubleTree = object@doubleTree)

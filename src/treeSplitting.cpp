@@ -934,7 +934,9 @@ void findBestSplitValueNonCategorical(
     std::mt19937_64& random_number_generator,
     bool splitMiddle,
     size_t maxObs,
-    float maxProp
+    float maxProp,
+    bool monotone_splits,
+    monotonic_info monotone_details
 ) {
 
   // Create specific vectors to holddata
@@ -943,7 +945,7 @@ void findBestSplitValueNonCategorical(
   std::vector<dataPair> averagingData;
   float splitTotalSum = 0;
 
-  for (size_t j=0; j<(*splittingSampleIndex).size(); j++){
+  for (size_t j=0; j<(*splittingSampleIndex).size(); j++) {
     // Retrieve the current feature value
     float tmpFeatureValue = (*trainingData).
     getPoint((*splittingSampleIndex)[j], currentFeature);
@@ -960,7 +962,7 @@ void findBestSplitValueNonCategorical(
     );
   }
 
-  for (size_t j=0; j<(*averagingSampleIndex).size(); j++){
+  for (size_t j=0; j<(*averagingSampleIndex).size(); j++) {
     // Retrieve the current feature value
     float tmpFeatureValue = (*trainingData).
     getPoint((*averagingSampleIndex)[j], currentFeature);
@@ -1059,7 +1061,7 @@ void findBestSplitValueNonCategorical(
 
     while (
         SelectSplittingDataIter < newSplittingData.end()
-    ){
+    ) {
 
       //Now have to iterate select point iterator too
       while (
@@ -1140,6 +1142,21 @@ void findBestSplitValueNonCategorical(
       (splitTotalCount - splitLeftPartitionCount) * rightPartitionMean
         * rightPartitionMean;
 
+      // If we are using monotonic constraints, we need to work out whether
+      // the monotone constraints will reject a split
+      if (monotone_splits && (monotone_details.monotonic_constraints[currentFeature] != 0)) {
+        bool keepMonotoneSplit = acceptMonotoneSplit(monotone_details,
+                                                     currentFeature,
+                                                     leftPartitionMean,
+                                                     rightPartitionMean);
+
+        if (!keepMonotoneSplit) {
+          // Update the oldFeature value before proceeding
+          featureValue = newFeatureValue;
+          continue;
+        }
+      }
+
       double currentSplitValue;
       if (splitMiddle) {
         currentSplitValue = (newFeatureValue + featureValue) / 2.0;
@@ -1180,7 +1197,6 @@ void findBestSplitValueNonCategorical(
         splittingDataIter < splittingData.end() ||
           averagingDataIter < averagingData.end()
     ){
-
       // Exhaust all current feature value in both dataset as partitioning
       while (
           splittingDataIter < splittingData.end() &&
@@ -1260,6 +1276,20 @@ void findBestSplitValueNonCategorical(
       (splitTotalCount - splitLeftPartitionCount) * rightPartitionMean
         * rightPartitionMean;
 
+      // If we are using monotonic constraints, we need to work out whether
+      // the monotone constraints will reject a split
+      if (monotone_splits && (monotone_details.monotonic_constraints[currentFeature] != 0)) {
+        bool keepMonotoneSplit = acceptMonotoneSplit(monotone_details,
+                                                     currentFeature,
+                                                     leftPartitionMean,
+                                                     rightPartitionMean);
+        if (!keepMonotoneSplit) {
+          // Update the oldFeature value before proceeding
+          featureValue = newFeatureValue;
+          continue;
+        }
+      }
+
       double currentSplitValue;
       if (splitMiddle) {
         currentSplitValue = (newFeatureValue + featureValue) / 2.0;
@@ -1295,7 +1325,6 @@ void findBestSplitValueNonCategorical(
     }
   }
 }
-
 
 void determineBestSplit(
     size_t &bestSplitFeature,
@@ -1348,5 +1377,48 @@ void determineBestSplit(
     bestSplitLoss = std::numeric_limits<float>::quiet_NaN();
   }
 
+}
+
+bool acceptMonotoneSplit(
+  monotonic_info &monotone_details,
+  size_t currentFeature,
+  float leftPartitionMean,
+  float rightPartitionMean
+) {
+    // If we have the uncle mean equal to infinity, then we enforce a simple
+    // monotone split without worrying about the uncle bounds
+    int monotone_direction = monotone_details.monotonic_constraints[currentFeature];
+    float uncle_mean = monotone_details.uncle_mean;
+    bool left_node = monotone_details.left_node;
+
+    // Monotone increasing
+    if (monotone_direction == 1) {
+      if (leftPartitionMean > rightPartitionMean) {
+        return false;
+      }
+      // Monotone decreasing
+    } else if (monotone_direction == -1) {
+      if (rightPartitionMean > leftPartitionMean) {
+        return false;
+      }
+    }
+
+    // Now reject splits which do not obey uncle bounds
+    if (!std::isnan(uncle_mean)) {
+      if (monotone_direction == 1) {
+        if (left_node && (rightPartitionMean > uncle_mean)) {
+          return false;
+        } else if ((!left_node) && (leftPartitionMean < uncle_mean)) {
+          return false;
+        }
+      } else if (monotone_direction == -1) {
+        if (left_node && (rightPartitionMean < uncle_mean)) {
+          return false;
+        } else if ((!left_node) && (leftPartitionMean > uncle_mean)) {
+          return false;
+        }
+      }
+    }
+    return true;
 }
 
