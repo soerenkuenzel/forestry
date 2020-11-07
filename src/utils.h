@@ -38,15 +38,12 @@ struct monotonic_info {
   // indicates no monotonic relationship
   std::vector<int> monotonic_constraints;
 
-  // The value of the uncle node mean. In a positive monotonic relationship- If
-  // this is a left node, this value upper bounds the mean of the Right node
-  // of the potential split, and if this is a right node, this value lower
-  // bounds the mean of the Left node of the potential split.
-  float uncle_mean;
-
-  // Indicator whether the current node being split is a right child or a left
-  // child.
-  bool left_node;
+  // These contain the upper and lower bounds on node means for the node
+  // currently being split on. These are used to reject potential splits
+  // which do not respect the bounds, and therfore enforce global monotonic
+  // bounds.
+  float upper_bound;
+  float lower_bound;
 };
 
 #endif //FORESTRYCPP_UTILS_H

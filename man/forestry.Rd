@@ -29,6 +29,7 @@ forestry(
   linear = FALSE,
   splitFeats = 1:(ncol(x)),
   linFeats = 1:(ncol(x)),
+  monotonicConstraints = rep(0, ncol(x)),
   sampleWeights = rep((1/ncol(x)), ncol(x)),
   overfitPenalty = 1,
   doubleTree = FALSE,
@@ -123,6 +124,12 @@ value is FALSE.}
 
 \item{linFeats}{Specify which features to split linearly on when using
 linear (defaults to use all numerical features)}
+
+\item{monotonicConstraints}{Specifies monotonic relationships between the
+continuous features and the outcome. Supplied as a vector of length p with
+entries in 1,0,-1 which 1 indicating an increasing monotonic relationship,
+-1 indicating a decreasing monotonic relationship, and 0 indicating no
+relationship. Constraints supplied for categorical will be ignored.}
 
 \item{sampleWeights}{Specify weights for weighted uniform distribution used
 to randomly sample features.}

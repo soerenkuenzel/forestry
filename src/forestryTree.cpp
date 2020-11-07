@@ -166,9 +166,8 @@ forestryTree::forestryTree(
 
   if (monotone_splits) {
     monotonic_details.monotonic_constraints = (*trainingData->getMonotonicConstraints());
-    monotonic_details.uncle_mean = std::numeric_limits<float>::quiet_NaN();
-    monotonic_details.left_node = true;
-    //Rcpp::Rcout << "Monotone splitting";
+    monotonic_details.upper_bound = std::numeric_limits<float>::max();
+    monotonic_details.lower_bound = -std::numeric_limits<float>::max();
   }
 
   /* Recursively grow the tree */
@@ -313,9 +312,6 @@ void splitDataIntoTwoParts(
     float splitValue,
     std::vector<size_t>* leftPartitionIndex,
     std::vector<size_t>* rightPartitionIndex,
-    float &leftPartitionMean,
-    float &rightPartitionMean,
-    bool calculate_means,
     bool categoical
 ){
   for (
@@ -323,48 +319,22 @@ void splitDataIntoTwoParts(
       it != (*sampleIndex).end();
       ++it
   ) {
-    float leftSum = 0;
-    float rightSum = 0;
-    size_t numLeft = 0;
-    size_t numRight = 0;
 
     if (categoical) {
       // categorical, split by (==) or (!=)
       if ((*trainingData).getPoint(*it, splitFeature) == splitValue) {
         (*leftPartitionIndex).push_back(*it);
-        if (calculate_means) {
-          leftSum += trainingData->getOutcomePoint(*it);
-          numLeft++;
-        }
       } else {
         (*rightPartitionIndex).push_back(*it);
-        if (calculate_means) {
-          rightSum += trainingData->getOutcomePoint(*it);
-          numRight++;
-        }
       }
     } else {
       // Non-categorical, split to left (<) and right (>=) according to the
       if ((*trainingData).getPoint(*it, splitFeature) < splitValue) {
         (*leftPartitionIndex).push_back(*it);
-        if (calculate_means) {
-          leftSum += trainingData->getOutcomePoint(*it);
-          numLeft++;
-        }
       } else {
         (*rightPartitionIndex).push_back(*it);
-        if (calculate_means) {
-          rightSum += trainingData->getOutcomePoint(*it);
-          numRight++;
-        }
       }
     }
-
-    if (calculate_means) {
-      leftPartitionMean = leftSum / numLeft;
-      rightPartitionMean = rightSum / numRight;
-    }
-
   }
 }
 
@@ -378,9 +348,6 @@ void splitData(
     std::vector<size_t>* averagingRightPartitionIndex,
     std::vector<size_t>* splittingLeftPartitionIndex,
     std::vector<size_t>* splittingRightPartitionIndex,
-    float &leftPartitionMean,
-    float &rightPartitionMean,
-    bool monotone_splits,
     bool categoical
 ){
   // averaging data
@@ -391,9 +358,6 @@ void splitData(
     splitValue,
     averagingLeftPartitionIndex,
     averagingRightPartitionIndex,
-    leftPartitionMean,
-    rightPartitionMean,
-    false,
     categoical
   );
   // splitting data
@@ -404,9 +368,6 @@ void splitData(
     splitValue,
     splittingLeftPartitionIndex,
     splittingRightPartitionIndex,
-    leftPartitionMean,
-    rightPartitionMean,
-    monotone_splits,
     categoical
   );
 }
@@ -592,10 +553,6 @@ void forestryTree::recursivePartition(
     std::vector<size_t> splittingRightPartitionIndex;
     std::vector<size_t> categorialCols = *(*trainingData).getCatCols();
 
-    // We want to record the partition means if
-    float leftPartitionMean;
-    float rightPartitionMean;
-
     // Create split for both averaging and splitting dataset based on
     // categorical feature or not
     splitData(
@@ -608,9 +565,6 @@ void forestryTree::recursivePartition(
       &averagingRightPartitionIndex,
       &splittingLeftPartitionIndex,
       &splittingRightPartitionIndex,
-      leftPartitionMean,
-      rightPartitionMean,
-      monotone_splits,
       std::find(
         categorialCols.begin(),
         categorialCols.end(),
@@ -670,13 +624,34 @@ void forestryTree::recursivePartition(
     struct monotonic_info monotonic_details_right;
 
     if (monotone_splits) {
+      int monotone_direction = monotone_details.monotonic_constraints[bestSplitFeature];
       monotonic_details_left.monotonic_constraints = (*trainingData->getMonotonicConstraints());
-      monotonic_details_left.uncle_mean = rightPartitionMean;
-      monotonic_details_left.left_node = true;
-
       monotonic_details_right.monotonic_constraints = (*trainingData->getMonotonicConstraints());
-      monotonic_details_right.uncle_mean = leftPartitionMean;
-      monotonic_details_right.left_node = false;
+
+      float leftNodeMean = calculateMonotonicBound(trainingData->partitionMean(&splittingLeftPartitionIndex), monotone_details);
+      float rightNodeMean = calculateMonotonicBound(trainingData->partitionMean(&splittingRightPartitionIndex), monotone_details);
+      float midMean = (leftNodeMean + rightNodeMean )/(2);
+
+      // Pass down the new upper and lower bounds if it is a monotonic split,
+      if (monotone_direction == -1) {
+        monotonic_details_left.lower_bound = midMean;
+        monotonic_details_right.upper_bound = midMean;
+
+        monotonic_details_left.upper_bound = monotone_details.upper_bound;
+        monotonic_details_right.lower_bound = monotone_details.lower_bound;
+      } else if (monotone_direction == 1) {
+        monotonic_details_left.upper_bound = midMean;
+        monotonic_details_right.lower_bound = midMean;
+
+        monotonic_details_left.lower_bound =  monotone_details.lower_bound;
+        monotonic_details_right.upper_bound = monotone_details.upper_bound;
+      } else {
+        // otherwise keep the old ones
+        monotonic_details_left.upper_bound = monotone_details.upper_bound;
+        monotonic_details_left.lower_bound = monotone_details.lower_bound;
+        monotonic_details_right.upper_bound = monotone_details.upper_bound;
+        monotonic_details_right.lower_bound = monotone_details.lower_bound;
+      }
     }
 
     recursivePartition(

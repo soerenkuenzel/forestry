@@ -1388,37 +1388,41 @@ bool acceptMonotoneSplit(
     // If we have the uncle mean equal to infinity, then we enforce a simple
     // monotone split without worrying about the uncle bounds
     int monotone_direction = monotone_details.monotonic_constraints[currentFeature];
-    float uncle_mean = monotone_details.uncle_mean;
-    bool left_node = monotone_details.left_node;
+    float upper_bound = monotone_details.upper_bound;
+    float lower_bound = monotone_details.lower_bound;
+
+    // This is not right. I should check the split is correctly monotonic and then
+    // check that neither node violates the upper and lower bounds
 
     // Monotone increasing
-    if (monotone_direction == 1) {
-      if (leftPartitionMean > rightPartitionMean) {
-        return false;
-      }
+    if ((monotone_direction == 1) && (leftPartitionMean > rightPartitionMean)) {
+      return false;
+    } else if ((monotone_direction == -1) && (rightPartitionMean > leftPartitionMean)) {
       // Monotone decreasing
-    } else if (monotone_direction == -1) {
-      if (rightPartitionMean > leftPartitionMean) {
-        return false;
-      }
+      return false;
+    } else if ((monotone_direction == 1) && (rightPartitionMean > upper_bound)) {
+      return false;
+    } else if ((monotone_direction == 1) && (leftPartitionMean < lower_bound)) {
+      return false;
+    } else if ((monotone_direction == -1) && (rightPartitionMean < lower_bound)) {
+      return false;
+    } else if ((monotone_direction == -1) && (leftPartitionMean > upper_bound)) {
+      return false;
+    } else {
+      return true;
     }
+}
 
-    // Now reject splits which do not obey uncle bounds
-    if (!std::isnan(uncle_mean)) {
-      if (monotone_direction == 1) {
-        if (left_node && (rightPartitionMean > uncle_mean)) {
-          return false;
-        } else if ((!left_node) && (leftPartitionMean < uncle_mean)) {
-          return false;
-        }
-      } else if (monotone_direction == -1) {
-        if (left_node && (rightPartitionMean < uncle_mean)) {
-          return false;
-        } else if ((!left_node) && (leftPartitionMean > uncle_mean)) {
-          return false;
-        }
-      }
-    }
-    return true;
+float calculateMonotonicBound(
+  float node_mean,
+  monotonic_info& monotone_details
+) {
+  if (node_mean < monotone_details.lower_bound) {
+    return monotone_details.lower_bound;
+  } else if (node_mean > monotone_details.upper_bound) {
+    return monotone_details.upper_bound;
+  } else {
+    return node_mean;
+  }
 }
 

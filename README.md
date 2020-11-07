@@ -55,3 +55,22 @@ x <- data.frame(a,b,c)
 forest <- forestry(x, y, ridgeRF = TRUE)
 predict(forest, x)
 ```
+
+## Monotonic Constraints
+
+A parameter controlling monotonic constraints for features in forestry.
+
+```R
+x <- rnorm(150)+5
+y <- .15*x + .5*sin(3*x)
+data_train <- data.frame(x1 = x, x2 = rnorm(150)+5, y = y + rnorm(150, sd = .4))
+
+monotone_rf <- forestry(x = data_train %>% select(-y),
+                        y = data_train$y,
+                        monotonicConstraints = c(-1,-1),
+                        nodesizeStrictSpl = 5,
+                        nthread = 1,
+                        ntree = 25)
+predict(monotone_rf, feature.new = data_train %>% select(-y))
+
+```

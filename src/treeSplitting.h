@@ -198,4 +198,9 @@ bool acceptMonotoneSplit(
         float rightPartitionMean
 );
 
+float calculateMonotonicBound(
+        float node_mean,
+        monotonic_info& monotone_details
+);
+
 #endif //FORESTRYCPP_TREESPLIT_H
