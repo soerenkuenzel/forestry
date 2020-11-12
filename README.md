@@ -74,3 +74,32 @@ monotone_rf <- forestry(x = data_train %>% select(-y),
 predict(monotone_rf, feature.new = data_train %>% select(-y))
 
 ```
+
+
+## OOB Predictions
+
+We can return the predictions for the training dataset using only the trees in
+which each observation was out of bag. Note that when there are few trees, or a
+high proportion of the observations sampled, there may be some observations 
+which are not out of bag for any trees. 
+The predictions for these are returned NaN.
+
+
+```R
+library(forestry)
+
+# Train a forest
+rf <- forestry(x = iris[,-1], 
+               y = iris[,1],
+               ntree = 500)
+               
+# Get the OOB predictions for the training set
+oob_preds <- getOOBpreds(rf)
+
+# This should be equal to the OOB error
+sum((oob_preds -  iris[,1])^2)
+getOOB(rf)
+```
+
+
+
