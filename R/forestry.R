@@ -1177,6 +1177,45 @@ getOOB <- function(object,
     return(rcppOOB)
   }
 
+# -- Calculate OOB Predictions -------------------------------------------------
+#' getOOBpreds-forestry
+#' @name getOOBpreds-forestry
+#' @rdname getOOBpreds-forestry
+#' @description Calculate the out-of-bag predictions of a given forest.
+#' @param object A trained model object of class "forestry".
+#' @param noWarning Flag to not display warnings.
+#' @aliases getOOBpreds, forestry-method
+#' @return The vector of all training observations, with their out of bag
+#'  predictions. Note each observation is out of bag for different trees, and so
+#'  the predictions will be more or less stable based on the observation. Some
+#'  observations may not be out of bag for any trees, and here the predictions
+#'  are returned as NA.
+#' @seealso \code{\link{forestry}}
+#' @export
+getOOBpreds <- function(object,
+                        noWarning) {
+
+  if (!object@replace &&
+      object@ntree * (rcpp_getObservationSizeInterface(object@dataframe) -
+                      object@sampsize) < 10) {
+    if (!noWarning) {
+      warning(paste(
+        "Samples are drawn without replacement and sample size",
+        "is too big!"
+      ))
+    }
+    return(NA)
+  }
+
+  rcppOOBpreds <- tryCatch({
+    return(rcpp_OBBPredictionsInterface(object@forest))
+  }, error = function(err) {
+    print(err)
+    return(NA)
+  })
+  rcppOOBpreds[is.nan(rcppOOBpreds)] <- NA
+  return(rcppOOBpreds)
+}
 
 # -- Calculate Variable Importance ---------------------------------------------
 #' getVI-forestry

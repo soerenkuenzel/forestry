@@ -762,10 +762,14 @@ void forestry::calculateOOBError() {
     if (outputOOBCount[j] != 0) {
       OOB_MSE +=
         pow(trueValue - outputOOBPrediction[j] / outputOOBCount[j], 2);
+      outputOOBPrediction[j] = outputOOBPrediction[j] / outputOOBCount[j];
+    } else {
+      outputOOBPrediction[j] = std::numeric_limits<float>::quiet_NaN();
     }
   }
 
   this->_OOBError = OOB_MSE;
+  this->_OOBpreds = outputOOBPrediction;
 };
 
 
