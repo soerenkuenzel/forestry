@@ -93,6 +93,11 @@ public:
     return _OOBError;
   }
 
+  std::vector<float> getOOBpreds() {
+    calculateOOBError();
+    return _OOBpreds;
+  }
+
   void addTrees(size_t ntree);
 
   DataFrame* getTrainingData() {
@@ -202,6 +207,7 @@ private:
   bool _verbose;
   size_t _nthread;
   float _OOBError;
+  std::vector<float> _OOBpreds;
   std::unique_ptr< std::vector<float> > _variableImportance;
   bool _splitMiddle;
   size_t _maxObs;

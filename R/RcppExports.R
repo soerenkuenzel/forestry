@@ -25,6 +25,10 @@ rcpp_OBBPredictInterface <- function(forest) {
     .Call(`_forestry_rcpp_OBBPredictInterface`, forest)
 }
 
+rcpp_OBBPredictionsInterface <- function(forest) {
+    .Call(`_forestry_rcpp_OBBPredictionsInterface`, forest)
+}
+
 rcpp_VariableImportanceInterface <- function(forest) {
     .Call(`_forestry_rcpp_VariableImportanceInterface`, forest)
 }
