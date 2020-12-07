@@ -1307,11 +1307,12 @@ CppToR_translator <- function(object) {
 #'  saveable if needed, and then saves it.
 #' @param object an object of class `forestry`
 #' @param file a filename in which to store the `forestry` object
+#' @param ... additional arguments useful for specifying compression type and level
 #' @export
-saveForestry <- function(object, filename){
+saveForestry <- function(object, filename, ...){
     # First we need to make sure the object is saveable
     forest <- make_savable(object)
-    base::save(forest, file = filename)
+    base::save(forest, file = filename, ...)
 }
 
 # -- Load RF -----------------------------------------------------
