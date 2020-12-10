@@ -1,4 +1,4 @@
-[![Travis-CI Build Status](https://travis-ci.org/soerenkuenzel/forestry.svg?branch=master)](https://travis-ci.org/soerenkuenzel/forestry)
+[![Travis-CI Build Status](https://travis-ci.org/linanqiu/forestry.svg?branch=master)](https://travis-ci.org/linanqiu/forestry)
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2629366.svg)](https://doi.org/10.5281/zenodo.2629366)
 
