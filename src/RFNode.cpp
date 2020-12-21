@@ -14,7 +14,7 @@ RFNode::RFNode():
   _averageCount(0), _splitCount(0) {}
 
 RFNode::~RFNode() {
-  //  std::cout << "RFNode() destructor is called." << std::endl;
+  //  Rcpp::Rcout << "RFNode() destructor is called." << std::endl;
 };
 
 void RFNode::setLeafNode(

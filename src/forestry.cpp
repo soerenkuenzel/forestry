@@ -272,7 +272,7 @@ void forestry::addTrees(size_t ntree) {
             #endif
 
             if (isVerbose()) {
-              std::cout << "Finish training tree # " << (i + 1) << std::endl;
+              Rcpp::Rcout << "Finish training tree # " << (i + 1) << std::endl;
             }
             (*getForest()).emplace_back(oneTree);
             _ntree = _ntree + 1;
