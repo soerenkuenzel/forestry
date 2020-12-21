@@ -3,8 +3,6 @@
 \name{getOOB-forestry}
 \alias{getOOB-forestry}
 \alias{getOOB}
-\alias{getOOB,}
-\alias{forestry-method}
 \title{getOOB-forestry}
 \usage{
 getOOB(object, noWarning)

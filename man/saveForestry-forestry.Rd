@@ -4,12 +4,14 @@
 \alias{saveForestry}
 \title{save RF}
 \usage{
-saveForestry(object, filename)
+saveForestry(object, filename, ...)
 }
 \arguments{
 \item{object}{an object of class `forestry`}
 
-\item{file}{a filename in which to store the `forestry` object}
+\item{filename}{a filename in which to store the `forestry` object}
+
+\item{...}{additional arguments useful for specifying compression type and level}
 }
 \description{
 This wrapper function checks the forestry object, makes it

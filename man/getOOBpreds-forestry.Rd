@@ -3,8 +3,6 @@
 \name{getOOBpreds-forestry}
 \alias{getOOBpreds-forestry}
 \alias{getOOBpreds}
-\alias{getOOBpreds,}
-\alias{forestry-method}
 \title{getOOBpreds-forestry}
 \usage{
 getOOBpreds(object, noWarning)

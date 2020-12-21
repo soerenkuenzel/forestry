@@ -1147,7 +1147,6 @@ predict.multilayerForestry <- function(object,
 #' @description Calculate the out-of-bag error of a given forest.
 #' @param object A trained model object of class "forestry".
 #' @param noWarning Flag to not display warnings.
-#' @aliases getOOB, forestry-method
 #' @return The out-of-bag error of the forest.
 #' @seealso \code{\link{forestry}}
 #' @export
@@ -1184,7 +1183,6 @@ getOOB <- function(object,
 #' @description Calculate the out-of-bag predictions of a given forest.
 #' @param object A trained model object of class "forestry".
 #' @param noWarning Flag to not display warnings.
-#' @aliases getOOBpreds, forestry-method
 #' @return The vector of all training observations, with their out of bag
 #'  predictions. Note each observation is out of bag for different trees, and so
 #'  the predictions will be more or less stable based on the observation. Some
@@ -1306,7 +1304,7 @@ CppToR_translator <- function(object) {
 #' @description This wrapper function checks the forestry object, makes it
 #'  saveable if needed, and then saves it.
 #' @param object an object of class `forestry`
-#' @param file a filename in which to store the `forestry` object
+#' @param filename a filename in which to store the `forestry` object
 #' @param ... additional arguments useful for specifying compression type and level
 #' @export
 saveForestry <- function(object, filename, ...){
