@@ -1,3 +1,6 @@
+# This package has been moved to https://github.com/forestry-labs/Rforestry
+</br></br></br></br></br></br></br></br></br></br></br></br>
+
 [![Travis-CI Build Status](https://travis-ci.org/soerenkuenzel/forestry.svg?branch=master)](https://travis-ci.org/soerenkuenzel/forestry)
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2629366.svg)](https://doi.org/10.5281/zenodo.2629366)
